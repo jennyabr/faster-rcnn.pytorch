@@ -1,0 +1,14 @@
+from lib.model.roi_align.modules.roi_align import RoIAlignAvg
+from lib.model.roi_crop.modules.roi_crop import _RoICrop
+from lib.model.roi_pooling.modules.roi_pool import _RoIPooling
+from lib.model.utils.config import cfg #TODO: this class shouldn't import cfg
+
+#TODO put all rio in one dir
+def create_roi_pooler(roi_pooler_name):
+    if roi_pooler_name== 'crop':
+        roi_pooler = _RoICrop()
+    elif roi_pooler_name == 'align':
+        roi_pooler = RoIAlignAvg(cfg.POOLING_SIZE, cfg.POOLING_SIZE, 1.0/16.0)
+    elif roi_pooler_name == 'pool':
+        roi_pooler = _RoIPooling(cfg.POOLING_SIZE, cfg.POOLING_SIZE, 1.0/16.0)
+    return roi_pooler
