@@ -24,6 +24,7 @@ import torch.optim as optim
 import torchvision.transforms as transforms
 from torch.utils.data.sampler import Sampler
 
+from model.feature_extractors.vgg16_for_faster_rcnn import VGG16ForFasterRCNN
 from roi_data_layer.roidb import combined_roidb
 from roi_data_layer.roibatchLoader import roibatchLoader
 from model.utils.config import cfg, cfg_from_file, cfg_from_list, get_output_dir
@@ -240,18 +241,24 @@ if __name__ == '__main__':
 
   # initilize the network here.
   if args.net == 'vgg16':
-    fasterRCNN = vgg16(imdb.classes, pretrained=True, class_agnostic=args.class_agnostic)
-  elif args.net == 'res101':
-    fasterRCNN = resnet(imdb.classes, 101, pretrained=True, class_agnostic=args.class_agnostic)
-  elif args.net == 'res50':
-    fasterRCNN = resnet(imdb.classes, 50, pretrained=True, class_agnostic=args.class_agnostic)
-  elif args.net == 'res152':
-    fasterRCNN = resnet(imdb.classes, 152, pretrained=True, class_agnostic=args.class_agnostic)
+    #fasterRCNN = vgg16(imdb.classes, pretrained=True, class_agnostic=args.class_agnostic)
+    feature_extractors = VGG16ForFasterRCNN(pretrained=True)
+  # elif args.net == 'res101':
+  #   fasterRCNN = resnet(imdb.classes, 101, pretrained=True, class_agnostic=args.class_agnostic)
+  # elif args.net == 'res50':
+  #   fasterRCNN = resnet(imdb.classes, 50, pretrained=True, class_agnostic=args.class_agnostic)
+  # elif args.net == 'res152':
+  #   fasterRCNN = resnet(imdb.classes, 152, pretrained=True, class_agnostic=args.class_agnostic)
   else:
     print("network is not defined")
     pdb.set_trace()
 
-  fasterRCNN.create_architecture()
+  #TODO rename
+  fasterRCNN = FasterRCNNMetaArch(feature_extractors,
+                                   class_names=imdb.classes,
+                                   predict_bbox_per_class=args.class_agnostic,
+                                   num_regression_outputs_per_bbox=4,
+                                   roi_pooler_name='align')
 
   lr = cfg.TRAIN.LEARNING_RATE
   lr = args.lr
