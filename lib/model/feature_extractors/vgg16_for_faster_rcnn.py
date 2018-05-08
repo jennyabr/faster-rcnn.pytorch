@@ -29,7 +29,7 @@ class FasterRCNNFeatureExtractors(ABC):
     def _make_non_trainable(net, fixed_layers=10):  # TODO fixed_layers until pooling
         for layer in range(fixed_layers):
             for p in net[layer].parameters():
-                p.requires_grad = False  # TODO sould reconstract? and return
+                p.requires_grad = False  # TODO make immutable
         return net
 
     @staticmethod
@@ -54,29 +54,30 @@ class VGG16ForFasterRCNN(FasterRCNNFeatureExtractors):
             flattened_input = input.view(input.size(0), -1)
             return self.feature_extractor(flattened_input)
 
-    def __init__(self, pretrained=False, model_path='data/pretrained_model/vgg16_caffe.pth'):
+    def __init__(self, pretrained=False, model_path='data/pretrained_model/vgg16_caffe.pth'):  # TODO defaults
         def load_vgg16():
             vgg = models.vgg16()
             if pretrained:
-                print("Loading pretrained weights from %s" % model_path)  # TODO log
+                # TODO log not print (how log effects the GPU?)
+                print("Loading pretrained weights from %s" % model_path)
                 state_dict = torch.load(model_path)
                 vgg.load_state_dict({k: v for k, v in state_dict.items() if k in vgg.state_dict()})
             return vgg
 
-        def load_base_feature_extractor(vgg):
-            feature_extractor = nn.Sequential(*FasterRCNNFeatureExtractors._remove_last_layer_from_network(vgg.features))
-            feature_extractor = self._make_non_trainable(feature_extractor, 10)
-            return feature_extractor
+        def load_base(vgg):
+            base_fe = nn.Sequential(*FasterRCNNFeatureExtractors._remove_last_layer_from_network(vgg.features))
+            base_fe_non_trainable = self._make_non_trainable(base_fe, 10)
+            return base_fe_non_trainable
 
-        def load_fast_rcnn_feature_extractor(vgg):  # TODO
-            fast_rcnn = self._FastRCNNFeatureExtractor(vgg)
-            return fast_rcnn
+        def load_fast_rcnn(vgg):
+            fast_rcnn_fe = self._FastRCNNFeatureExtractor(vgg)
+            return fast_rcnn_fe
 
         super(VGG16ForFasterRCNN, self).__init__(pretrained)
         self.model_path = model_path
         vgg = load_vgg16()
-        self._base_feature_extractor = load_base_feature_extractor(vgg)
-        self._fast_rcnn_feature_extractor = load_fast_rcnn_feature_extractor(vgg)
+        self._base_feature_extractor = load_base(vgg)
+        self._fast_rcnn_feature_extractor = load_fast_rcnn(vgg)
 
     def get_base_feature_extractor(self):
         return self._base_feature_extractor

@@ -1,4 +1,3 @@
-import random
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -14,17 +13,22 @@ from model.utils.net_utils import _smooth_l1_loss, _affine_grid_gen
 
 class FasterRCNNMetaArch(nn.Module):
     def __init__(self, faster_rcnn_feature_extractors, class_names,
-                 predict_bbox_per_class=False, num_regression_outputs_per_bbox=4, roi_pooler_name='crop'):
+                 predict_bbox_per_class=False,
+                 num_regression_outputs_per_bbox=4,
+                 roi_pooler_name='crop'):
+
         super(FasterRCNNMetaArch, self).__init__()
         self.class_names = class_names
         self.num_classes = len(class_names)
         self.predict_bbox_per_class = predict_bbox_per_class
 
         self.base_feature_extractor = faster_rcnn_feature_extractors.get_base_feature_extractor()
+
         def create_rpn():
-            rpn_FE_output_depth = FasterRCNNFeatureExtractors.get_output_num_channels(self.base_feature_extractor)
-            rpn_and_nms = _RPN(rpn_FE_output_depth)
-            rpn_proposal_target = _ProposalTargetLayer(self.num_classes) #TODO: the ProposalTargetLayer is not intuitive
+            rpn_fe_output_depth = FasterRCNNFeatureExtractors.get_output_num_channels(self.base_feature_extractor)
+            rpn_and_nms = _RPN(rpn_fe_output_depth)
+            # TODO: the ProposalTargetLayer is not intuitive
+            rpn_proposal_target = _ProposalTargetLayer(self.num_classes)
             return rpn_and_nms, rpn_proposal_target
         self.rpn_and_nms, self.rpn_proposal_target = create_rpn()
 
@@ -32,19 +36,18 @@ class FasterRCNNMetaArch(nn.Module):
         self.grid_size = cfg.POOLING_SIZE * 2 if cfg.CROP_RESIZE_WITH_MAX_POOL else cfg.POOLING_SIZE #TODO delete this linbe
 
         def create_fast_rcnn():
-            fast_rcnn_feature_extractor = faster_rcnn_feature_extractors.get_fast_rcnn_feature_extractor()
-            fast_rcnn_FE_output_depth = FasterRCNNFeatureExtractors.get_output_num_channels(fast_rcnn_feature_extractor.feature_extractor)
-            assert fast_rcnn_FE_output_depth == 4096 #TODO delete this assertion
-
+            fast_rcnn_fe = faster_rcnn_feature_extractors.get_fast_rcnn_feature_extractor()
+            fast_rcnn_fe_output_depth = FasterRCNNFeatureExtractors.get_output_num_channels(fast_rcnn_fe.feature_extractor)
             if self.predict_bbox_per_class:
-                bbox_head = nn.Linear(fast_rcnn_FE_output_depth, num_regression_outputs_per_bbox * self.num_classes)
+                bbox_head = nn.Linear(fast_rcnn_fe_output_depth, num_regression_outputs_per_bbox * self.num_classes)
             else:
-                bbox_head = nn.Linear(fast_rcnn_FE_output_depth, num_regression_outputs_per_bbox)
+                bbox_head = nn.Linear(fast_rcnn_fe_output_depth, num_regression_outputs_per_bbox)
             fast_rcnn_bbox_head = bbox_head
-            fast_rcnn_cls_head = nn.Linear(fast_rcnn_FE_output_depth, self.num_classes)
-            return fast_rcnn_feature_extractor, fast_rcnn_bbox_head, fast_rcnn_cls_head
-        self.fast_rcnn_feature_extractor, self.fast_rcnn_bbox_head, self.fast_rcnn_cls_head = \
-            create_fast_rcnn()
+
+            fast_rcnn_cls_head = nn.Linear(fast_rcnn_fe_output_depth, self.num_classes)
+
+            return fast_rcnn_fe, fast_rcnn_bbox_head, fast_rcnn_cls_head
+        self.fast_rcnn_feature_extractor, self.fast_rcnn_bbox_head, self.fast_rcnn_cls_head = create_fast_rcnn()
 
         def init_weights(rpn, bbox_head, cls_head):
             def normal_init(m, mean, stddev, truncated=False):
@@ -65,7 +68,6 @@ class FasterRCNNMetaArch(nn.Module):
 
     def forward(self, im_data, im_info, gt_boxes, num_boxes):
         batch_size = im_data.size(0)
-
         im_info = im_info.data
         gt_boxes = gt_boxes.data
         num_boxes = num_boxes.data
@@ -91,9 +93,9 @@ class FasterRCNNMetaArch(nn.Module):
             rpn_loss_cls = 0
             rpn_loss_bbox = 0
 
-        rois = Variable(rois)
+        rois = Variable(rois) # TODO make immutable
 
-        #TODO delete this:
+        #TODO refactor this:
         if cfg.POOLING_MODE == 'crop':
             grid_xy = _affine_grid_gen(rois.view(-1, 5), base_feature_map.size()[2:], self.grid_size)
             grid_yx = torch.stack([grid_xy.data[:, :, :, 1], grid_xy.data[:, :, :, 0]], 3).contiguous()
@@ -104,18 +106,17 @@ class FasterRCNNMetaArch(nn.Module):
             pooled_rois = self.roi_pooler(base_feature_map, rois.view(-1, 5))
         elif cfg.POOLING_MODE == 'pool':
             pooled_rois = self.roi_pooler(base_feature_map, rois.view(-1, 5))
-
         #TODO this insted : pooled_rois = self.roi_pooler(base_feature_map, rois.view(-1, 5))
-
-
-
         #TODO: IB - what is this 5 in the view? it might be hardcoding the number of bb coords
+
         def run_fast_rcnn():
             fast_rcnn_feature_map = self.fast_rcnn_feature_extractor(pooled_rois)
             bbox_pred = self.fast_rcnn_bbox_head(fast_rcnn_feature_map)
             if self.training and self.predict_bbox_per_class:
-                # select the corresponding columns according to roi labels # TODO: replace the comment with an encapsulating function
-                bbox_pred_view = bbox_pred.view(bbox_pred.size(0), int(bbox_pred.size(1) / 4), 4) #TODO: these 4s might be hardcoding the number of output coords
+                # select the corresponding columns according to roi labels
+                #  TODO: replace the comment with an encapsulating function
+                # TODO: these 4s might be hardcoding the number of output coords
+                bbox_pred_view = bbox_pred.view(bbox_pred.size(0), int(bbox_pred.size(1) / 4), 4)
                 bbox_pred_select = torch.gather(bbox_pred_view,
                                                 1,
                                                 rois_label.view(rois_label.size(0), 1, 1).expand(rois_label.size(0), 1, 4))
@@ -138,4 +139,4 @@ class FasterRCNNMetaArch(nn.Module):
 
         return rois, cls_prob, bbox_pred, \
                rpn_loss_cls, rpn_loss_bbox, \
-               faster_rcnn_loss_cls, faster_rcnn_loss_bbox, rois_label
+               self.faster_rcnn_loss_cls, self.faster_rcnn_loss_bbox, rois_label
