@@ -12,10 +12,8 @@ from __future__ import absolute_import
 import torch
 import torch.nn as nn
 import numpy as np
-import numpy.random as npr
 from ..utils.config import cfg
 from .bbox_transform import bbox_overlaps_batch, bbox_transform_batch
-import pdb
 
 class _ProposalTargetLayer(nn.Module):
     """

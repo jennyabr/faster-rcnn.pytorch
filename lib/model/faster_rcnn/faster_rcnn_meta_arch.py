@@ -4,12 +4,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
-from lib.model.feature_extractors.vgg16_for_faster_rcnn import FasterRCNNFeatureExtractors
-from lib.model.roi_poolers.roi_pooler_factory import create_roi_pooler
-from lib.model.utils.config import cfg
-from lib.model.rpn.rpn import _RPN
-from lib.model.rpn.proposal_target_layer_cascade import _ProposalTargetLayer
-from lib.model.utils.net_utils import _smooth_l1_loss, _affine_grid_gen
+from model.feature_extractors.vgg16_for_faster_rcnn import FasterRCNNFeatureExtractors
+from model.roi_poolers.roi_pooler_factory import create_roi_pooler
+from model.utils.config import cfg
+from model.rpn.rpn import _RPN
+from model.rpn.proposal_target_layer_cascade import _ProposalTargetLayer
+from model.utils.net_utils import _smooth_l1_loss, _affine_grid_gen
 
 
 class FasterRCNNMetaArch(nn.Module):
