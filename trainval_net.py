@@ -359,7 +359,7 @@ if __name__ == '__main__':
                 print("\t\t\trpn_cls: %.4f, rpn_box: %.4f, rcnn_cls: %.4f, rcnn_box %.4f"
                       % (loss_rpn_cls, loss_rpn_box, loss_rcnn_cls, loss_rcnn_box))
                 if args.use_tfboard:
-                    total_step = epoch * step
+                    total_step = epoch * iters_per_epoch + step
                     tensorboard.scalar_summary('loss',          loss_temp,     total_step)
                     tensorboard.scalar_summary('loss_rpn_cls',  loss_rpn_cls,  total_step)
                     tensorboard.scalar_summary('loss_rpn_box',  loss_rpn_box,  total_step)
