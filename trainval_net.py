@@ -333,10 +333,10 @@ if __name__ == '__main__':
                 clip_gradient(faster_rcnn, 10.)
 
             optimizer.step()
-            if step % args.disp_interval == 0:
+            if step % args.disp_interval == 0: #TODO add: or (step + 1) == iters_per_epoch + update the loss aproprietly
                 end = time.time()
                 if step > 0:
-                    loss_temp /= args.disp_interval
+                    loss_temp /= args.disp_interval #TODO understand
 
                 if args.mGPUs:
                     loss_rpn_cls = rpn_loss_cls.mean().data[0]
@@ -359,7 +359,7 @@ if __name__ == '__main__':
                 print("\t\t\trpn_cls: %.4f, rpn_box: %.4f, rcnn_cls: %.4f, rcnn_box %.4f"
                       % (loss_rpn_cls, loss_rpn_box, loss_rcnn_cls, loss_rcnn_box))
                 if args.use_tfboard:
-                    total_step = (1 + epoch) * step  # TODO check epoch starts from 1
+                    total_step = epoch * step
                     tensorboard.scalar_summary('loss',          loss_temp,     total_step)
                     tensorboard.scalar_summary('loss_rpn_cls',  loss_rpn_cls,  total_step)
                     tensorboard.scalar_summary('loss_rpn_box',  loss_rpn_box,  total_step)
