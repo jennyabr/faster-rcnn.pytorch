@@ -40,12 +40,11 @@ class FasterRCNNMetaArch(nn.Module):
                 bbox_head = nn.Linear(fast_rcnn_FE_output_depth, num_regression_outputs_per_bbox * self.num_classes)
             else:
                 bbox_head = nn.Linear(fast_rcnn_FE_output_depth, num_regression_outputs_per_bbox)
-            fast_rcnn_heads = {'bbox': bbox_head, 'cls': nn.Linear(fast_rcnn_FE_output_depth, self.num_classes)}
-            return fast_rcnn_feature_extractor, fast_rcnn_heads
-        self.fast_rcnn_feature_extractor, self.fast_rcnn_heads = create_fast_rcnn()
-
-        faster_rcnn_loss_cls = 0
-        faster_rcnn_loss_bbox = 0
+            fast_rcnn_bbox_head = bbox_head
+            fast_rcnn_cls_head = nn.Linear(fast_rcnn_FE_output_depth, self.num_classes)
+            return fast_rcnn_feature_extractor, fast_rcnn_bbox_head, fast_rcnn_cls_head
+        self.fast_rcnn_feature_extractor, self.fast_rcnn_bbox_head, self.fast_rcnn_cls_head = \
+            create_fast_rcnn()
 
         def init_weights(rpn, bbox_head, cls_head):
             def normal_init(m, mean, stddev, truncated=False):
@@ -59,7 +58,10 @@ class FasterRCNNMetaArch(nn.Module):
             normal_init(rpn.RPN_bbox_pred, 0, 0.01, cfg.TRAIN.TRUNCATED)
             normal_init(cls_head, 0, 0.01, cfg.TRAIN.TRUNCATED)
             normal_init(bbox_head, 0, 0.001, cfg.TRAIN.TRUNCATED)
-        init_weights(self.rpn_and_nms, self.fast_rcnn_heads['bbox'], self.fast_rcnn_heads['cls'])
+        init_weights(self.rpn_and_nms, self.fast_rcnn_bbox_head, self.fast_rcnn_cls_head)
+
+        self.faster_rcnn_loss_cls = 0
+        self.faster_rcnn_loss_bbox = 0
 
     def forward(self, im_data, im_info, gt_boxes, num_boxes):
         batch_size = im_data.size(0)
@@ -110,7 +112,7 @@ class FasterRCNNMetaArch(nn.Module):
         #TODO: IB - what is this 5 in the view? it might be hardcoding the number of bb coords
         def run_fast_rcnn():
             fast_rcnn_feature_map = self.fast_rcnn_feature_extractor(pooled_rois)
-            bbox_pred = self.fast_rcnn_heads['bbox'](fast_rcnn_feature_map)
+            bbox_pred = self.fast_rcnn_bbox_head(fast_rcnn_feature_map)
             if self.training and self.predict_bbox_per_class:
                 # select the corresponding columns according to roi labels # TODO: replace the comment with an encapsulating function
                 bbox_pred_view = bbox_pred.view(bbox_pred.size(0), int(bbox_pred.size(1) / 4), 4) #TODO: these 4s might be hardcoding the number of output coords
@@ -119,17 +121,17 @@ class FasterRCNNMetaArch(nn.Module):
                                                 rois_label.view(rois_label.size(0), 1, 1).expand(rois_label.size(0), 1, 4))
                 bbox_pred = bbox_pred_select.squeeze(1)
 
-            cls_score = self.fast_rcnn_heads['cls'](fast_rcnn_feature_map)
+            cls_score = self.fast_rcnn_cls_head(fast_rcnn_feature_map)
             cls_prob = F.softmax(cls_score)
             return bbox_pred, cls_score, cls_prob
         bbox_pred, cls_score, cls_prob = run_fast_rcnn()
 
         if self.training:
-            faster_rcnn_loss_cls = F.cross_entropy(cls_score, rois_label)
-            faster_rcnn_loss_bbox = _smooth_l1_loss(bbox_pred, rois_target, rois_inside_ws, rois_outside_ws)
+            self.faster_rcnn_loss_cls = F.cross_entropy(cls_score, rois_label)
+            self.faster_rcnn_loss_bbox = _smooth_l1_loss(bbox_pred, rois_target, rois_inside_ws, rois_outside_ws)
         else:
-            faster_rcnn_loss_cls = 0
-            faster_rcnn_loss_bbox = 0
+            self.faster_rcnn_loss_cls = 0
+            self.faster_rcnn_loss_bbox = 0
 
         cls_prob = cls_prob.view(batch_size, rois.size(1), -1)
         bbox_pred = bbox_pred.view(batch_size, rois.size(1), -1)
