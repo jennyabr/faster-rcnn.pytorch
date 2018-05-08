@@ -44,10 +44,10 @@ def parse_args():
                         default=1, type=int)
     parser.add_argument('--epochs', dest='max_epochs',
                         help='number of epochs to train',
-                        default=20, type=int)
+                        default=6, type=int)
     parser.add_argument('--disp_interval', dest='disp_interval',
                         help='number of iterations to display',
-                        default=100, type=int)
+                        default=500, type=int)
     parser.add_argument('--checkpoint_interval', dest='checkpoint_interval',
                         help='number of iterations to display',
                         default=10000, type=int)
@@ -81,7 +81,7 @@ def parse_args():
                         default="sgd", type=str)
     parser.add_argument('--lr', dest='lr',
                         help='starting learning rate',
-                        default=0.001, type=float)
+                        default=1e-3, type=float)
     parser.add_argument('--lr_decay_step', dest='lr_decay_step',
                         help='step to do learning rate decay, unit is epoch',
                         default=5, type=int)
@@ -110,7 +110,7 @@ def parse_args():
     # log and diaplay
     parser.add_argument('--use_tfboard', dest='use_tfboard',
                         help='whether use tensorflow tensorboard',
-                        default=False, type=bool)
+                        default=True, type=bool)
 
     args = parser.parse_args()
     return args
@@ -307,7 +307,7 @@ if __name__ == '__main__':
             lr *= args.lr_decay_gamma
 
         data_iter = iter(dataloader)
-        t0 = time.time()
+        #t0 = time.time()
         for step in range(iters_per_epoch):
             data = next(data_iter)
             im_data.data.resize_(data[0].size()).copy_(data[0])
