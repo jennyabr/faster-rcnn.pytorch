@@ -353,19 +353,18 @@ if __name__ == '__main__':
                     fg_cnt = torch.sum(rois_label.data.ne(0))
                     bg_cnt = rois_label.data.numel() - fg_cnt
 
-                print("[session %d][epoch %2d][iter %4d/%4d] loss: %.4f, lr: %.2e" \
+                print("[session %d][epoch %2d][iter %4d/%4d] loss: %.4f, lr: %.2e"
                       % (args.session, epoch, step, iters_per_epoch, loss_temp, lr))
                 print("\t\t\tfg/bg=(%d/%d), time cost: %f" % (fg_cnt, bg_cnt, end - start))
-                print("\t\t\trpn_cls: %.4f, rpn_box: %.4f, rcnn_cls: %.4f, rcnn_box %.4f" \
+                print("\t\t\trpn_cls: %.4f, rpn_box: %.4f, rcnn_cls: %.4f, rcnn_box %.4f"
                       % (loss_rpn_cls, loss_rpn_box, loss_rcnn_cls, loss_rcnn_box))
                 if args.use_tfboard:
-                    info = {'loss': loss_temp,
-                            'loss_rpn_cls': loss_rpn_cls,
-                            'loss_rpn_box': loss_rpn_box,
-                            'loss_rcnn_cls': loss_rcnn_cls,
-                            'loss_rcnn_box': loss_rcnn_box}
-                    for tag, value in info.items():
-                        tensorboard.scalar_summary(tag, value, step)
+                    total_step = (1 + epoch) * step  # TODO check epoch starts from 1
+                    tensorboard.scalar_summary('loss',          loss_temp,     total_step)
+                    tensorboard.scalar_summary('loss_rpn_cls',  loss_rpn_cls,  total_step)
+                    tensorboard.scalar_summary('loss_rpn_box',  loss_rpn_box,  total_step)
+                    tensorboard.scalar_summary('loss_rcnn_cls', loss_rcnn_cls, total_step)
+                    tensorboard.scalar_summary('loss_rcnn_box', loss_rcnn_box, total_step)
 
                 loss_temp = 0
                 start = time.time()
