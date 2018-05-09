@@ -7,7 +7,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import os
 import numpy as np
 import argparse
 import pprint
@@ -22,7 +21,7 @@ from torch.utils.data.sampler import Sampler
 from model.feature_extractors.vgg16_for_faster_rcnn import VGG16ForFasterRCNN
 from roi_data_layer.roidb import combined_roidb
 from roi_data_layer.roibatchLoader import roibatchLoader
-from model.utils.config import cfg, cfg_from_file, cfg_from_list
+from model.utils.config import cfg, get_output_dir, get_ckpt_path, cfg_from_file, cfg_from_list
 from model.utils.net_utils import adjust_learning_rate, save_checkpoint, clip_gradient
 
 from model.faster_rcnn.faster_rcnn_meta_arch import FasterRCNNMetaArch
@@ -53,9 +52,7 @@ def parse_args():
                         default=10000, type=int)
 
     parser.add_argument('--save_dir', dest='save_dir',
-                        help='directory to save models',
-                        default="/home/jenny/gripper2/faster-rcnn.pytorch/output/00/models",
-                        nargs=argparse.REMAINDER)
+                        help='directory to save models')  # TODO check that it updates the default value
     parser.add_argument('--nw', dest='num_workers',
                         help='number of worker to load data',
                         default=1, type=int)
@@ -151,7 +148,7 @@ if __name__ == '__main__':
 
     if args.use_tfboard:
         from model.utils.logger import Logger
-        tensorboard = Logger('./logs')
+        tensorboard = Logger(get_output_dir(args.net, args.dataset))
     else:
         tensorboard = None
 
@@ -198,10 +195,6 @@ if __name__ == '__main__':
     train_size = len(roidb)
 
     print('{:d} roidb entries'.format(len(roidb)))
-
-    output_dir = args.save_dir + "/" + args.net + "/" + args.dataset
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
 
     sampler_batch = BDSampler(train_size, args.batch_size)
 
@@ -275,8 +268,7 @@ if __name__ == '__main__':
         raise AssertionError('optimizer not defined')  # TODO which error
 
     if args.resume:
-        load_name = os.path.join(output_dir,
-                                 'faster_rcnn_{}_{}_{}.pth'.format(args.checksession, args.checkepoch, args.checkpoint))
+        load_name = get_ckpt_path(args.net, args.dataset, args.checksession, args.checkepoch, args.checkpoint)
         print("loading checkpoint %s" % load_name)
         checkpoint = torch.load(load_name)
         args.session = checkpoint['session']
@@ -307,7 +299,6 @@ if __name__ == '__main__':
             lr *= args.lr_decay_gamma
 
         data_iter = iter(dataloader)
-        #t0 = time.time()
         for step in range(iters_per_epoch):
             data = next(data_iter)
             im_data.data.resize_(data[0].size()).copy_(data[0])
@@ -369,18 +360,18 @@ if __name__ == '__main__':
                 loss_temp = 0
                 start = time.time()
 
-        save_name = os.path.join(output_dir, 'faster_rcnn_{}_{}.pth'.format(args.session, epoch))
         if args.mGPUs:
             ckpt_model = faster_rcnn.module.state_dict()
         else:
             ckpt_model = faster_rcnn.state_dict()
+        save_to = get_ckpt_path(args.net, args.dataset, args.session, epoch)
         save_checkpoint({'session': args.session,
                          'epoch': epoch + 1,
                          'model': ckpt_model,
                          'optimizer': optimizer.state_dict(),
                          'pooling_mode': cfg.POOLING_MODE,
-                         'class_agnostic': args.class_agnostic}, save_name)
-        print('save model: {}'.format(save_name))
+                         'class_agnostic': args.class_agnostic}, save_to)
+        print('save model: {}'.format(save_to))
 
         end = time.time()
         print(end - start)
