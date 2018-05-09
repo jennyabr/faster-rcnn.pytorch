@@ -20,7 +20,7 @@ class VGG16ForFasterRCNN(FasterRCNNFeatureExtractors):
             flattened_input = input.view(input.size(0), -1)
             return self.feature_extractor(flattened_input)
 
-    def __init__(self, pretrained=False, model_path='data/pretrained_model/vgg16_caffe.pth'):  # TODO defaults
+    def __init__(self, pretrained, model_path):  # TODO defaults
         super(VGG16ForFasterRCNN, self).__init__(pretrained, model_path)
 
         def load_vgg16():

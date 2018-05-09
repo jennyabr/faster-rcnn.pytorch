@@ -266,8 +266,8 @@ __C.EPS = 1e-14
 __C.ROOT_DIR = osp.abspath(osp.join(osp.dirname(__file__), '..', '..', '..'))
 
 # __C.DATA_DIR = osp.abspath(osp.join(__C.ROOT_DIR, 'data'))
-__C.DATA_DIR = osp.abspath('/home/jenny/gripper2/faster_rcnn_data')
-__C.OUTPUT_DIR = osp.abspath('/home/jenny/gripper2/faster_rcnn_output')
+__C.DATA_DIR = osp.abspath('/home/jenny/gripper2/faster-rcnn_data')
+__C.OUTPUT_DIR = osp.abspath('/home/jenny/gripper2/faster-rcnn_output')
 
 # Name (or path to) the matlab executable
 __C.MATLAB = 'matlab'
