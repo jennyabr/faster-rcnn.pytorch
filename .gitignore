@@ -1,3 +1,9 @@
 data/*
+output/*
+logs/*
+.idea/*
+__pycache__/*
 *.pyc
 *~
+*.so
+*.o
