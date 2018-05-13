@@ -2,11 +2,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import torch
-import torch.nn as nn
-import torchvision.models as models
-
 from abc import ABC, abstractmethod
+
+import torch.nn as nn
 
 
 class FasterRCNNFeatureExtractors(ABC):
@@ -22,23 +20,13 @@ class FasterRCNNFeatureExtractors(ABC):
     def get_fast_rcnn_feature_extractor(self):
         raise NotImplementedError
 
-    @staticmethod
-    def _remove_last_layer_from_network(subnet):
-        return list(subnet._modules.values())[:-1]  # TODO???
+    @abstractmethod
+    def get_output_num_channels(self, model):
+        raise NotImplementedError
 
     @staticmethod
-    def _make_non_trainable(net, fixed_layers=10):  # TODO fixed_layers until pooling
-        for layer in range(fixed_layers):
-            for p in net[layer].parameters():
-                p.requires_grad = False  # TODO make immutable
-        return net
-
-    @staticmethod
-    def get_output_num_channels(model):
-        for layer_num in range(len(model)-1, -1, -1):
-            if hasattr(model[layer_num], 'out_channels'):
-                return model[layer_num].out_channels
-            if hasattr(model[layer_num], 'out_features'):
-                return model[layer_num].out_features
-
-        raise AssertionError('Unexpected model architecture')
+    def check_sequential(model):
+        if not isinstance(model, nn.Sequential):
+            raise ValueError(
+                'Since Pytorch supports dynamic graphs, the order of layers in a non-sequential net is '
+                'defined only dynamically at run-time and cant be used for counting layers')

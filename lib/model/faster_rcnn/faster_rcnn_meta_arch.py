@@ -3,16 +3,16 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
-from model.feature_extractors.vgg16_for_faster_rcnn import FasterRCNNFeatureExtractors
 from model.roi_poolers.roi_pooler_factory import create_roi_pooler
 from model.utils.config import cfg
 from model.rpn.rpn import _RPN
 from model.rpn.proposal_target_layer_cascade import _ProposalTargetLayer
 from model.utils.net_utils import _smooth_l1_loss, _affine_grid_gen
+from model.feature_extractors.faster_rcnn_feature_extractors import FasterRCNNFeatureExtractors
 
 
 class FasterRCNNMetaArch(nn.Module):
-    def __init__(self, faster_rcnn_feature_extractors, class_names,
+    def __init__(self, feature_extractors, class_names,
                  predict_bbox_per_class=False,
                  num_regression_outputs_per_bbox=4,
                  roi_pooler_name='crop'):
@@ -22,10 +22,10 @@ class FasterRCNNMetaArch(nn.Module):
         self.num_classes = len(class_names)
         self.predict_bbox_per_class = predict_bbox_per_class
 
-        self.base_feature_extractor = faster_rcnn_feature_extractors.get_base_feature_extractor()
+        self.base_feature_extractor = feature_extractors.get_base_feature_extractor()
 
         def create_rpn():
-            rpn_fe_output_depth = FasterRCNNFeatureExtractors.get_output_num_channels(self.base_feature_extractor)
+            rpn_fe_output_depth = feature_extractors.get_output_num_channels(self.base_feature_extractor)
             rpn_and_nms = _RPN(rpn_fe_output_depth)
             # TODO: the ProposalTargetLayer is not intuitive
             rpn_proposal_target = _ProposalTargetLayer(self.num_classes)
@@ -36,8 +36,8 @@ class FasterRCNNMetaArch(nn.Module):
         self.grid_size = cfg.POOLING_SIZE * 2 if cfg.CROP_RESIZE_WITH_MAX_POOL else cfg.POOLING_SIZE #TODO delete this linbe
 
         def create_fast_rcnn():
-            fast_rcnn_fe = faster_rcnn_feature_extractors.get_fast_rcnn_feature_extractor()
-            fast_rcnn_fe_output_depth = FasterRCNNFeatureExtractors.get_output_num_channels(fast_rcnn_fe.feature_extractor)
+            fast_rcnn_fe = feature_extractors.get_fast_rcnn_feature_extractor()
+            fast_rcnn_fe_output_depth = feature_extractors.get_output_num_channels(fast_rcnn_fe.feature_extractor)
             if self.predict_bbox_per_class:
                 bbox_head = nn.Linear(fast_rcnn_fe_output_depth, num_regression_outputs_per_bbox * self.num_classes)
             else:

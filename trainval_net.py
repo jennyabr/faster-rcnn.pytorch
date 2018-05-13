@@ -13,12 +13,15 @@ import pprint
 import pdb
 import time
 import os
+import logging
+
 
 import torch
 from torch.autograd import Variable
 import torch.nn as nn
 from torch.utils.data.sampler import Sampler
 
+from model.feature_extractors.resnet_for_faster_rcnn import ResNetForFasterRCNN
 from model.feature_extractors.vgg16_for_faster_rcnn import VGG16ForFasterRCNN
 from roi_data_layer.roidb import combined_roidb
 from roi_data_layer.roibatchLoader import roibatchLoader
@@ -27,6 +30,8 @@ from model.utils.net_utils import adjust_learning_rate, save_checkpoint, clip_gr
 
 from model.faster_rcnn.faster_rcnn_meta_arch import FasterRCNNMetaArch
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def parse_args():
     """
@@ -47,7 +52,7 @@ def parse_args():
                         default=6, type=int)
     parser.add_argument('--disp_interval', dest='disp_interval',
                         help='number of iterations to display',
-                        default=500, type=int)
+                        default=100, type=int)
     parser.add_argument('--checkpoint_interval', dest='checkpoint_interval',
                         help='number of iterations to display',
                         default=10000, type=int)
@@ -115,8 +120,14 @@ def parse_args():
 
 
 class BDSampler(Sampler):
-    def __init__(self, train_size, batch_size):
-        self.num_data = train_size
+    def __init__(self, train_size, batch_size, seed):
+        self.seed = seed #TODO is it done no the CPU?
+        torch.manual_seed(seed)
+        #torch.cuda.manual_seed(seed)
+        #np.random.seed(1337)
+        #random.seed(1337)
+
+        self.data_size = train_size
         self.num_per_batch = int(train_size / batch_size)
         self.batch_size = batch_size
         self.range = torch.arange(0, batch_size).view(1, batch_size).long()
@@ -137,15 +148,14 @@ class BDSampler(Sampler):
         return iter(self.rand_num_view)
 
     def __len__(self):
-        return self.num_data
+        return self.data_size  # TODO (self.data_size + self.batch_size - 1) // self.batch_size
 
 
 if __name__ == '__main__':
-
     args = parse_args()
 
-    print('Called with args:')
-    print(args)
+    logger.info('Called with args:')
+    logger.info(args)
 
     if args.use_tfboard:
         from model.utils.logger import Logger
@@ -183,7 +193,6 @@ if __name__ == '__main__':
 
     print('Using config:')
     pprint.pprint(cfg)
-    np.random.seed(cfg.RNG_SEED)  # TODO cant do with some other lib?
 
     if torch.cuda.is_available() and not args.cuda:
         print("WARNING: You have a CUDA device, so you should probably run with --cuda")
@@ -197,7 +206,7 @@ if __name__ == '__main__':
 
     print('{:d} roidb entries'.format(len(roidb)))
 
-    sampler_batch = BDSampler(train_size, args.batch_size)
+    sampler_batch = BDSampler(train_size, args.batch_size, cfg.RNG_SEED)
 
     dataset = roibatchLoader(roidb, ratio_list, ratio_index, args.batch_size,
                              imdb.num_classes, training=True)
@@ -228,15 +237,11 @@ if __name__ == '__main__':
 
     if args.net == 'vgg16':
         model_path = os.path.join(cfg.DATA_DIR, 'pretrained_model/vgg16_caffe.pth')
-        feature_extractors = VGG16ForFasterRCNN(pretrained=True,
-                                                model_path=model_path)
-    # elif args.net == 'res101':
-    #   fasterRCNN = resnet(imdb.classes, 101, pretrained=True, class_agnostic=args.class_agnostic)
-    # elif args.net == 'res50':
-    #   fasterRCNN = resnet(imdb.classes, 50, pretrained=True, class_agnostic=args.class_agnostic)
-    # elif args.net == 'res152':
-    #   fasterRCNN = resnet(imdb.classes, 152, pretrained=True, class_agnostic=args.class_agnostic)
-    else:
+        feature_extractors = VGG16ForFasterRCNN(pretrained=True, model_path=model_path)
+    elif args.net == 'res101':
+        model_path = os.path.join(cfg.DATA_DIR, 'pretrained_model/resnet101_caffe.pth')
+        feature_extractors = ResNetForFasterRCNN(pretrained=True, model_path=model_path)
+    else: #TODO add more resnet archs
         feature_extractors = None
         print("network is not defined")
         pdb.set_trace()
