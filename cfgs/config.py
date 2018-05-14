@@ -122,4 +122,5 @@ class ConfigProvider(dict):#object):
         except AttributeError:
             raise Exception("{} does not exist in Config.".format(attr))
 
+
 cfg = ConfigProvider()
