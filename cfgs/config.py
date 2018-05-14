@@ -116,7 +116,7 @@ class ConfigProvider(dict):#object):
         return self._cfg[key]
 
     def __getattr__(self, attr):
-        # note: only called what self.attr doesn't exist
+        # note: this is called what self.attr doesn't exist
         try:
             return self._cfg[attr]
         except AttributeError:
