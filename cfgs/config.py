@@ -123,5 +123,3 @@ class ConfigProvider(dict):#object):
             raise Exception("{} does not exist in Config.".format(attr))
 
 cfg = ConfigProvider()
-#cfg = ConfigProvider('/home/jenny/gripper2/faster-rcnn.pytorch_dev/cfgs')
-#print("sddsdsds")
