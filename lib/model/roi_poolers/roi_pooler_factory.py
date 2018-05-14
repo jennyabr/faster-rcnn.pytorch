@@ -1,7 +1,7 @@
 from lib.model.roi_align.modules.roi_align import RoIAlignAvg
 from lib.model.roi_crop.modules.roi_crop import _RoICrop
 from lib.model.roi_pooling.modules.roi_pool import _RoIPooling
-from lib.model.utils.config import cfg #TODO: this class shouldn't import cfg
+from cfgs.config import cfg #TODO: this class shouldn't import cfg
 
 #TODO put all rio in one dir
 def create_roi_pooler(roi_pooler_name):

@@ -6,8 +6,8 @@ import torch
 import torch.nn as nn
 from torchvision.models import resnet101
 from torchvision.models.resnet import Bottleneck
-from model.utils.config import cfg
 from model.feature_extractors.faster_rcnn_feature_extractors import FasterRCNNFeatureExtractors
+from cfgs.config import cfg
 
 class ResNetForFasterRCNN(FasterRCNNFeatureExtractors):
     class _FastRCNNFeatureExtractor(nn.Module):

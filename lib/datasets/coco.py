@@ -9,20 +9,18 @@ from __future__ import print_function
 
 from datasets.imdb import imdb
 import datasets.ds_utils as ds_utils
-from model.utils.config import cfg
+from cfgs.config import cfg
 import os.path as osp
-import sys
 import os
 import numpy as np
 import scipy.sparse
-import scipy.io as sio
 import pickle
 import json
 import uuid
 # COCO API
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
-from pycocotools import mask as COCOmask
+
 
 class coco(imdb):
   def __init__(self, image_set, year):

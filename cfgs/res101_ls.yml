@@ -20,3 +20,14 @@ TEST:
 POOLING_SIZE: 7
 POOLING_MODE: align
 CROP_RESIZE_WITH_MAX_POOL: False
+
+RESNET:
+  # Option to set if max-pooling is appended after crop_and_resize.
+  # if true, the region will be resized to a square of 2xPOOLING_SIZE,
+  # then 2x2 max-pooling is applied; otherwise the region will be directly
+  # resized to a square of POOLING_SIZE
+  MAX_POOL: False
+
+  # Number of fixed blocks during training, by default the first of all 4 blocks is fixed
+  # Range: 0 (none) to 3 (all)
+  FIXED_BLOCKS: 1

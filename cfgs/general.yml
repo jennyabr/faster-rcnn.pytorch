@@ -1,0 +1,224 @@
+DATA_DIR: '/home/jenny/gripper2/faster-rcnn_data'
+OUTPUT_DIR: '/home/jenny/gripper2/faster-rcnn_output'
+dataset: 'pascal_voc'  # training dataset'
+net: 'vgg16'  # {vgg16,res101}
+
+num_workers: 6  # number of worker to load data
+
+# Name (or path to) the matlab executable
+MATLAB: 'matlab'
+
+# Place outputs under an experiments directory
+EXP_DIR: 'default'
+
+# For reproducibility
+RNG_SEED: 3
+
+# Use GPU implementation of non-maximum suppression
+USE_GPU_NMS: True
+
+# Default GPU device id
+GPU_ID: 0
+
+
+# The mapping from image coordinates to feature map coordinates might cause
+# some boxes that are distinct in image space to become identical in feature
+# coordinates. If DEDUP_BOXES > 0, then DEDUP_BOXES is used as the scale factor
+# for identifying duplicate boxes.
+# 1/16 is correct for {Alex,Caffe}Net, VGG_CNN_M_1024, and VGG16
+DEDUP_BOXES_numerator: 1.
+DEDUP_BOXES_denominator: 16.
+
+# Pixel mean values (BGR order) as a (1, 1, 3) array
+# We use the same pixel mean for all networks even though it's not exactly what
+# they were trained with
+PIXEL_MEANS: [[[102.9801, 115.9465, 122.7717]]]
+
+# A small number that's used many times
+EPS: 1e-14
+
+POOLING_MODE: 'align'
+
+# Size of the pooled region after RoI pooling
+POOLING_SIZE: 7
+
+# Maximal number of gt rois in an image during Training
+MAX_NUM_GT_BOXES: 20
+
+# Anchor scales for RPN
+ANCHOR_SCALES: [8, 16, 32]
+
+# Anchor ratios for RPN
+ANCHOR_RATIOS: [0.5, 1, 2]
+
+# Feature stride for RPN
+FEAT_STRIDE: [16, ]
+
+CUDA: True
+mGPUs: False  # whether use multiple GPUs
+
+CROP_RESIZE_WITH_MAX_POOL: True
+
+TRAIN:
+  start_epoch: 1
+  max_epochs: 6  # number of epochs to train
+  disp_interval: 100  # number of iterations to display
+  checkpoint_interval: 10000  # number of iterations to display
+  large_scale: False  # whether use large imag scale
+  batch_size: 1
+  class_agnostic: False  # whether perform class_agnostic bbox regression',
+  session: 1  # training session
+  resume: False  # resume checkpoint or not
+  checksession: 1  # checksession to load model
+  checkepoch: 1  # checkepoch to load model
+  checkpoint: 0  # checkpoint to load model
+  use_tfboard: True  # whether use tensorflow tensorboard
+  optimizer: 'sgd'  # training optimizer
+  LEARNING_RATE: 1e-3
+  lr_decay_step: 5  # step to do learning rate decay, unit is epoch
+  GAMMA: 0.1 # Factor for reducing the learning rate | learning rate decay ratio
+  MOMENTUM: 0.9
+  WEIGHT_DECAY: 0.0005
+  STEPSIZE: [30000] # Step size for reducing the learning rate, currently only support one step
+  DISPLAY: 10 # Iteration intervals for showing the loss during training, on command line interface
+  DOUBLE_BIAS: True # Whether to double the learning rate for bias
+  TRUNCATED: False # Whether to initialize the weights with truncated normal distribution
+  BIAS_DECAY: False # Whether to have weight decay on bias as well
+  USE_GT: False # Whether to add ground truth boxes to the pool when sampling regions
+  ASPECT_GROUPING: False # Whether to use aspect-ratio grouping of training images, introduced merely for saving GPU memory
+  SNAPSHOT_KEPT: 3 # The number of snapshots kept, older ones are deleted to save space
+  SUMMARY_INTERVAL: 180 # The time interval for saving tensorflow summaries
+  SCALES: [600] # Scale to use during training (can list multiple scales) The scale is the pixel size of an image's shortest side
+  MAX_SIZE: 1000 # Max pixel size of the longest side of a scaled input image
+
+  # Trim size for input images to create minibatch
+  TRIM_HEIGHT: 600
+  TRIM_WIDTH: 600
+
+  IMS_PER_BATCH: 1
+
+  # Minibatch size (number of regions of interest [ROIs])
+  #BATCH_SIZE: 128
+
+  # Fraction of minibatch that is labeled foreground (i.e. class > 0)
+  FG_FRACTION: 0.25
+
+  # Overlap threshold for a ROI to be considered foreground (if >= FG_THRESH)
+  FG_THRESH: 0.5
+
+  # Overlap threshold for a ROI to be considered background (class = 0 if overlap in [LO, HI))
+  BG_THRESH_HI: 0.5
+  BG_THRESH_LO: 0.1
+
+  # Use horizontally-flipped images during training?
+  USE_FLIPPED: True
+
+  # Train bounding-box regressors
+  BBOX_REG: True
+
+  # Overlap required between a ROI and ground-truth box in order for that ROI to
+  # be used as a bounding-box regression training example
+  BBOX_THRESH: 0.5
+  # Iterations between snapshots
+  SNAPSHOT_ITERS: 5000
+
+  # solver.prototxt specifies the snapshot path prefix, this adds an optional
+  # infix to yield the path: <prefix>[_<infix>]_iters_XYZ.caffemodel
+  SNAPSHOT_PREFIX: 'res101_faster_rcnn'
+
+
+  # Normalize the targets (subtract empirical mean, divide by empirical stddev)
+  BBOX_NORMALIZE_TARGETS: True
+
+  # Deprecated (inside weights)
+  BBOX_INSIDE_WEIGHTS: [1.0, 1.0, 1.0, 1.0]
+
+  # Normalize the targets using "precomputed" (or made up) means and stdevs
+  # (BBOX_NORMALIZE_TARGETS must also be True)
+  BBOX_NORMALIZE_TARGETS_PRECOMPUTED: True
+  BBOX_NORMALIZE_MEANS: [0.0, 0.0, 0.0, 0.0]
+  BBOX_NORMALIZE_STDS: [0.1, 0.1, 0.2, 0.2]
+
+  # Train using these proposals
+  PROPOSAL_METHOD: 'gt'
+
+  # Make minibatches from images that have similar aspect ratios (i.e. both
+  # tall and thin or both short and wide) in order to avoid wasting computation
+  # on zero-padding.
+
+  # Use RPN to detect objects
+  HAS_RPN: True
+  # IOU >= thresh: positive example
+  RPN_POSITIVE_OVERLAP: 0.7
+  # IOU < thresh: negative example
+  RPN_NEGATIVE_OVERLAP: 0.3
+  # If an anchor statisfied by positive and negative conditions set to negative
+  RPN_CLOBBER_POSITIVES: False
+  # Max number of foreground examples
+  RPN_FG_FRACTION: 0.5
+  # Total number of examples
+  RPN_BATCHSIZE: 256
+  # NMS threshold used on RPN proposals
+  RPN_NMS_THRESH: 0.7
+  # Number of top scoring boxes to keep before apply NMS to RPN proposals
+  RPN_PRE_NMS_TOP_N: 12000
+  # Number of top scoring boxes to keep after applying NMS to RPN proposals
+  RPN_POST_NMS_TOP_N: 2000
+  # Proposal height and width both need to be greater than RPN_MIN_SIZE (at orig image scale)
+  RPN_MIN_SIZE: 8
+  # Deprecated (outside weights)
+  RPN_BBOX_INSIDE_WEIGHTS: [1.0, 1.0, 1.0, 1.0]
+  # Give the positive RPN examples weight of p * 1 / {num positives}
+  # and give negatives a weight of (1 - p)
+  # Set to -1.0 to use uniform example weighting
+  RPN_POSITIVE_WEIGHT: -1.0
+  # Whether to use all ground truth bounding boxes for training,
+  # For COCO, setting USE_ALL_GT to False will exclude boxes that are flagged as ''iscrowd''
+  USE_ALL_GT: True
+
+  # Whether to tune the batch normalization parameters during training
+  BN_TRAIN: False
+
+
+TEST:
+  # Scale to use during testing (can NOT list multiple scales)
+  # The scale is the pixel size of an image's shortest side
+  SCALES: [600,]
+
+  # Max pixel size of the longest side of a scaled input image
+  MAX_SIZE: 1000
+
+  # Overlap threshold used for non-maximum suppression (suppress boxes with IoU >= this threshold)
+  NMS: 0.3
+
+  # Experimental: treat the (K+1) units in the cls_score layer as linear
+  # predictors (trained, eg, with one-vs-rest SVMs).
+  SVM: False
+
+  # Test using bounding-box regressors
+  BBOX_REG: True
+
+  # Propose boxes
+  HAS_RPN: False
+
+  # Test using these proposals
+  PROPOSAL_METHOD: 'gt'
+
+  ## NMS threshold used on RPN proposals
+  RPN_NMS_THRESH: 0.7
+  ## Number of top scoring boxes to keep before apply NMS to RPN proposals
+  RPN_PRE_NMS_TOP_N: 6000
+
+  ## Number of top scoring boxes to keep after applying NMS to RPN proposals
+  RPN_POST_NMS_TOP_N: 300
+
+  # Proposal height and width both need to be greater than RPN_MIN_SIZE (at orig image scale)
+  RPN_MIN_SIZE: 16
+
+  # Testing mode, default to be 'nms', 'top' is slower but better
+  # See report for details
+  MODE: 'nms'
+
+  # Only useful when TEST.MODE is 'top', specifies the number of top proposals to select
+  RPN_TOP_N: 5000
+

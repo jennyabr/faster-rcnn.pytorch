@@ -4,11 +4,10 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 
 from model.roi_poolers.roi_pooler_factory import create_roi_pooler
-from model.utils.config import cfg
+from cfgs.config import cfg
 from model.rpn.rpn import _RPN
 from model.rpn.proposal_target_layer_cascade import _ProposalTargetLayer
 from model.utils.net_utils import _smooth_l1_loss, _affine_grid_gen
-from model.feature_extractors.faster_rcnn_feature_extractors import FasterRCNNFeatureExtractors
 
 
 class FasterRCNNMetaArch(nn.Module):
@@ -30,6 +29,10 @@ class FasterRCNNMetaArch(nn.Module):
             # TODO: the ProposalTargetLayer is not intuitive
             rpn_proposal_target = _ProposalTargetLayer(self.num_classes)
             return rpn_and_nms, rpn_proposal_target
+
+        print("--------------------------------")
+        print(cfg)
+        print("--------------------------------")
         self.rpn_and_nms, self.rpn_proposal_target = create_rpn()
 
         self.roi_pooler = create_roi_pooler(roi_pooler_name)

@@ -12,7 +12,7 @@ from __future__ import absolute_import
 import torch
 import torch.nn as nn
 import numpy as np
-from ..utils.config import cfg
+from cfgs.config import cfg
 from .bbox_transform import bbox_overlaps_batch, bbox_transform_batch
 
 class _ProposalTargetLayer(nn.Module):
