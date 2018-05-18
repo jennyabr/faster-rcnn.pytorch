@@ -82,7 +82,6 @@ TRAIN:
   STEPSIZE: [30000] # Step size for reducing the learning rate, currently only support one step
   DISPLAY: 10 # Iteration intervals for showing the loss during training, on command line interface
   DOUBLE_BIAS: True # Whether to double the learning rate for bias
-  TRUNCATED: False # Whether to initialize the weights with truncated normal distribution
   BIAS_DECAY: False # Whether to have weight decay on bias as well
   USE_GT: False # Whether to add ground truth boxes to the pool when sampling regions
   ASPECT_GROUPING: False # Whether to use aspect-ratio grouping of training images, introduced merely for saving GPU memory
@@ -110,8 +109,8 @@ TRAIN:
   BG_THRESH_HI: 0.5
   BG_THRESH_LO: 0.1
 
-  # Use horizontally-flipped images during training?
-  USE_FLIPPED: True
+
+  USE_FLIPPED: True # Use horizontally-flipped images during training?
 
   # Train bounding-box regressors
   BBOX_REG: True

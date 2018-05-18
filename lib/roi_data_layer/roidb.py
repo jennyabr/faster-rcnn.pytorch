@@ -72,6 +72,7 @@ def rank_roidb_ratio(roidb):
     ratio_index = np.argsort(ratio_list)
     return ratio_list[ratio_index], ratio_index
 
+
 def filter_roidb(roidb):
     # filter the image without bounding box.
     print('before filtering, there are %d images...' % (len(roidb)))
@@ -84,6 +85,7 @@ def filter_roidb(roidb):
 
     print('after filtering, there are %d images...' % (len(roidb)))
     return roidb
+
 
 def combined_roidb(imdb_names, training=True):
   """

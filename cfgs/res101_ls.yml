@@ -12,6 +12,7 @@ TRAIN:
   SCALES: [800]
   DOUBLE_BIAS: False
   LEARNING_RATE: 0.001
+  pretrained_model_path: 'pretrained_model/resnet101_caffe.pth'
 TEST:
   HAS_RPN: True
   SCALES: [800]

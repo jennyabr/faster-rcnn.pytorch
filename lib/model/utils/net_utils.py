@@ -66,9 +66,6 @@ def adjust_learning_rate(optimizer, decay=0.1):
         param_group['lr'] = decay * param_group['lr']
 
 
-def save_checkpoint(state, filename):
-    torch.save(state, filename)
-
 def _smooth_l1_loss(bbox_pred, bbox_targets, bbox_inside_weights, bbox_outside_weights, sigma=1.0, dim=[1]):
     
     sigma_2 = sigma ** 2
@@ -221,3 +218,16 @@ def compare_grid_sample():
     pdb.set_trace()
 
     delta = (grad_input_off.data - grad_input_stn).sum()
+
+
+def assert_sequential(model):
+    if not isinstance(model, nn.Sequential):
+        raise ValueError(
+            'Since Pytorch supports dynamic graphs, the order of layers in a non-sequential net is '
+            'defined only dynamically at run-time and cant be used for counting layers')
+
+def normal_init(nn_module, mean=0, stddev=1):
+    # TODO seed?
+    # TODO: IB - the initialization should be flexible to all initializations in pytorch
+    nn.init.normal(nn_module.weight, mean, stddev)
+    nn.init.constant(nn_module.bias, 0)

@@ -2,11 +2,17 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import logging
+
 import torch
 import torch.nn as nn
 import torchvision.models as models
 
-from model.feature_extractors.faster_rcnn_feature_extractors import FasterRCNNFeatureExtractors
+from model.feature_extractors.faster_rcnn_feature_extractors_api import FasterRCNNFeatureExtractors
+from model.utils.net_utils import assert_sequential
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class VGG16ForFasterRCNN(FasterRCNNFeatureExtractors):
@@ -20,17 +26,8 @@ class VGG16ForFasterRCNN(FasterRCNNFeatureExtractors):
             flattened_input = input.view(input.size(0), -1)
             return self.feature_extractor(flattened_input)
 
-    def __init__(self, pretrained, model_path):  # TODO defaults
-        super(VGG16ForFasterRCNN, self).__init__(pretrained, model_path)
-
-        def load_vgg16():
-            vgg = models.vgg16()
-            if self.pretrained:
-                # TODO log not print (how log effects the GPU?)
-                print("Loading pretrained weights from %s" % model_path)
-                state_dict = torch.load(model_path)
-                vgg.load_state_dict({k: v for k, v in state_dict.items() if k in vgg.state_dict()})
-            return vgg
+    def __init__(self):
+        super(VGG16ForFasterRCNN, self).__init__()  # TODO is this line needed?
 
         def load_base(vgg):
             base_fe = nn.Sequential(*self._remove_last_layer_from_network(vgg.features))
@@ -41,15 +38,21 @@ class VGG16ForFasterRCNN(FasterRCNNFeatureExtractors):
             fast_rcnn_fe = self._FastRCNNFeatureExtractor(vgg, self._remove_last_layer_from_network)
             return fast_rcnn_fe
 
-        vgg = load_vgg16()
+        vgg = models.vgg16()
         self._base_feature_extractor = load_base(vgg)
         self._fast_rcnn_feature_extractor = load_fast_rcnn(vgg)
+
+    def base_feature_extractor(self):
+        return self._base_feature_extractor
+
+    def fast_rcnn_feature_extractor(self):
+        return self._fast_rcnn_feature_extractor
 
     def _remove_last_layer_from_network(self, model):
         return list(model._modules.values())[:-1]  # TODO???
 
     def _freeze_layers(self, model, upto_pooling_num):
-        FasterRCNNFeatureExtractors.check_sequential(model)
+        assert_sequential(model)
         curr_pooling_num = 0
         for idx in range(len(model)):
             layer = model[idx]
@@ -71,9 +74,3 @@ class VGG16ForFasterRCNN(FasterRCNNFeatureExtractors):
                 return model[layer_num].out_features
 
         raise AssertionError('Unexpected model architecture')
-
-    def get_base_feature_extractor(self):
-        return self._base_feature_extractor
-
-    def get_fast_rcnn_feature_extractor(self):
-        return self._fast_rcnn_feature_extractor

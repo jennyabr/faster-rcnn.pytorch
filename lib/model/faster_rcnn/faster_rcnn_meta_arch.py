@@ -1,13 +1,21 @@
+import logging
+from functools import partial
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
 from model.roi_poolers.roi_pooler_factory import create_roi_pooler
-from cfgs.config import cfg
 from model.rpn.rpn import _RPN
 from model.rpn.proposal_target_layer_cascade import _ProposalTargetLayer
-from model.utils.net_utils import _smooth_l1_loss, _affine_grid_gen
+from model.utils.net_utils import _smooth_l1_loss, _affine_grid_gen, normal_init
+
+from cfgs.config import cfg
+
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class FasterRCNNMetaArch(nn.Module):
@@ -17,6 +25,8 @@ class FasterRCNNMetaArch(nn.Module):
                  roi_pooler_name='crop'):
 
         super(FasterRCNNMetaArch, self).__init__()
+        # TODO should predict_bbox_per_class, num_regression_outputs_per_bbox, roi_pooler_name be in self?
+        # TODO so that they can be saved in dict
         self.class_names = class_names
         self.num_classes = len(class_names)
         self.predict_bbox_per_class = predict_bbox_per_class
@@ -30,13 +40,11 @@ class FasterRCNNMetaArch(nn.Module):
             rpn_proposal_target = _ProposalTargetLayer(self.num_classes)
             return rpn_and_nms, rpn_proposal_target
 
-        print("--------------------------------")
-        print(cfg)
-        print("--------------------------------")
         self.rpn_and_nms, self.rpn_proposal_target = create_rpn()
 
         self.roi_pooler = create_roi_pooler(roi_pooler_name)
-        self.grid_size = cfg.POOLING_SIZE * 2 if cfg.CROP_RESIZE_WITH_MAX_POOL else cfg.POOLING_SIZE #TODO delete this linbe
+        # TODO delete next line:
+        self.grid_size = cfg.POOLING_SIZE * 2 if cfg.CROP_RESIZE_WITH_MAX_POOL else cfg.POOLING_SIZE
 
         def create_fast_rcnn():
             fast_rcnn_fe = feature_extractors.get_fast_rcnn_feature_extractor()
@@ -52,22 +60,40 @@ class FasterRCNNMetaArch(nn.Module):
             return fast_rcnn_fe, fast_rcnn_bbox_head, fast_rcnn_cls_head
         self.fast_rcnn_feature_extractor, self.fast_rcnn_bbox_head, self.fast_rcnn_cls_head = create_fast_rcnn()
 
-        def init_weights(rpn, bbox_head, cls_head):
-            def normal_init(m, mean, stddev, truncated=False):
-                if truncated:
-                    m.weight.data.normal_().fmod_(2).mul_(stddev).add_(mean)  # not a perfect approximation
-                else:
-                    m.weight.data.normal_(mean, stddev)
-                    m.bias.data.zero_()
-            normal_init(rpn.RPN_Conv, 0, 0.01, cfg.TRAIN.TRUNCATED)
-            normal_init(rpn.RPN_cls_score, 0, 0.01, cfg.TRAIN.TRUNCATED)
-            normal_init(rpn.RPN_bbox_pred, 0, 0.01, cfg.TRAIN.TRUNCATED)
-            normal_init(cls_head, 0, 0.01, cfg.TRAIN.TRUNCATED)
-            normal_init(bbox_head, 0, 0.001, cfg.TRAIN.TRUNCATED)
-        init_weights(self.rpn_and_nms, self.fast_rcnn_bbox_head, self.fast_rcnn_cls_head)
-
+        # TODO should the loss be in self?
         self.faster_rcnn_loss_cls = 0
         self.faster_rcnn_loss_bbox = 0
+
+    def init_params(self, mean=0, stddev=0.01):
+        configured_normal_init = partial(normal_init, mean=mean, stddev=stddev)
+        configured_normal_init(self.faster_rcnn.rpn_and_nms.RPN_Conv)
+        configured_normal_init(self.faster_rcnn.rpn_and_nms.RPN_cls_score)
+        configured_normal_init(self.faster_rcnn.rpn_and_nms.RPN_bbox_pred)
+        configured_normal_init(self.faster_rcnn.fast_rcnn_cls_head)
+        configured_normal_init(self.faster_rcnn.fast_rcnn_bbox_head)
+
+    # TODO maybe it should be a "free" function
+    @classmethod
+    def with_random_params(cls, feature_extractors, class_names, **kargs):
+        faster_rcnn = cls.__init__(feature_extractors, class_names, kargs)  # TODO will this work?
+        faster_rcnn.init_params()
+        return faster_rcnn
+
+    # TODO maybe this is not logical as some params are needed to contract the object...
+    def load_from_ckpt(self, ckpt_path):
+        import os.path
+        logger.info("Loading pretrained weights from {}.".format(ckpt_path))
+        # TODO check what happens if pretrained_model_path file doesn't exist
+        state_dict = torch.load(os.path.expanduser(ckpt_path))
+        self.load_state_dict(state_dict['model'])  # TODO will this work???
+
+    # TODO maybe it should be a "free" function
+    @classmethod
+    def from_ckpt(cls, feature_extractors, class_names, pretrained_model_path, **kargs):
+        faster_rcnn = cls.__init__(feature_extractors, class_names, kargs)  # TODO will this work?
+        faster_rcnn.load_from_ckpt(pretrained_model_path)
+        # TODO should we load predict_bbox_per_class, num_regression_outputs_per_bbox, roi_pooler_name
+        return faster_rcnn
 
     def forward(self, im_data, im_info, gt_boxes, num_boxes):
         batch_size = im_data.size(0)
