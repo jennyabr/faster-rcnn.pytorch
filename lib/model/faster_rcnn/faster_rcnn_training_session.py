@@ -4,41 +4,47 @@ import logging
 import torch
 import torch.nn as nn
 
-from model.feature_extractors.feature_extractors_factory import FeatureExtractorsFactory
+from model.feature_extractors.faster_rcnn_feature_extractors import create_feature_extractor
 from model.utils.net_utils import adjust_learning_rate, clip_gradient
 from model.faster_rcnn.faster_rcnn_meta_arch import FasterRCNNMetaArch
-
-from cfgs.config import cfg
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-class FasterRCNNTrainer(object):
-    def __init__(self, data_manager, train_logger):
-        self. train_logger = train_logger
-        self.data_manager = data_manager
-        feature_extractors = FeatureExtractorsFactory(cfg.net, cfg.TRAIN.pretrained_model_path)
-        self.faster_rcnn = FasterRCNNMetaArch(
-                              feature_extractors,
-                              class_names=self.data_manager.imdb.classes,
-                              predict_bbox_per_class=cfg.TRAIN.class_agnostic,  # TODO is it in TRAIN?
-                              num_regression_outputs_per_bbox=4,  # TODO parametrize
-                              roi_pooler_name=cfg.POOLING_MODE)
+class FasterRCNNTrainingSession(object):
+    def __init__(self, data_manager_creator, model_creator, train_logger_creator, cfg):
+        self._model_creator = model_creator
+        self._data_manager_creator = data_manager_creator
+        self._train_logger_creator = train_logger_creator
+        self.cfg = cfg
 
-    def train_model(self, optimizer):
-        '''
+    # TODO: IB - read how to make the lazy evaluation more logical
+    def _create_model(self, data_manager):
+        cfg = self.cfg
+        feature_extractors = create_feature_extractor(cfg.net, cfg.TRAIN.pretrained_model_path)
+        faster_rcnn = self._model_creator(
+                          feature_extractors,
+                          class_names=data_manager.imdb.classes, # TODO: IB - data manager abstract should have get_classes function
+                          predict_bbox_per_class=cfg.TRAIN.class_agnostic,
+                          num_regression_outputs_per_bbox=4,
+                          roi_pooler_name=cfg.POOLING_MODE)
+        return faster_rcnn
+    
+    def create_optimizer(self):
+        pass
 
-        :param optimizer: default optimizer is sgd
-        :return:
-        '''
+    def run_session(self, cfg):
+        data_manager = self._data_manager_creator()
+        model = self._create_model(data_manager)
+
         #TODO: IB - create sub functions
+
         lr = cfg.TRAIN.LEARNING_RATE
 
         def get_trainable_params():
             trainable_params = []
-            for key, value in dict(self.faster_rcnn.named_parameters()).items():
+            for key, value in dict(model.named_parameters()).items():
                 if value.requires_grad:
                     if 'bias' in key:
                         trainable_params += [{'params': [value],
@@ -60,7 +66,7 @@ class FasterRCNNTrainer(object):
             checkpoint = torch.load(load_name)
             cfg.session = checkpoint['session']
             cfg.start_epoch = checkpoint['epoch']
-            self.faster_rcnn.load_state_dict(checkpoint['model'])
+            model.load_state_dict(checkpoint['model'])
             optimizer.load_state_dict(checkpoint['optimizer'])
             lr = optimizer.param_groups[0]['lr']
             if 'pooling_mode' in checkpoint.keys():
@@ -68,15 +74,15 @@ class FasterRCNNTrainer(object):
             logger.info("loaded checkpoint %s" % load_name)
 
         if cfg.mGPUs:
-            self.faster_rcnn = nn.DataParallel(self.faster_rcnn)
+            model = nn.DataParallel(model)
 
         if cfg.CUDA:
-            self.faster_rcnn.cuda()
+            model.cuda()
 
         iters_per_epoch = int(self.data_manager.train_size / cfg.TRAIN.batch_size)
 
         for epoch in range(cfg.TRAIN.start_epoch, cfg.TRAIN.max_epochs + 1):
-            self.faster_rcnn.train()  # setting to train mode TODO why each epoch?
+            model.train()  # setting to train mode TODO why each epoch?
             loss_temp = 0
             start = time.time()
 
@@ -87,9 +93,9 @@ class FasterRCNNTrainer(object):
             for step in range(iters_per_epoch):
                 im_data, im_info, gt_boxes, num_boxes = next(self.data_manager)
 
-                self.faster_rcnn.zero_grad()
+                model.zero_grad()
                 rois, cls_prob, bbox_pred, rpn_loss_cls, rpn_loss_box, \
-                    RCNN_loss_cls, RCNN_loss_bbox, rois_label = self.faster_rcnn(im_data, im_info, gt_boxes, num_boxes)
+                    RCNN_loss_cls, RCNN_loss_bbox, rois_label = model(im_data, im_info, gt_boxes, num_boxes)
 
                 loss = rpn_loss_cls.mean() + rpn_loss_box.mean() + RCNN_loss_cls.mean() + RCNN_loss_bbox.mean()
                 loss_temp += loss.data[0]
@@ -99,7 +105,7 @@ class FasterRCNNTrainer(object):
                 loss.backward()
 
                 if cfg.net == "vgg16":  # TODO why?
-                    clip_gradient(self.faster_rcnn, 10.)
+                    clip_gradient(model, 10.)
 
                 optimizer.step()
                 if step % cfg.TRAIN.disp_interval == 0:  # TODO add: or (step + 1) == iters_per_epoch + update the loss aproprietly
@@ -152,9 +158,9 @@ class FasterRCNNTrainer(object):
 
             def save_checkpoint():
                 if cfg.mGPUs:
-                    ckpt_model = self.faster_rcnn.module.state_dict()
+                    ckpt_model = model.module.state_dict()
                 else:
-                    ckpt_model = self.faster_rcnn.state_dict()
+                    ckpt_model = model.state_dict()
                 save_to = cfg.get_ckpt_path(epoch)
                 logger.info('Saving model checkpoint to {}'.format(save_to))
                 torch.save({'session': cfg.TRAIN.session,

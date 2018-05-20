@@ -9,13 +9,14 @@ from __future__ import print_function
 
 import argparse
 import logging
-
+from functools import partial
 
 from cfgs.config import cfg
 from data_handler.detection_data_manager import DetectionDataManager
 from data_handler.data_manager_api import Mode
 from loggers.tensorbord_logger import TensorBoardLogger
-from model.faster_rcnn.faster_rcnn_trainer import FasterRCNNTrainer
+from model.faster_rcnn.faster_rcnn_meta_arch import FasterRCNNMetaArch
+from model.faster_rcnn.faster_rcnn_training_session import FasterRCNNTrainingSession
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -35,7 +36,7 @@ if __name__ == '__main__':
     #     cfg.scale = scale
     #     faster_rcnn = FasterRCNNTrainer(cfg)
 
-    data_manager = DetectionDataManager(mode=Mode.TRAIN, imdb_name=cfg.imdb_name)
+    data_manager_constructor = partial(DetectionDataManager, mode=Mode.TRAIN, imdb_name=cfg.imdb_name)
     logger = TensorBoardLogger(cfg.output_path)
-    faster_rcnn = FasterRCNNTrainer(data_manager, logger)
-    faster_rcnn.train_model()
+    faster_rcnn = FasterRCNNTrainingSession(data_manager_constructor, FasterRCNNMetaArch, TensorBoardLogger, cfg)
+    faster_rcnn.run_session()

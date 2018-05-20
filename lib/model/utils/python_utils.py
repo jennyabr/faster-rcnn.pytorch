@@ -1,16 +1,13 @@
 
 from importlib import import_module
 
+from model.feature_extractors.faster_rcnn_feature_extractors import FasterRCNNFeatureExtractors
 
-def get_class_from_package(class_name, package_name, abstract_class):
+
+def get_class_from_package(package_full_path, class_rel_path, abstract_class):
     try:
-        if '.' in class_name:
-            module_name, class_name = class_name.rsplit('.', 1)
-        else:
-            module_name = class_name
-            class_name = class_name.capitalize()
-
-        class_module = import_module('.' + module_name, package=package_name)
+        module_name, class_name = class_rel_path.rsplit('.', 1)
+        class_module = import_module(package_full_path + '.' + module_name)
 
         returned_class = getattr(class_module, class_name)
         if not issubclass(returned_class, abstract_class):
@@ -23,4 +20,5 @@ def get_class_from_package(class_name, package_name, abstract_class):
 
 
 if __name__=='__main__':
-    print(1)
+    get_class_from_package('lib.model.feature_extractors', 'vgg16_for_faster_rcnn.VGG16ForFasterRCNN',
+                           FasterRCNNFeatureExtractors)

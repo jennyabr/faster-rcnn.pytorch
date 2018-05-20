@@ -1,5 +1,6 @@
 import logging
 from functools import partial
+import os.path
 
 import torch
 import torch.nn as nn
@@ -20,7 +21,8 @@ logger = logging.getLogger(__name__)
 
 class FasterRCNNMetaArch(nn.Module):
     def __init__(self, feature_extractors, class_names,
-                 predict_bbox_per_class=False,
+                 # TODO cfg:
+                 predict_bbox_per_class=False, #is class agnostic?
                  num_regression_outputs_per_bbox=4,
                  roi_pooler_name='crop'):
 
@@ -64,35 +66,38 @@ class FasterRCNNMetaArch(nn.Module):
         self.faster_rcnn_loss_cls = 0
         self.faster_rcnn_loss_bbox = 0
 
-    def init_params(self, mean=0, stddev=0.01):
-        configured_normal_init = partial(normal_init, mean=mean, stddev=stddev)
-        configured_normal_init(self.faster_rcnn.rpn_and_nms.RPN_Conv)
-        configured_normal_init(self.faster_rcnn.rpn_and_nms.RPN_cls_score)
-        configured_normal_init(self.faster_rcnn.rpn_and_nms.RPN_bbox_pred)
-        configured_normal_init(self.faster_rcnn.fast_rcnn_cls_head)
-        configured_normal_init(self.faster_rcnn.fast_rcnn_bbox_head)
 
-    # TODO maybe it should be a "free" function
     @classmethod
-    def with_random_params(cls, feature_extractors, class_names, **kargs):
-        faster_rcnn = cls.__init__(feature_extractors, class_names, kargs)  # TODO will this work?
-        faster_rcnn.init_params()
+    def create_with_random_normal_init(cls, feature_extractors, class_names,
+                                       predict_bbox_per_class, num_regression_outputs_per_bbox, roi_pooler_name,
+                                       mean=0, stddev=0.01):
+        faster_rcnn = cls(feature_extractors, class_names,
+                          predict_bbox_per_class, num_regression_outputs_per_bbox, roi_pooler_name)
+        configured_normal_init = partial(normal_init, mean=mean, stddev=stddev)
+        configured_normal_init(faster_rcnn.rpn_and_nms.RPN_Conv)
+        configured_normal_init(faster_rcnn.rpn_and_nms.RPN_cls_score)
+        configured_normal_init(faster_rcnn.rpn_and_nms.RPN_bbox_pred)
+        configured_normal_init(faster_rcnn.fast_rcnn_cls_head)
+        configured_normal_init(faster_rcnn.fast_rcnn_bbox_head)
         return faster_rcnn
 
-    # TODO maybe this is not logical as some params are needed to contract the object...
-    def load_from_ckpt(self, ckpt_path):
-        import os.path
-        logger.info("Loading pretrained weights from {}.".format(ckpt_path))
+    @classmethod
+    def create_from_ckpt(cls, feature_extractors, ckpt_path):
+        logger.info("Loading ckpt from {}.".format(ckpt_path))
         # TODO check what happens if pretrained_model_path file doesn't exist
         state_dict = torch.load(os.path.expanduser(ckpt_path))
-        self.load_state_dict(state_dict['model'])  # TODO will this work???
 
-    # TODO maybe it should be a "free" function
-    @classmethod
-    def from_ckpt(cls, feature_extractors, class_names, pretrained_model_path, **kargs):
-        faster_rcnn = cls.__init__(feature_extractors, class_names, kargs)  # TODO will this work?
-        faster_rcnn.load_from_ckpt(pretrained_model_path)
-        # TODO should we load predict_bbox_per_class, num_regression_outputs_per_bbox, roi_pooler_name
+        # TODO maybe the extraction od conf should be a EXTERNAL FUN
+        cnf = state_dict['cnf']  # TODO maybe all these (and additional) should be in conf in constractor...
+        class_names = cnf['class_names']
+        predict_bbox_per_class = cnf['predict_bbox_per_class']
+        num_regression_outputs_per_bbox = cnf['num_regression_outputs']
+        roi_pooler_name = cnf['roi_pooler']
+
+        faster_rcnn = cls(feature_extractors, class_names,
+                          predict_bbox_per_class, num_regression_outputs_per_bbox, roi_pooler_name)
+
+        faster_rcnn.load_state_dict(state_dict['model'])
         return faster_rcnn
 
     def forward(self, im_data, im_info, gt_boxes, num_boxes):
