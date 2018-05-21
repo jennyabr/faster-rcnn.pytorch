@@ -19,13 +19,13 @@ from torch.autograd import Variable
 import torch.nn as nn
 from torch.utils.data.sampler import Sampler
 
-from model.feature_extractors.vgg16_for_faster_rcnn import VGG16ForFasterRCNN
+from model.feature_extractors_new.vgg16_for_faster_rcnn import VGG16ForFasterRCNN
 from roi_data_layer.roidb import combined_roidb
 from roi_data_layer.roibatchLoader import roibatchLoader
 from model.utils.config import cfg, get_output_dir, get_ckpt_path, cfg_from_file, cfg_from_list
 from model.utils.net_utils import adjust_learning_rate, save_checkpoint, clip_gradient
 
-from model.faster_rcnn.faster_rcnn_meta_arch import FasterRCNNMetaArch
+from model.faster_rcnn_new.faster_rcnn_meta_arch import FasterRCNNMetaArch
 
 
 def parse_args():

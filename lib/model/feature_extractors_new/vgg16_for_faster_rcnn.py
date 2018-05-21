@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 import torchvision.models as models
 
-from model.feature_extractors.faster_rcnn_feature_extractors import FasterRCNNFeatureExtractors
+from model.feature_extractors_new.faster_rcnn_feature_extractors import FasterRCNNFeatureExtractors
 
 
 class VGG16ForFasterRCNN(FasterRCNNFeatureExtractors):

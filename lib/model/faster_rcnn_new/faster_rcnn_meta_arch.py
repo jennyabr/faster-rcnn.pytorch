@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
-from model.feature_extractors.vgg16_for_faster_rcnn import FasterRCNNFeatureExtractors
+from model.feature_extractors_new.vgg16_for_faster_rcnn import FasterRCNNFeatureExtractors
 from model.roi_poolers.roi_pooler_factory import create_roi_pooler
 from model.utils.config import cfg
 from model.rpn.rpn import _RPN
