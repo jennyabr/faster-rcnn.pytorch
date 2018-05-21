@@ -6,11 +6,11 @@
 #
 # eval orig network:
 #
-# python test_net.py --dataset pascal_voc --net vgg16 --checksession 1 --checkepoch 6 --checkpoint 10021 --cuda --vis --load_dir ~/gripper2/outputs/orig_vgg16_pascal_voc/ --out_dir ~/gripper2/outputs/orig_vgg16_pascal_voc/eval
+# python test_net.py --dataset pascal_voc --net vgg16 --checksession 1 --checkepoch 6 --checkpoint 10021 --cuda --vis --load_dir ~/gripper2/outputs/orig_vgg16_pascal_voc/ --out_dir ~/gripper2/outputs/orig_vgg16_pascal_voc/eval --cag
 #
 # eval dev network (p100):
 #
-# python test_net.py --dataset pascal_voc --net vgg16 --checksession 1 --checkepoch 6 --checkpoint 1 --cuda --vis --load_dir ~/gripper2/outputs/p100_vgg16_pascal_voc/ --out_dir ~/gripper2/outputs/p100_vgg16_pascal_voc/eval
+# python test_new_net.py --dataset pascal_voc --net vgg16 --checksession 1 --checkepoch 6 --checkpoint 1 --cuda --vis --load_dir ~/gripper2/outputs/p100_vgg16_pascal_voc/ --out_dir ~/gripper2/outputs/p100_vgg16_pascal_voc/eval --cag
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -250,7 +250,7 @@ if __name__ == '__main__':
 
   fasterRCNN.eval()
   empty_array = np.transpose(np.array([[],[],[],[],[]]), (1,0))
-  for i in range(5):
+  for i in range(num_images):
 
       data = next(data_iter)
       im_data.data.resize_(data[0].size()).copy_(data[0])
