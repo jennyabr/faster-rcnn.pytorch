@@ -22,16 +22,16 @@ logger = logging.getLogger(__name__)
 class FasterRCNNMetaArch(nn.Module):
     def __init__(self, feature_extractors, class_names,
                  # TODO cfg:
-                 predict_bbox_per_class=False, #is class agnostic?
+                 is_class_agnostic=True,
                  num_regression_outputs_per_bbox=4,
                  roi_pooler_name='crop'):
 
         super(FasterRCNNMetaArch, self).__init__()
-        # TODO should predict_bbox_per_class, num_regression_outputs_per_bbox, roi_pooler_name be in self?
+        # TODO should is_class_agnostic, num_regression_outputs_per_bbox, roi_pooler_name be in self?
         # TODO so that they can be saved in dict
         self.class_names = class_names
         self.num_classes = len(class_names)
-        self.predict_bbox_per_class = predict_bbox_per_class
+        self.is_class_agnostic = is_class_agnostic
 
         self.base_feature_extractor = feature_extractors.get_base_feature_extractor()
 
@@ -51,10 +51,10 @@ class FasterRCNNMetaArch(nn.Module):
         def create_fast_rcnn():
             fast_rcnn_fe = feature_extractors.get_fast_rcnn_feature_extractor()
             fast_rcnn_fe_output_depth = feature_extractors.get_output_num_channels(fast_rcnn_fe.feature_extractor)
-            if self.predict_bbox_per_class:
-                bbox_head = nn.Linear(fast_rcnn_fe_output_depth, num_regression_outputs_per_bbox * self.num_classes)
-            else:
+            if self.is_class_agnostic:
                 bbox_head = nn.Linear(fast_rcnn_fe_output_depth, num_regression_outputs_per_bbox)
+            else:
+                bbox_head = nn.Linear(fast_rcnn_fe_output_depth, num_regression_outputs_per_bbox * self.num_classes)
             fast_rcnn_bbox_head = bbox_head
 
             fast_rcnn_cls_head = nn.Linear(fast_rcnn_fe_output_depth, self.num_classes)
@@ -69,10 +69,10 @@ class FasterRCNNMetaArch(nn.Module):
 
     @classmethod
     def create_with_random_normal_init(cls, feature_extractors, class_names,
-                                       predict_bbox_per_class, num_regression_outputs_per_bbox, roi_pooler_name,
+                                       is_class_agnostic, num_regression_outputs_per_bbox, roi_pooler_name,
                                        mean=0, stddev=0.01):
         faster_rcnn = cls(feature_extractors, class_names,
-                          predict_bbox_per_class, num_regression_outputs_per_bbox, roi_pooler_name)
+                          is_class_agnostic, num_regression_outputs_per_bbox, roi_pooler_name)
         configured_normal_init = partial(normal_init, mean=mean, stddev=stddev)
         configured_normal_init(faster_rcnn.rpn_and_nms.RPN_Conv)
         configured_normal_init(faster_rcnn.rpn_and_nms.RPN_cls_score)
@@ -80,6 +80,7 @@ class FasterRCNNMetaArch(nn.Module):
         configured_normal_init(faster_rcnn.fast_rcnn_cls_head)
         configured_normal_init(faster_rcnn.fast_rcnn_bbox_head)
         return faster_rcnn
+
 
     @classmethod
     def create_from_ckpt(cls, feature_extractors, ckpt_path):
@@ -90,12 +91,12 @@ class FasterRCNNMetaArch(nn.Module):
         # TODO maybe the extraction od conf should be a EXTERNAL FUN
         cnf = state_dict['cnf']  # TODO maybe all these (and additional) should be in conf in constractor...
         class_names = cnf['class_names']
-        predict_bbox_per_class = cnf['predict_bbox_per_class']
+        is_class_agnostic = cnf['is_class_agnostic']
         num_regression_outputs_per_bbox = cnf['num_regression_outputs']
         roi_pooler_name = cnf['roi_pooler']
 
         faster_rcnn = cls(feature_extractors, class_names,
-                          predict_bbox_per_class, num_regression_outputs_per_bbox, roi_pooler_name)
+                          is_class_agnostic, num_regression_outputs_per_bbox, roi_pooler_name)
 
         faster_rcnn.load_state_dict(state_dict['model'])
         return faster_rcnn
@@ -146,7 +147,7 @@ class FasterRCNNMetaArch(nn.Module):
         def run_fast_rcnn():
             fast_rcnn_feature_map = self.fast_rcnn_feature_extractor(pooled_rois)
             bbox_pred = self.fast_rcnn_bbox_head(fast_rcnn_feature_map)
-            if self.training and self.predict_bbox_per_class:
+            if self.training and self.is_class_agnostic:
                 # select the corresponding columns according to roi labels
                 #  TODO: replace the comment with an encapsulating function
                 # TODO: these 4s might be hardcoding the number of output coords

@@ -11,7 +11,7 @@ import torch
 
 from lib import FASTER_RCNN_LIB_FULL_PATH
 from model.utils.net_utils import normal_init
-from model.utils.python_utils import get_class_from_package
+from model.utils.factory_utils import get_class_from_package
 
 
 logging.basicConfig(level=logging.INFO)
