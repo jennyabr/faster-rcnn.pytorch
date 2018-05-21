@@ -320,7 +320,7 @@ def get_output_dir(net, dataset):
 def get_ckpt_path(net, dataset, checksession, checkepoch, checkpoint=1):
     output_dir = get_output_dir(net, dataset)
     file_name = 'faster_rcnn_{}_{}_{}.pth'.format(checksession, checkepoch, checkpoint)
-    ckpt_path = osp.path.join(output_dir, file_name)
+    ckpt_path = os.path.join(output_dir, file_name)
     return ckpt_path
 
 

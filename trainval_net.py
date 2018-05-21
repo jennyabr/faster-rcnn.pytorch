@@ -291,6 +291,8 @@ if __name__ == '__main__':
 
     iters_per_epoch = int(train_size / args.batch_size)
 
+
+
     for epoch in range(args.start_epoch, args.max_epochs + 1):
         # setting to train mode
         faster_rcnn.train()
