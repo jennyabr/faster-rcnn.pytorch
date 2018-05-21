@@ -3,6 +3,14 @@
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Jiasen Lu, Jianwei Yang, based on code from Ross Girshick
 # --------------------------------------------------------
+#
+# eval orig network:
+#
+# python test_net.py --dataset pascal_voc --net vgg16 --checksession 1 --checkepoch 6 --checkpoint 10021 --cuda --vis --load_dir ~/gripper2/outputs/orig_vgg16_pascal_voc/ --out_dir ~/gripper2/outputs/orig_vgg16_pascal_voc/eval
+#
+# eval dev network (p100):
+#
+# python test_net.py --dataset pascal_voc --net vgg16 --checksession 1 --checkepoch 6 --checkpoint 1 --cuda --vis --load_dir ~/gripper2/outputs/p100_vgg16_pascal_voc/ --out_dir ~/gripper2/outputs/p100_vgg16_pascal_voc/eval
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -71,6 +79,7 @@ def parse_args():
   parser.add_argument('--mGPUs', dest='mGPUs',
                       help='whether use multiple GPUs',
                       action='store_true')
+  #TODO: IB - cag parameter should be passed from a config file saved by the training
   parser.add_argument('--cag', dest='class_agnostic',
                       help='whether perform class_agnostic bbox regression',
                       action='store_true')
@@ -170,9 +179,10 @@ if __name__ == '__main__':
       print("network is not defined")
       pdb.set_trace()
 
+  predict_bbox_per_class = not args.class_agnostic
   fasterRCNN = FasterRCNNMetaArch(feature_extractors,
                                    class_names=imdb.classes,
-                                   predict_bbox_per_class=args.class_agnostic,
+                                   predict_bbox_per_class=predict_bbox_per_class,
                                    num_regression_outputs_per_bbox=4,
                                    roi_pooler_name='align')
 
@@ -226,7 +236,7 @@ if __name__ == '__main__':
 
   # output_dir = get_output_dir(imdb, save_name)
   output_dir = args.out_dir # TODO: IB - added this
-  os.makedirs(output_dir)
+  os.makedirs(output_dir, exist_ok=True)
   dataset = roibatchLoader(roidb, ratio_list, ratio_index, args.batch_size, \
                         imdb.num_classes, training=False, normalize = False)
   dataloader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size,
@@ -240,7 +250,7 @@ if __name__ == '__main__':
 
   fasterRCNN.eval()
   empty_array = np.transpose(np.array([[],[],[],[],[]]), (1,0))
-  for i in range(num_images):
+  for i in range(5):
 
       data = next(data_iter)
       im_data.data.resize_(data[0].size()).copy_(data[0])
@@ -262,7 +272,7 @@ if __name__ == '__main__':
           box_deltas = bbox_pred.data
           if cfg.TRAIN.BBOX_NORMALIZE_TARGETS_PRECOMPUTED:
           # Optionally normalize targets by a precomputed mean and stdev
-            if args.class_agnostic:
+            if not predict_bbox_per_class:
                 box_deltas = box_deltas.view(-1, 4) * torch.FloatTensor(cfg.TRAIN.BBOX_NORMALIZE_STDS).cuda() \
                            + torch.FloatTensor(cfg.TRAIN.BBOX_NORMALIZE_MEANS).cuda()
                 box_deltas = box_deltas.view(1, -1, 4)
@@ -293,7 +303,7 @@ if __name__ == '__main__':
           if inds.numel() > 0:
             cls_scores = scores[:,j][inds]
             _, order = torch.sort(cls_scores, 0, True)
-            if args.class_agnostic:
+            if not predict_bbox_per_class:
               cls_boxes = pred_boxes[inds, :]
             else:
               cls_boxes = pred_boxes[inds][:, j * 4:(j + 1) * 4]
