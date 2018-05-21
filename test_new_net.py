@@ -6,7 +6,7 @@
 #
 # eval orig network:
 #
-# python test_net.py --dataset pascal_voc --net vgg16 --checksession 1 --checkepoch 6 --checkpoint 10021 --cuda --vis --load_dir ~/gripper2/outputs/orig_vgg16_pascal_voc/ --out_dir ~/gripper2/outputs/orig_vgg16_pascal_voc/eval --cag
+# python test_net.py --dataset pascal_voc --net vgg16 --checksession 1 --checkepoch 6 --checkpoint 10021 --cuda --vis --load_dir ~/gripper2/outputs/orig_vgg16_pascal_voc/ --out_dir ~/gripper2/outputs/orig_vgg16_pascal_voc/eval
 #
 # eval dev network (p100):
 #
