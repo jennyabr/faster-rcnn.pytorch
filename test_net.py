@@ -217,7 +217,7 @@ if __name__ == '__main__':
 
   # output_dir = get_output_dir(imdb, save_name)
   output_dir = args.out_dir # TODO: IB - added this
-  os.makedirs(output_dir)
+  os.makedirs(output_dir, exist_ok=True)
   dataset = roibatchLoader(roidb, ratio_list, ratio_index, args.batch_size, \
                         imdb.num_classes, training=False, normalize = False)
   dataloader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size,
