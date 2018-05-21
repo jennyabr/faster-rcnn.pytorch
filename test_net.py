@@ -89,6 +89,8 @@ def parse_args():
   parser.add_argument('--vis', dest='vis',
                       help='visualization mode',
                       action='store_true')
+  parser.add_argument('--out_dir', dest='out_dir',
+                      help='output dir', type=str)
   args = parser.parse_args()
   return args
 
@@ -144,11 +146,11 @@ if __name__ == '__main__':
 
   print('{:d} roidb entries'.format(len(roidb)))
 
-  input_dir = args.load_dir + "/" + args.net + "/" + args.dataset
+  input_dir = args.load_dir
   if not os.path.exists(input_dir):
     raise Exception('There is no input directory for loading network from ' + input_dir)
   load_name = os.path.join(input_dir,
-    'faster_rcnn_{}_{}_{}.pth'.format(args.checksession, args.checkepoch, args.checkpoint))
+    'faster_rcnn_model_{}_{}_{}.pth'.format(args.checksession, args.checkepoch, args.checkpoint))
 
   # initilize the network here.
   if args.net == 'vgg16':
@@ -213,7 +215,9 @@ if __name__ == '__main__':
   all_boxes = [[[] for _ in xrange(num_images)]
                for _ in xrange(imdb.num_classes)]
 
-  output_dir = get_output_dir(imdb, save_name)
+  # output_dir = get_output_dir(imdb, save_name)
+  output_dir = args.out_dir # TODO: IB - added this
+  os.makedirs(output_dir)
   dataset = roibatchLoader(roidb, ratio_list, ratio_index, args.batch_size, \
                         imdb.num_classes, training=False, normalize = False)
   dataloader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size,
@@ -314,8 +318,9 @@ if __name__ == '__main__':
       sys.stdout.flush()
 
       if vis:
-          cv2.imwrite('result.png', im2show)
-          pdb.set_trace()
+          out_image_path = os.path.join(output_dir, 'result{}.png'.format(i))
+          cv2.imwrite(out_image_path, im2show)
+          # pdb.set_trace()
           #cv2.imshow('test', im2show)
           #cv2.waitKey(0)
 
