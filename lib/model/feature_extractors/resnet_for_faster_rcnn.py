@@ -6,7 +6,7 @@ import torch.nn as nn
 from torchvision.models import resnet101
 from torchvision.models.resnet import Bottleneck
 
-from model.feature_extractors.faster_rcnn_feature_extractors_api import FasterRCNNFeatureExtractors
+from model.feature_extractors.faster_rcnn_feature_extractors import FasterRCNNFeatureExtractors
 from cfgs.config import cfg
 from model.utils.net_utils import assert_sequential
 

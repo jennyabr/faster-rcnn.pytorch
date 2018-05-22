@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
-from model.feature_extractors.faster_rcnn_feature_extractors_api import FasterRCNNFeatureExtractors
+from model.feature_extractors.faster_rcnn_feature_extractors import FasterRCNNFeatureExtractors
 
 
 class TestFasterRCNNFeatureExtractors(unittest.TestCase):

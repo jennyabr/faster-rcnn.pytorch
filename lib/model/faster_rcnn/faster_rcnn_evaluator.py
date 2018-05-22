@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 
 from model.feature_extractors.feature_extractors_factory import FeatureExtractorsFactory
-from model.utils.net_utils import adjust_learning_rate, clip_gradient
+from model.utils.net_utils import decay_lr_in_optimizer, clip_gradient
 from model.faster_rcnn.faster_rcnn_meta_arch import FasterRCNNMetaArch
 from model.feature_extractors.resnet_for_faster_rcnn import ResNetForFasterRCNN
 from model.feature_extractors.vgg16_for_faster_rcnn import VGG16ForFasterRCNN
@@ -31,7 +31,7 @@ class FasterRCNN_Evaluator(object):
         self.faster_rcnn = FasterRCNNMetaArch(
                               feature_extractors,
                               class_names=self.data_obj.imdb.classes,
-                              predict_bbox_per_class=cfg.class_agnostic,
+                              is_class_agnostic=cfg.class_agnostic,
                               num_regression_outputs_per_bbox=4,
                               roi_pooler_name=cfg.POOLING_MODE)
 

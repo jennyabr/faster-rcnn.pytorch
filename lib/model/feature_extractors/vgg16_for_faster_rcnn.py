@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 import torchvision.models as models
 
-from model.feature_extractors.faster_rcnn_feature_extractors_api import FasterRCNNFeatureExtractors
+from model.feature_extractors.faster_rcnn_feature_extractors import FasterRCNNFeatureExtractors
 from model.utils.net_utils import assert_sequential
 
 logging.basicConfig(level=logging.INFO)

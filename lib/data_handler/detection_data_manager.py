@@ -53,6 +53,7 @@ class DetectionDataManager(DataManager):
 
         if mode == Mode.TRAIN:
             train_size = len(roidb)
+            self.train_size = train_size
             logger.info('{:d} roidb entries.'.format(train_size))
             sampler_batch = BDSampler(train_size, batch_size, seed)
             data_loader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers,
@@ -64,6 +65,8 @@ class DetectionDataManager(DataManager):
         else:
             raise Exception("Not valid mode {} - should be TRAIN or TEST".format(mode))
 
+        self.batch_size = batch_size
+        self.iters_per_epoch = int(self.train_size / self.batch_size)
         self.data_iter = iter(data_loader)
 
     def transform_data_tensors(self, data):
