@@ -1,6 +1,5 @@
 
 from importlib import import_module
-from model.feature_extractors.faster_rcnn_feature_extractors import FasterRCNNFeatureExtractors
 
 
 def get_class_from_package(package_full_path, class_rel_path, abstract_class):
@@ -24,8 +23,3 @@ def get_optimizer_class(optimizer_name):
     class_rel_path = module_name + '.' + optimizer_name
     optimizer_class = get_class_from_package('torch.optim', class_rel_path, Optimizer)
     return optimizer_class
-
-
-if __name__=='__main__':
-    get_class_from_package('lib.model.feature_extractors', 'vgg16_for_faster_rcnn.VGG16ForFasterRCNN',
-                           FasterRCNNFeatureExtractors)
