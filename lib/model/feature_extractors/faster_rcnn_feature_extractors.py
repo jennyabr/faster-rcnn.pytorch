@@ -30,22 +30,39 @@ class FasterRCNNFeatureExtractors(ABC):
     def fast_rcnn_feature_extractor(self):
         return NotImplementedError
 
+    @property
+    @abstractmethod
+    def base_subnet(self):
+        return NotImplementedError
+
+    @property
+    @abstractmethod
+    def fast_rcnn_subnet(self):
+        return NotImplementedError
+
     @classmethod
     def create_with_random_normal_init(cls, mean=0, stddev=0.01):
         fe = cls()
         configured_normal_init = partial(normal_init, mean=mean, stddev=stddev)
-        configured_normal_init(fe.base_feature_extractor)
-        configured_normal_init(fe.fast_rcnn_feature_extractor)
+        # configured_normal_init(fe.base_feature_extractor)
+        # configured_normal_init(fe.fast_rcnn_feature_extractor)
+        configured_normal_init(fe.base_subnet)
+        configured_normal_init(fe.fast_rcnn_subnet)
         return fe
 
     @classmethod
     def create_from_ckpt(cls, pretrained_model_path):
         fe = cls()
         logger.info("Loading feature extractors pretrained weights from {}.".format(pretrained_model_path))
+
         state_dict = torch.load(os.path.expanduser(pretrained_model_path))
-        fe_subnets = [fe.base_feature_extractor, fe.fast_rcnn_feature_extractor]
-        for fe_subnet in fe_subnets:
-            fe_subnet.load_state_dict({k: v for k, v in state_dict.items() if k in fe_subnet.state_dict()})
+        fe_names = ["features.", "classifier."]
+        #fe_subnets = [fe.base_feature_extractor, fe.fast_rcnn_feature_extractor]
+        fe_subnets = [fe.base_subnet, fe.fast_rcnn_subnet]
+
+        for idx, fe_subnet in enumerate(fe_subnets):
+            fe_subnet.load_state_dict({k.replace(fe_names[idx], ""): v for k, v in state_dict.items()}, strict=False)
+
         return fe
 
     @abstractmethod

@@ -4,7 +4,6 @@ from __future__ import print_function
 
 import logging
 
-import torch
 import torch.nn as nn
 import torchvision.models as models
 
@@ -27,7 +26,7 @@ class VGG16ForFasterRCNN(FasterRCNNFeatureExtractors):
             return self.feature_extractor(flattened_input)
 
     def __init__(self):
-        super(VGG16ForFasterRCNN, self).__init__()  # TODO is this line needed?
+        super(VGG16ForFasterRCNN, self).__init__()
 
         def load_base(vgg):
             base_fe = nn.Sequential(*self._remove_last_layer_from_network(vgg.features))
@@ -42,14 +41,24 @@ class VGG16ForFasterRCNN(FasterRCNNFeatureExtractors):
         self._base_feature_extractor = load_base(vgg)
         self._fast_rcnn_feature_extractor = load_fast_rcnn(vgg)
 
+    @property
     def base_feature_extractor(self):
         return self._base_feature_extractor
 
+    @property
     def fast_rcnn_feature_extractor(self):
         return self._fast_rcnn_feature_extractor
 
+    @property
+    def base_subnet(self):
+        return self._base_feature_extractor
+
+    @property
+    def fast_rcnn_subnet(self):
+        return self._fast_rcnn_feature_extractor.feature_extractor
+
     def _remove_last_layer_from_network(self, model):
-        return list(model._modules.values())[:-1]  # TODO???
+        return list(model._modules.values())[:-1]
 
     def _freeze_layers(self, model, upto_pooling_num):
         assert_sequential(model)

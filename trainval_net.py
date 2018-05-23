@@ -7,15 +7,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-print("----------------0----------------")
-
 import argparse
 import logging
 import torch
 
 from functools import partial
-
-print("----------------01----------------")
 
 from cfgs.config import cfg
 from data_handler.detection_data_manager import DetectionDataManager
@@ -23,9 +19,9 @@ from data_handler.data_manager_api import Mode
 from loggers.tensorbord_logger import TensorBoardLogger
 from model.faster_rcnn.faster_rcnn_meta_arch import FasterRCNNMetaArch
 from model.faster_rcnn.faster_rcnn_training_session import run_training_session
-print("----------------02----------------")
 from model.feature_extractors.faster_rcnn_feature_extractors import create_feature_extractor
-print("----------------03----------------")
+
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -35,12 +31,10 @@ if __name__ == '__main__':
     parser.add_argument('--config_dir', dest='config_dir', help='Path to config dir', type=str)
     args = parser.parse_args()
 
-    print("----------------1----------------")
     # TODO: IB: cfg should be a local variable to enable h.p. sweeps like the following.
     # TODO: IB it can be assigned to the state of the trainer\evaluator\etc.
     global cfg
     cfg.load(args.config_dir)
-    print("----------------2----------------")
 
     # possible_anchors_scales = [a,b,c]
     # for scale in possible_anchors_scales:
@@ -48,9 +42,8 @@ if __name__ == '__main__':
     #     faster_rcnn = FasterRCNNTrainer(cfg)
 
     data_manager = DetectionDataManager(mode=Mode.TRAIN, imdb_name=cfg.imdb_name,
-                                        seed=cfg.RNG_SEED, num_workers=cfg.NUM_WORKERS, is_cuda=cfg.is_cuda,
-                                        batch_size=cfg.batch_size)
-    print("----------------3----------------")
+                                        seed=cfg.RNG_SEED, num_workers=cfg.NUM_WORKERS, is_cuda=cfg.CUDA,
+                                        batch_size=cfg.TRAIN.batch_size)
 
     train_logger = TensorBoardLogger(cfg.output_path)
     feature_extractors = create_feature_extractor(cfg.net, cfg.TRAIN.pretrained_model_path)

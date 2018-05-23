@@ -1,9 +1,9 @@
-DATA_DIR: '/home/jenny/gripper2/faster-rcnn_data'
+DATA_DIR: '/home/jenny/gripper2/data'
 OUTPUT_DIR: '/home/jenny/gripper2/faster-rcnn_output'
 dataset: 'pascal_voc'  # training dataset'
-net: 'vgg16'  # {vgg16,res101}
+net: 'VGG16'  # {vgg16,res101} ResNet
 
-num_workers: 6  # number of worker to load data
+NUM_WORKERS: 6  # number of worker to load data
 
 # Name (or path to) the matlab executable
 MATLAB: 'matlab'

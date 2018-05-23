@@ -74,6 +74,7 @@ class DetectionDataManager(DataManager):
         self.im_info.data.resize_(data[1].size()).copy_(data[1])
         self.gt_boxes.data.resize_(data[2].size()).copy_(data[2])
         self.num_boxes.data.resize_(data[3].size()).copy_(data[3])
+        return self.im_data, self.im_info, self.gt_boxes, self.num_boxes
 
     def __len__(self):
         return len(self.imdb.image_index)

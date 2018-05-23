@@ -46,10 +46,12 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractors):
         self._base_feature_extractor = load_base(resnet)
         self._fast_rcnn_feature_extractor = load_fast_rcnn(resnet)
 
-    def get_base_feature_extractor(self):
+    @property
+    def base_feature_extractor(self):
         return self._base_feature_extractor
 
-    def get_fast_rcnn_feature_extractor(self):
+    @property
+    def fast_rcnn_feature_extractor(self):
         return self._fast_rcnn_feature_extractor
 
     def _freeze_batch_norm_layers(self, net):

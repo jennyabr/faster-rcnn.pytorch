@@ -9,7 +9,7 @@ import pprint
 import torch
 import yaml
 from easydict import EasyDict as edict, EasyDict
-
+#TODO should be part of the lib
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -30,7 +30,8 @@ class ConfigProvider(dict):#object):
         with open(os.path.join(config_path, 'general.yml'), 'r') as f:
             cfg = yaml.load(f)
 
-        model_name = "{}_ls.yml".format(cfg.net) if cfg['TRAIN']['large_scale'] else "{}.yml".format(cfg['net'])
+
+        model_name = "{}_ls.yml".format(cfg.net) if cfg['TRAIN']['large_scale'] else "{}.yml".format(cfg['net'].lower()) #TODO fiename
         with open(os.path.join(config_path, model_name), 'r') as f:
             model_cfg = yaml.load(f)
 

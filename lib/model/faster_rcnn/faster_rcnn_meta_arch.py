@@ -33,7 +33,7 @@ class FasterRCNNMetaArch(nn.Module):
         self.num_classes = len(class_names)
         self.is_class_agnostic = is_class_agnostic
 
-        self.base_feature_extractor = feature_extractors.get_base_feature_extractor()
+        self.base_feature_extractor = feature_extractors.base_feature_extractor
 
         def create_rpn():
             rpn_fe_output_depth = feature_extractors.get_output_num_channels(self.base_feature_extractor)
@@ -49,8 +49,9 @@ class FasterRCNNMetaArch(nn.Module):
         self.grid_size = cfg.POOLING_SIZE * 2 if cfg.CROP_RESIZE_WITH_MAX_POOL else cfg.POOLING_SIZE
 
         def create_fast_rcnn():
-            fast_rcnn_fe = feature_extractors.get_fast_rcnn_feature_extractor()
-            fast_rcnn_fe_output_depth = feature_extractors.get_output_num_channels(fast_rcnn_fe.feature_extractor)
+            fast_rcnn_fe = feature_extractors.fast_rcnn_feature_extractor
+            fast_rcnn_fe_output_depth = feature_extractors.get_output_num_channels(feature_extractors.fast_rcnn_subnet)
+            #fast_rcnn_fe_output_depth = feature_extractors.get_output_num_channels(fast_rcnn_fe)
             if self.is_class_agnostic:
                 bbox_head = nn.Linear(fast_rcnn_fe_output_depth, num_regression_outputs_per_bbox)
             else:
