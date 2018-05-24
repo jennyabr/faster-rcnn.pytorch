@@ -7,7 +7,6 @@ from torchvision.models import resnet101
 from torchvision.models.resnet import Bottleneck
 
 from model.feature_extractors.faster_rcnn_feature_extractors import FasterRCNNFeatureExtractors
-from cfgs.config import cfg
 from model.utils.net_utils import assert_sequential
 
 
@@ -22,7 +21,7 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractors):
         def forward(self, input):
             return self.feature_extractor(input).mean(3).mean(2)
 
-    def __init__(self, pretrained_model_path):
+    def __init__(self, FIXED_BLOCKS=0):
         super(ResNetForFasterRCNN, self).__init__()  # TODO is this needed?
 
         def load_base(resnet):
@@ -33,9 +32,10 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractors):
                                     resnet.layer1,
                                     resnet.layer2,
                                     resnet.layer3)
-            assert (0 <= cfg.RESNET.FIXED_BLOCKS < 4)  # TODO move from here  ?
-            base_fe_non_trainable = self._freeze_layers(base_fe, cfg.RESNET.FIXED_BLOCKS)
+            assert (0 <= FIXED_BLOCKS < 4)  # TODO move from here  ?
+            base_fe_non_trainable = self._freeze_layers(base_fe, FIXED_BLOCKS)
             base_fe.apply(self._freeze_batch_norm_layers)
+
             return base_fe_non_trainable
 
         def load_fast_rcnn(resnet):
@@ -129,3 +129,27 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractors):
             return out_num
         else:
             raise AssertionError('Unexpected model architecture')
+
+    def recreate_state_dict(self, resnet_state_dict):
+        base_state_dict = fast_rcnn_state_dict = {}
+
+        base_layers_mapping = ["conv1.", "bn1.", "relu.", "maxpool.", "layer1.", "layer2.", "layer3."]
+        fast_rcnn_layers_mapping = ["layer4."]
+
+        def startswith_one_of(key, list):
+            for i, item in enumerate(list):
+                if key.startswith(item):
+                    return i, item
+            return -1, ""
+
+        for orig_key, v in resnet_state_dict.items():
+            i, item = startswith_one_of(orig_key, fast_rcnn_layers_mapping)
+            if i != -1:
+                fast_rcnn_state_dict[orig_key.replace(item, str(i) + ".")] = v
+            else:
+                i, item = startswith_one_of(orig_key, base_layers_mapping)
+                if i != -1:
+                    base_state_dict[orig_key.replace(item, str(i) + ".")] = v
+
+        return [(self._base_feature_extractor, base_state_dict),
+                (self._fast_rcnn_feature_extractor.feature_extractor, fast_rcnn_state_dict)]

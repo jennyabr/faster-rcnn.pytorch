@@ -50,12 +50,12 @@ class FasterRCNNMetaArch(nn.Module):
 
         def create_fast_rcnn():
             fast_rcnn_fe = feature_extractors.fast_rcnn_feature_extractor
-            fast_rcnn_fe_output_depth = feature_extractors.get_output_num_channels(feature_extractors.fast_rcnn_subnet)
+            fast_rcnn_fe_output_depth = feature_extractors.get_output_num_channels(fast_rcnn_fe.feature_extractor)  #TODO this functioncan get any model...
             #fast_rcnn_fe_output_depth = feature_extractors.get_output_num_channels(fast_rcnn_fe)
             if self.is_class_agnostic:
-                bbox_head = nn.Linear(fast_rcnn_fe_output_depth, num_regression_outputs_per_bbox)
-            else:
                 bbox_head = nn.Linear(fast_rcnn_fe_output_depth, num_regression_outputs_per_bbox * self.num_classes)
+            else:
+                bbox_head = nn.Linear(fast_rcnn_fe_output_depth, num_regression_outputs_per_bbox)
             fast_rcnn_bbox_head = bbox_head
 
             fast_rcnn_cls_head = nn.Linear(fast_rcnn_fe_output_depth, self.num_classes)
@@ -159,7 +159,7 @@ class FasterRCNNMetaArch(nn.Module):
                 bbox_pred = bbox_pred_select.squeeze(1)
 
             cls_score = self.fast_rcnn_cls_head(fast_rcnn_feature_map)
-            cls_prob = F.softmax(cls_score)
+            cls_prob = F.softmax(cls_score) # TODO UserWarning: Implicit dimension choice for softmax has been deprecated. Change the call to include dim=X as an argument.
             return bbox_pred, cls_score, cls_prob
         bbox_pred, cls_score, cls_prob = run_fast_rcnn()
 

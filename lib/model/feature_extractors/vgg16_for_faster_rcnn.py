@@ -25,12 +25,12 @@ class VGG16ForFasterRCNN(FasterRCNNFeatureExtractors):
             flattened_input = input.view(input.size(0), -1)
             return self.feature_extractor(flattened_input)
 
-    def __init__(self):
+    def __init__(self, FIXED_LAYERS=2):
         super(VGG16ForFasterRCNN, self).__init__()
 
         def load_base(vgg):
             base_fe = nn.Sequential(*self._remove_last_layer_from_network(vgg.features))
-            base_fe_non_trainable = self._freeze_layers(base_fe, 2)
+            base_fe_non_trainable = self._freeze_layers(base_fe, FIXED_LAYERS)
             return base_fe_non_trainable
 
         def load_fast_rcnn(vgg):
@@ -48,14 +48,6 @@ class VGG16ForFasterRCNN(FasterRCNNFeatureExtractors):
     @property
     def fast_rcnn_feature_extractor(self):
         return self._fast_rcnn_feature_extractor
-
-    @property
-    def base_subnet(self):
-        return self._base_feature_extractor
-
-    @property
-    def fast_rcnn_subnet(self):
-        return self._fast_rcnn_feature_extractor.feature_extractor
 
     def _remove_last_layer_from_network(self, model):
         return list(model._modules.values())[:-1]
@@ -83,3 +75,18 @@ class VGG16ForFasterRCNN(FasterRCNNFeatureExtractors):
                 return model[layer_num].out_features
 
         raise AssertionError('Unexpected model architecture')
+
+    def recreate_state_dict(self, vgg16_state_dict):
+        base_state_dict = {}
+        fast_rcnn_state_dict = {}
+
+        for orig_key, v in vgg16_state_dict.items():
+            if orig_key.startswith("features."):
+                base_state_dict[orig_key.replace("features.", "")] = v
+            elif orig_key.startswith("classifier."):
+                fast_rcnn_state_dict[orig_key.replace("classifier.", "")] = v
+            else:
+                raise KeyError('unexpected key "{}" in state_dict'.format(orig_key))
+
+        return [(self._base_feature_extractor, base_state_dict),
+                (self._fast_rcnn_feature_extractor.feature_extractor, fast_rcnn_state_dict)]

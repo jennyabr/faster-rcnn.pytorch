@@ -31,7 +31,20 @@ class ConfigProvider(dict):#object):
             cfg = yaml.load(f)
 
 
-        model_name = "{}_ls.yml".format(cfg.net) if cfg['TRAIN']['large_scale'] else "{}.yml".format(cfg['net'].lower()) #TODO fiename
+        # TODO fix:model_name
+        #model_name = "{}_ls.yml".format(cfg.net) if cfg['TRAIN']['large_scale'] else "{}.yml".format(cfg['net'].lower()) #TODO fiename
+        if cfg['TRAIN']['large_scale']:
+            model_name = "{}_ls.yml"
+        else:
+            model_name = "{}.yml"
+
+        if cfg['net'].lower() == "vgg16":
+            model_name = model_name.format("vgg16")
+        elif cfg['net'].lower() == "resnet":
+            model_name = model_name.format("res101")
+        else:
+            raise Exception("unexpected net config.")
+
         with open(os.path.join(config_path, model_name), 'r') as f:
             model_cfg = yaml.load(f)
 
@@ -119,7 +132,7 @@ class ConfigProvider(dict):#object):
     def __getattr__(self, attr):
         # note: this is called what self.attr doesn't exist
         try:
-            return self._cfg[attr]
+            return self._cfg[attr] #TODO make not key sensitive
         except AttributeError:
             raise Exception("{} does not exist in Config.".format(attr))
 

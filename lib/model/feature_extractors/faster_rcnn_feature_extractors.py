@@ -30,47 +30,35 @@ class FasterRCNNFeatureExtractors(ABC):
     def fast_rcnn_feature_extractor(self):
         return NotImplementedError
 
-    @property
     @abstractmethod
-    def base_subnet(self):
+    def recreate_state_dict(self, orig_state_dict):
         return NotImplementedError
-
-    @property
-    @abstractmethod
-    def fast_rcnn_subnet(self):
-        return NotImplementedError
-
-    @classmethod
-    def create_with_random_normal_init(cls, mean=0, stddev=0.01):
-        fe = cls()
-        configured_normal_init = partial(normal_init, mean=mean, stddev=stddev)
-        # configured_normal_init(fe.base_feature_extractor)
-        # configured_normal_init(fe.fast_rcnn_feature_extractor)
-        configured_normal_init(fe.base_subnet)
-        configured_normal_init(fe.fast_rcnn_subnet)
-        return fe
-
-    @classmethod
-    def create_from_ckpt(cls, pretrained_model_path):
-        fe = cls()
-        logger.info("Loading feature extractors pretrained weights from {}.".format(pretrained_model_path))
-
-        state_dict = torch.load(os.path.expanduser(pretrained_model_path))
-        fe_names = ["features.", "classifier."]
-        #fe_subnets = [fe.base_feature_extractor, fe.fast_rcnn_feature_extractor]
-        fe_subnets = [fe.base_subnet, fe.fast_rcnn_subnet]
-
-        for idx, fe_subnet in enumerate(fe_subnets):
-            fe_subnet.load_state_dict({k.replace(fe_names[idx], ""): v for k, v in state_dict.items()}, strict=False)
-
-        return fe
 
     @abstractmethod
     def get_output_num_channels(self, model):
         raise NotImplementedError
 
+    @classmethod
+    def create_with_random_normal_init(cls, mean=0, stddev=0.01):
+        fe = cls(0)
+        configured_normal_init = partial(normal_init, mean=mean, stddev=stddev)
+        configured_normal_init(fe.base_feature_extractor)
+        configured_normal_init(fe.fast_rcnn_feature_extractor.feature_extractor) #TODO should this be func?
+        return fe
 
-def create_feature_extractor(net, pretrained_model_path=None, mean=0, stddev=0.01):
+    @classmethod
+    def create_from_ckpt(cls, freeze, pretrained_model_path):
+        fe = cls(freeze)
+        logger.info(" Loading feature extractors pretrained weights from: {}.".format(pretrained_model_path))
+        orig_state_dict = torch.load(os.path.expanduser(pretrained_model_path))
+        fe_subnets = fe.recreate_state_dict(orig_state_dict)
+        for fe_subnet, new_state_dict in fe_subnets:
+            fe_subnet.load_state_dict(new_state_dict, strict=False)
+
+        return fe
+
+
+def create_feature_extractor(net, freeze=0, pretrained_model_path=None, mean=0, stddev=0.01):
     abs_package_path = os.path.dirname(__file__)  # TODO check: __package__
     rel_package_path = \
         abs_package_path.replace(FASTER_RCNN_LIB_FULL_PATH, '').replace(os.path.sep, '.').strip('.')
@@ -82,7 +70,7 @@ def create_feature_extractor(net, pretrained_model_path=None, mean=0, stddev=0.0
     # TODO       for the exact class\module name (e.g. vgg16 vs VGG16)
 
     if pretrained_model_path:
-        fe = feature_extractor_class.create_from_ckpt(pretrained_model_path)
+        fe = feature_extractor_class.create_from_ckpt(freeze=freeze, pretrained_model_path=pretrained_model_path)
     else:
         fe = feature_extractor_class.create_with_random_normal_init(mean, stddev)
 

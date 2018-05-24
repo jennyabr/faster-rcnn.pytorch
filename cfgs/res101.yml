@@ -11,7 +11,7 @@ TRAIN:
   WEIGHT_DECAY: 0.0001
   DOUBLE_BIAS: False
   LEARNING_RATE: 0.001
-  pretrained_model_path: 'pretrained_model/resnet101_caffe.pth'
+  pretrained_model_path: '/home/jenny/gripper2/data/pretrained_model/resnet101_caffe.pth'
 TEST:
   HAS_RPN: True
 POOLING_SIZE: 7

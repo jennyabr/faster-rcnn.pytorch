@@ -46,7 +46,9 @@ if __name__ == '__main__':
                                         batch_size=cfg.TRAIN.batch_size)
 
     train_logger = TensorBoardLogger(cfg.output_path)
-    feature_extractors = create_feature_extractor(cfg.net, cfg.TRAIN.pretrained_model_path)
+    feature_extractors = create_feature_extractor(cfg.net,
+                                                  freeze=0, #TODO in cfg
+                                                  pretrained_model_path=cfg.TRAIN.pretrained_model_path)
     model = FasterRCNNMetaArch(
                       feature_extractors,
                       class_names=data_manager.imdb.classes, # TODO: IB - data manager abstract should have get_classes function
