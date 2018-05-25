@@ -43,9 +43,9 @@ class BDSampler(Sampler):
         return self.data_size  # TODO (self.data_size + self.batch_size - 1) // self.batch_size
 
 
-class DetectionDataManager(DataManager):
+class FasterRCNNDataManager(DataManager):
     def __init__(self, mode, imdb_name, seed, num_workers, is_cuda, batch_size=1):
-        super(DetectionDataManager, self).__init__(mode, is_cuda)
+        super(FasterRCNNDataManager, self).__init__(mode, is_cuda)
         self.imdb, roidb, ratio_list, ratio_index = combined_roidb(imdb_name,
                                                                    training=self.is_train)
         dataset = roibatchLoader(roidb, ratio_list, ratio_index, batch_size,

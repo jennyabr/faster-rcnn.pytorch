@@ -14,7 +14,7 @@ import torch
 from functools import partial
 
 from cfgs.config import cfg
-from data_handler.detection_data_manager import DetectionDataManager
+from data_handler.detection_data_manager import FasterRCNNDataManager
 from data_handler.data_manager_api import Mode
 from loggers.tensorbord_logger import TensorBoardLogger
 from model.faster_rcnn.faster_rcnn_meta_arch import FasterRCNNMetaArch
@@ -41,7 +41,7 @@ if __name__ == '__main__':
     #     cfg.scale = scale
     #     faster_rcnn = FasterRCNNTrainer(cfg)
 
-    data_manager = DetectionDataManager(mode=Mode.TRAIN, imdb_name=cfg.imdb_name,
+    data_manager = FasterRCNNDataManager(mode=Mode.TRAIN, imdb_name=cfg.imdb_name,
                                         seed=cfg.RNG_SEED, num_workers=cfg.NUM_WORKERS, is_cuda=cfg.CUDA,
                                         batch_size=cfg.TRAIN.batch_size)
 
