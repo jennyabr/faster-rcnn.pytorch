@@ -30,20 +30,12 @@ class ConfigProvider(dict):#object):
         with open(os.path.join(config_path, 'general.yml'), 'r') as f:
             cfg = yaml.load(f)
 
-
-        # TODO fix:model_name
-        #model_name = "{}_ls.yml".format(cfg.net) if cfg['TRAIN']['large_scale'] else "{}.yml".format(cfg['net'].lower()) #TODO fiename
         if cfg['TRAIN']['large_scale']:
-            model_name = "{}_ls.yml"
+            model_name = "{}{}_ls.yml"
         else:
-            model_name = "{}.yml"
+            model_name = "{}{}.yml"
 
-        if cfg['net'].lower() == "vgg16":
-            model_name = model_name.format("vgg16")
-        elif cfg['net'].lower() == "resnet":
-            model_name = model_name.format("res101")
-        else:
-            raise Exception("unexpected net config.")
+        model_name = model_name.format(cfg['net'].lower(), cfg['net_variant'])
 
         with open(os.path.join(config_path, model_name), 'r') as f:
             model_cfg = yaml.load(f)

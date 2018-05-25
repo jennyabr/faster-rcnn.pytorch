@@ -9,7 +9,7 @@ from model.feature_extractors.feature_extractors_factory import FeatureExtractor
 from model.utils.net_utils import decay_lr_in_optimizer, clip_gradient
 from model.faster_rcnn.faster_rcnn_meta_arch import FasterRCNNMetaArch
 from model.feature_extractors.resnet_for_faster_rcnn import ResNetForFasterRCNN
-from model.feature_extractors.vgg16_for_faster_rcnn import VGG16ForFasterRCNN
+from model.feature_extractors.vgg_for_faster_rcnn import VGGForFasterRCNN
 from data_handler.data_with_test import DataPrep, Mode
 
 from cfgs.config import cfg

@@ -4,7 +4,7 @@ from __future__ import print_function
 
 import torch.nn as nn
 from torchvision.models import resnet101
-from torchvision.models.resnet import Bottleneck
+from torchvision.models.resnet import Bottleneck, resnet50, resnet152
 
 from model.feature_extractors.faster_rcnn_feature_extractors import FasterRCNNFeatureExtractors
 from model.utils.net_utils import assert_sequential
@@ -21,8 +21,8 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractors):
         def forward(self, input):
             return self.feature_extractor(input).mean(3).mean(2)
 
-    def __init__(self, FIXED_BLOCKS=0):
-        super(ResNetForFasterRCNN, self).__init__()  # TODO is this needed?
+    def __init__(self, net_variant='101', frozen_blocks=0):
+        super(ResNetForFasterRCNN, self).__init__(net_variant, frozen_blocks)
 
         def load_base(resnet):
             base_fe = nn.Sequential(resnet.conv1,
@@ -32,8 +32,8 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractors):
                                     resnet.layer1,
                                     resnet.layer2,
                                     resnet.layer3)
-            assert (0 <= FIXED_BLOCKS < 4)  # TODO move from here  ?
-            base_fe_non_trainable = self._freeze_layers(base_fe, FIXED_BLOCKS)
+            assert (0 <= frozen_blocks < 4)  # TODO move from here  ?
+            base_fe_non_trainable = self._freeze_layers(base_fe, frozen_blocks)
             base_fe.apply(self._freeze_batch_norm_layers)
 
             return base_fe_non_trainable
@@ -42,7 +42,16 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractors):
             fast_rcnn_fe = self._FastRCNNFeatureExtractor(resnet, self._freeze_batch_norm_layers)
             return fast_rcnn_fe
 
-        resnet = resnet101()  # TODO add more resnet types
+        def resnet_variant_builder(variant):
+            if variant == '50':
+                return resnet50()
+            elif variant == '101':
+                return resnet101()
+            elif variant == '152':
+                return resnet152()
+            else:
+                raise ValueError('The variant Resnet{} is currently not supported'.format(variant))
+        resnet = resnet_variant_builder(net_variant)
         self._base_feature_extractor = load_base(resnet)
         self._fast_rcnn_feature_extractor = load_fast_rcnn(resnet)
 
@@ -66,6 +75,7 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractors):
         net.apply(_freeze_if_batch_norm)
 
     def _freeze_layers(self, model, upto_block_num):
+        # TODO: enable freezing only conv1
         assert_sequential(model)
 
         curr_block_num = 0

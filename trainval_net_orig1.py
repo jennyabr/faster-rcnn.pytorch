@@ -21,7 +21,7 @@ import torch.nn as nn
 from torch.utils.data.sampler import Sampler
 
 from model.feature_extractors.resnet_for_faster_rcnn import ResNetForFasterRCNN
-from model.feature_extractors.vgg16_for_faster_rcnn import VGG16ForFasterRCNN
+from model.feature_extractors.vgg_for_faster_rcnn import VGGForFasterRCNN
 from roi_data_layer.roidb import combined_roidb
 from roi_data_layer.roibatchLoader import roibatchLoader
 from cfgs.config import cfg, get_output_dir, get_ckpt_path, cfg_from_file, cfg_from_list
@@ -236,7 +236,7 @@ if __name__ == '__main__':
 
     if args.net == 'vgg16':
         model_path = os.path.join(cfg.DATA_DIR, 'pretrained_model/vgg16_caffe.pth')
-        feature_extractors = VGG16ForFasterRCNN(pretrained=True, model_path=model_path)
+        feature_extractors = VGGForFasterRCNN(pretrained=True, model_path=model_path)
     elif args.net == 'res101':
         model_path = os.path.join(cfg.DATA_DIR, 'pretrained_model/resnet101_caffe.pth')
         feature_extractors = ResNetForFasterRCNN(pretrained=True, model_path=model_path)

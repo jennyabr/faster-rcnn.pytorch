@@ -1,11 +1,18 @@
 
 from .faster_rcnn_feature_extractors import FasterRCNNFeatureExtractors
-from .vgg16_for_faster_rcnn import VGG16ForFasterRCNN
+from .vgg_for_faster_rcnn import VGGForFasterRCNN
 from .resnet_for_faster_rcnn import ResNetForFasterRCNN
 
 del faster_rcnn_feature_extractors
-del vgg16_for_faster_rcnn
+del vgg_for_faster_rcnn
 del resnet_for_faster_rcnn
+
+
+
+feature_extractors_classes = {cls.__name__: cls.__module__ for cls in FasterRCNNFeatureExtractors.__subclasses__()}
+
+# TODO: delete this
+#print("---1--- {}".format(__package__))
 
 # import os
 # import importlib
@@ -14,12 +21,6 @@ del resnet_for_faster_rcnn
 # pkg_dir = os.path.dirname(__file__)
 # for (module_loader, name, ispkg) in pkgutil.iter_modules([pkg_dir]):
 #     importlib.import_module('.' + name, __package__)
-
-feature_extractors_classes = {cls.__name__: cls.__module__ for cls in FasterRCNNFeatureExtractors.__subclasses__()}
-#print("---1--- {}".format(__package__))
-
-
-
 
 
 #dir(torch.optim)
