@@ -159,7 +159,7 @@ class FasterRCNNMetaArch(nn.Module):
                 bbox_pred = bbox_pred_select.squeeze(1)
 
             cls_score = self.fast_rcnn_cls_head(fast_rcnn_feature_map)
-            cls_prob = F.softmax(cls_score) # TODO UserWarning: Implicit dimension choice for softmax has been deprecated. Change the call to include dim=X as an argument.
+            cls_prob = F.softmax(cls_score, dim=0) # TODO UserWarning: Implicit dimension choice for softmax has been deprecated. Change the call to include dim=X as an argument.
             return bbox_pred, cls_score, cls_prob
         bbox_pred, cls_score, cls_prob = run_fast_rcnn()
 
