@@ -9,9 +9,7 @@ import os.path
 
 import torch
 
-from model import FASTER_RCNN_LIB_FULL_PATH
 from model.utils.net_utils import normal_init
-from model.utils.factory_utils import get_class_from_package
 
 
 logging.basicConfig(level=logging.INFO)
@@ -42,8 +40,12 @@ class FasterRCNNFeatureExtractors(ABC):
     def create_with_random_normal_init(cls, mean=0, stddev=0.01):
         fe = cls(0)
         configured_normal_init = partial(normal_init, mean=mean, stddev=stddev)
-        configured_normal_init(fe.base_feature_extractor)
-        configured_normal_init(fe.fast_rcnn_feature_extractor.feature_extractor) #TODO should this be func?
+        # configured_normal_init(fe.base_feature_extractor)
+        # configured_normal_init(fe.fast_rcnn_feature_extractor.feature_extractor) #TODO should this be func?
+
+        fe.base_feature_extractor.apply(configured_normal_init)
+        fe.fast_rcnn_feature_extractor.feature_extractor.apply(configured_normal_init)
+
         return fe
 
     @classmethod
@@ -59,19 +61,28 @@ class FasterRCNNFeatureExtractors(ABC):
 
 
 def create_feature_extractor(net, freeze=0, pretrained_model_path=None, mean=0, stddev=0.01):
-    abs_package_path = os.path.dirname(__file__)  # TODO check: __package__
-    rel_package_path = \
-        abs_package_path.replace(FASTER_RCNN_LIB_FULL_PATH, '').replace(os.path.sep, '.').strip('.')
-    feature_extractor_class = \
-        get_class_from_package(rel_package_path,
-                               '{}_for_faster_rcnn.{}ForFasterRCNN'.format(net.lower(), net),
-                               FasterRCNNFeatureExtractors)
-    # TODO: IB - get_class_from_package should not be case sensitive
-    # TODO       for the exact class\module name (e.g. vgg16 vs VGG16)
+    #TODO code reviwe
 
-    if pretrained_model_path:
-        fe = feature_extractor_class.create_from_ckpt(freeze=freeze, pretrained_model_path=pretrained_model_path)
+    from model.feature_extractors import feature_extractors_classes
+    from importlib import import_module
+
+    class_names = [c for c in feature_extractors_classes.keys() if c.lower().startswith(net)]
+    if len(class_names) == 0:
+        raise ImportError('{} is not part of the package!'.format(net))  # TODO msg
+    elif len(class_names) > 1:
+        raise ImportError('{} is umbiguas {}'.format(net, class_names))  # TODO msg
     else:
-        fe = feature_extractor_class.create_with_random_normal_init(mean, stddev)
+        class_name = class_names[0]
+        try:
+            class_module = import_module(feature_extractors_classes[class_name])
+            feature_extractor_class = getattr(class_module, class_name)
+        except (AttributeError, ModuleNotFoundError):
+            raise ImportError('{} is not part of the package!'.format(class_name))
 
-    return fe
+        if pretrained_model_path:
+            fe = feature_extractor_class.create_from_ckpt(freeze=freeze, pretrained_model_path=pretrained_model_path)
+        else:
+            fe = feature_extractor_class.create_with_random_normal_init(mean, stddev)
+
+        return fe
+

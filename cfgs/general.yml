@@ -1,7 +1,7 @@
 DATA_DIR: '/home/jenny/gripper2/data'
 OUTPUT_DIR: '/home/jenny/gripper2/faster-rcnn_output'
 dataset: 'pascal_voc'  # training dataset'
-net: 'ResNet' #'VGG16'  # {vgg16,res101} ResNet
+net: 'VGG16' #'VGG16'  # {vgg16,res101} ResNet
 
 NUM_WORKERS: 6  # number of worker to load data
 
@@ -177,6 +177,8 @@ TRAIN:
 
   # Whether to tune the batch normalization parameters during training
   BN_TRAIN: False
+
+  CLIP_GRADIENTS: False
 
 
 TEST:

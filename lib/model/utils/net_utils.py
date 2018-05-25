@@ -4,7 +4,6 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 import numpy as np
 from cfgs.config import cfg
-from model.roi_crop.functions.roi_crop import RoICropFunction
 import cv2
 import pdb
 import random
@@ -193,6 +192,7 @@ def _affine_theta(rois, input_size):
     return theta
 
 def compare_grid_sample():
+    from model.roi_crop.functions.roi_crop import RoICropFunction
     # do gradcheck
     N = random.randint(1, 8)
     C = 2 # random.randint(1, 8)
@@ -230,5 +230,15 @@ def assert_sequential(model):
 def normal_init(nn_module, mean=0, stddev=1):
     # TODO seed?
     # TODO: IB - the initialization should be flexible to all initializations in pytorch
-    nn.init.normal(nn_module.weight, mean, stddev)
-    nn.init.constant(nn_module.bias, 0)
+    if hasattr(nn_module, 'weight') and nn_module is not None:
+        nn.init.normal(nn_module.weight, mean, stddev)
+    if hasattr(nn_module, 'bias') and nn_module.bias is not None:
+        nn.init.constant(nn_module.bias, 0)
+
+# def weights_init(m):
+#     classname = m.__class__.__name__
+#     if classname.find('Conv') != -1:
+#         m.weight.data.normal_(0.0, 0.02)
+#     elif classname.find('BatchNorm') != -1:
+#         m.weight.data.normal_(1.0, 0.02)
+#         m.bias.data.fill_(0)

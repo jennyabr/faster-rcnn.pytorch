@@ -7,9 +7,17 @@ del faster_rcnn_feature_extractors
 del vgg16_for_faster_rcnn
 del resnet_for_faster_rcnn
 
-#import inspect
+# import os
+# import importlib
+# import pkgutil
+#
+# pkg_dir = os.path.dirname(__file__)
+# for (module_loader, name, ispkg) in pkgutil.iter_modules([pkg_dir]):
+#     importlib.import_module('.' + name, __package__)
 
-#clsmembers = inspect.getmembers(sys.modules[__name__], inspect.isclass)
+feature_extractors_classes = {cls.__name__: cls.__module__ for cls in FasterRCNNFeatureExtractors.__subclasses__()}
+#print("---1--- {}".format(__package__))
+
 
 
 
