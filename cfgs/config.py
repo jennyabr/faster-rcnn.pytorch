@@ -22,6 +22,8 @@ class ConfigProvider(dict):#object):
     def load(self, config_dir_path):
         """Load a config file and merge it into the default options."""
 
+
+
         if config_dir_path:
             config_path = config_dir_path
         else:
@@ -35,6 +37,9 @@ class ConfigProvider(dict):#object):
         else:
             model_name = "{}{}.yml"
 
+        seed = cfg['RNG_SEED']
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
         model_name = model_name.format(cfg['net'].lower(), cfg['net_variant'])
 
         with open(os.path.join(config_path, model_name), 'r') as f:

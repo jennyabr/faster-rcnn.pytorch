@@ -46,7 +46,7 @@ if __name__ == '__main__':
                                         batch_size=cfg.TRAIN.batch_size)
 
     train_logger = TensorBoardLogger(cfg.output_path)
-    feature_extractors = create_feature_extractor(cfg.net,
+    feature_extractors = create_feature_extractor(cfg.net, cfg.net_variant,
                                                   freeze=0, #TODO in cfg
                                                   pretrained_model_path=cfg.TRAIN.get("pretrained_model_path", None))
     model = FasterRCNNMetaArch(

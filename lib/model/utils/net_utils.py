@@ -227,18 +227,10 @@ def assert_sequential(model):
             'Since Pytorch supports dynamic graphs, the order of layers in a non-sequential net is '
             'defined only dynamically at run-time and cant be used for counting layers')
 
+
 def normal_init(nn_module, mean=0, stddev=1):
-    # TODO seed?
-    # TODO: IB - the initialization should be flexible to all initializations in pytorch
     if hasattr(nn_module, 'weight') and nn_module is not None:
+        # TODO: IB - enable using all available initializations in pytorch (not only normal)
         nn.init.normal(nn_module.weight, mean, stddev)
     if hasattr(nn_module, 'bias') and nn_module.bias is not None:
         nn.init.constant(nn_module.bias, 0)
-
-# def weights_init(m):
-#     classname = m.__class__.__name__
-#     if classname.find('Conv') != -1:
-#         m.weight.data.normal_(0.0, 0.02)
-#     elif classname.find('BatchNorm') != -1:
-#         m.weight.data.normal_(1.0, 0.02)
-#         m.bias.data.fill_(0)

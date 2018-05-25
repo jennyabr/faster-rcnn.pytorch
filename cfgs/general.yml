@@ -1,8 +1,8 @@
 DATA_DIR: '/home/jenny/gripper2/data'
 OUTPUT_DIR: '/home/jenny/gripper2/faster-rcnn_output'
 dataset: 'pascal_voc'  # training dataset'
-net: 'vgg' #  # {vgg,resnet}
-net_variant: '16' # Currently supported: {16 for vgg, 50, 101, 152 for resnet}
+net: 'resnet' #  # {vgg,resnet}
+net_variant: '101' # Currently supported: {16 for vgg, 50, 101, 152 for resnet}
 
 NUM_WORKERS: 6  # number of worker to load data
 

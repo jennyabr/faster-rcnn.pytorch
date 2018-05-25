@@ -18,8 +18,8 @@ logger = logging.getLogger(__name__)
 
 class FasterRCNNFeatureExtractors(ABC):
 
-    def __init__(self, variant, frozen_blocks):
-        self.variant = variant
+    def __init__(self, net_variant, frozen_blocks):
+        self.net_variant = net_variant
         self.frozen_blocks = frozen_blocks
 
     @property
@@ -42,10 +42,8 @@ class FasterRCNNFeatureExtractors(ABC):
 
     @classmethod
     def create_with_random_normal_init(cls, net_variant, mean=0, stddev=0.01):
-        fe = cls(variant=net_variant, frozen_blocks=0)
+        fe = cls(net_variant=net_variant, frozen_blocks=0)
         configured_normal_init = partial(normal_init, mean=mean, stddev=stddev)
-        # configured_normal_init(fe.base_feature_extractor)
-        # configured_normal_init(fe.fast_rcnn_feature_extractor.feature_extractor) #TODO should this be func?
 
         fe.base_feature_extractor.apply(configured_normal_init)
         fe.fast_rcnn_feature_extractor.feature_extractor.apply(configured_normal_init)
@@ -54,7 +52,7 @@ class FasterRCNNFeatureExtractors(ABC):
 
     @classmethod
     def create_from_ckpt(cls, net_variant, frozen_blocks, pretrained_model_path):
-        fe = cls(variant=net_variant, frozen_blocks=frozen_blocks)
+        fe = cls(net_variant=net_variant, frozen_blocks=frozen_blocks)
         logger.info(" Loading feature extractors pretrained weights from: {}.".format(pretrained_model_path))
         orig_state_dict = torch.load(os.path.expanduser(pretrained_model_path))
         fe_subnets = fe.recreate_state_dict(orig_state_dict)
@@ -82,7 +80,8 @@ def create_feature_extractor(net_name, net_variant, freeze=0, pretrained_model_p
             fe = feature_extractor_class.create_from_ckpt(
                 net_variant=net_variant, frozen_blocks=freeze, pretrained_model_path=pretrained_model_path)
         else:
-            fe = feature_extractor_class.create_with_random_normal_init(net_variant=net_variant, mean, stddev)
+            fe = feature_extractor_class.create_with_random_normal_init(
+                net_variant=net_variant, mean=mean, stddev=stddev)
 
         return fe
 

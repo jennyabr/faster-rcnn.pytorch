@@ -1,0 +1,30 @@
+EXP_DIR: resnet50
+TRAIN:
+  HAS_RPN: True
+  BBOX_NORMALIZE_TARGETS_PRECOMPUTED: True
+  RPN_POSITIVE_OVERLAP: 0.7
+  RPN_BATCHSIZE: 256
+  PROPOSAL_METHOD: gt
+  BG_THRESH_LO: 0.0
+  DISPLAY: 20
+  BATCH_SIZE: 128
+  WEIGHT_DECAY: 0.0001
+  DOUBLE_BIAS: False
+  LEARNING_RATE: 0.001
+#  pretrained_model_path:
+TEST:
+  HAS_RPN: True
+POOLING_SIZE: 7
+POOLING_MODE: align
+CROP_RESIZE_WITH_MAX_POOL: False
+
+RESNET:
+  # Option to set if max-pooling is appended after crop_and_resize.
+  # if true, the region will be resized to a square of 2xPOOLING_SIZE,
+  # then 2x2 max-pooling is applied; otherwise the region will be directly
+  # resized to a square of POOLING_SIZE
+  MAX_POOL: False
+
+  # Number of frozen blocks during training, by default the first of all 4 blocks is frozen
+  # Range: 0 (none) to 3 (all)
+  FROZEN_BLOCKS: 1
