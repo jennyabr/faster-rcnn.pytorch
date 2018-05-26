@@ -18,8 +18,8 @@ TEST:
   SCALES: [800]
   MAX_SIZE: 1200
   RPN_POST_NMS_TOP_N: 1000
-POOLING_SIZE: 7
-POOLING_MODE: align
+roi_pooler_size: 7
+roi_pooler_name: align
 CROP_RESIZE_WITH_MAX_POOL: False
 
 RESNET:

@@ -1,4 +1,6 @@
+# TODO: IB - the config should be code
 DATA_DIR: '/home/jenny/gripper2/data'
+EXPERIMENT_NAME: 'faster_rcnn_resnet_voc'
 OUTPUT_DIR: '/home/jenny/gripper2/faster-rcnn_output'
 dataset: 'pascal_voc'  # training dataset'
 net: 'resnet' #  # {vgg,resnet}
@@ -38,10 +40,10 @@ PIXEL_MEANS: [[[102.9801, 115.9465, 122.7717]]]
 # A small number that's used many times
 EPS: 1e-14
 
-POOLING_MODE: 'align'
+roi_pooler_name: 'align'
 
 # Size of the pooled region after RoI pooling
-POOLING_SIZE: 7
+roi_pooler_size: 7
 
 # Maximal number of gt rois in an image during Training
 MAX_NUM_GT_BOXES: 20
@@ -180,7 +182,8 @@ TRAIN:
   BN_TRAIN: False
 
   CLIP_GRADIENTS: False
-
+  frozen_blocks: 2
+  num_regression_outputs_per_bbox: 4
 
 TEST:
   # Scale to use during testing (can NOT list multiple scales)
@@ -192,13 +195,6 @@ TEST:
 
   # Overlap threshold used for non-maximum suppression (suppress boxes with IoU >= this threshold)
   NMS: 0.3
-
-  # Experimental: treat the (K+1) units in the cls_score layer as linear
-  # predictors (trained, eg, with one-vs-rest SVMs).
-  SVM: False
-
-  # Test using bounding-box regressors
-  BBOX_REG: True
 
   # Propose boxes
   HAS_RPN: False
@@ -224,3 +220,10 @@ TEST:
   # Only useful when TEST.MODE is 'top', specifies the number of top proposals to select
   RPN_TOP_N: 5000
 
+  USE_FLIPPED: False # Use horizontally-flipped images during evaluation
+
+  MAX_DETECTIONS_PER_IMAGE: 100 # counted over all classes together
+
+  DETECTION_THRESH: 0.05
+
+  max_per_image: 100

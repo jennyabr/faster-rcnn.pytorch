@@ -7,6 +7,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
+from model.faster_rcnn.ckpt_utils import load_ckpt_file
+from model.feature_extractors.faster_rcnn_feature_extractors import create_feature_extractor_empty
 from model.roi_poolers.roi_pooler_factory import create_roi_pooler
 from model.rpn.rpn import _RPN
 from model.rpn.proposal_target_layer_cascade import _ProposalTargetLayer
@@ -20,18 +22,13 @@ logger = logging.getLogger(__name__)
 
 
 class FasterRCNNMetaArch(nn.Module):
-    def __init__(self, feature_extractors, class_names,
-                 # TODO cfg:
-                 is_class_agnostic=True,
-                 num_regression_outputs_per_bbox=4,
-                 roi_pooler_name='crop'):
-
+    def __init__(self, feature_extractors, cfg):
         super(FasterRCNNMetaArch, self).__init__()
-        # TODO should is_class_agnostic, num_regression_outputs_per_bbox, roi_pooler_name be in self?
-        # TODO so that they can be saved in dict
-        self.class_names = class_names
-        self.num_classes = len(class_names)
-        self.is_class_agnostic = is_class_agnostic
+        self.state_params = {'num_classes': len(cfg.class_names),
+                             'is_class_agnostic': cfg.is_class_agnostic,
+                             'roi_pooler_name': cfg.roi_pooler_name,
+                             'roi_pooler_size': cfg.roi_pooler_size,
+                             'crop_resize_with_max_pool': cfg.CROP_RESIZE_WITH_MAX_POOL}
 
         self.base_feature_extractor = feature_extractors.base_feature_extractor
 
@@ -46,16 +43,18 @@ class FasterRCNNMetaArch(nn.Module):
 
         self.roi_pooler = create_roi_pooler(roi_pooler_name)
         # TODO delete next line:
-        self.grid_size = cfg.POOLING_SIZE * 2 if cfg.CROP_RESIZE_WITH_MAX_POOL else cfg.POOLING_SIZE
+        self.grid_size = self.state_params['roi_pooler_size'] * 2 if self.state_params['crop_resize_with_max_pool'] else\
+            state_params['roi_pooler_size']
 
         def create_fast_rcnn():
             fast_rcnn_fe = feature_extractors.fast_rcnn_feature_extractor
             fast_rcnn_fe_output_depth = feature_extractors.get_output_num_channels(fast_rcnn_fe.feature_extractor)  #TODO this functioncan get any model...
             #fast_rcnn_fe_output_depth = feature_extractors.get_output_num_channels(fast_rcnn_fe)
             if self.is_class_agnostic:
-                bbox_head = nn.Linear(fast_rcnn_fe_output_depth, num_regression_outputs_per_bbox * self.num_classes)
+                self.num_predicted_coords = num_regression_outputs_per_bbox * self.num_classes
             else:
-                bbox_head = nn.Linear(fast_rcnn_fe_output_depth, num_regression_outputs_per_bbox)
+                self.num_predicted_coords = num_regression_outputs_per_bbox
+            bbox_head = nn.Linear(fast_rcnn_fe_output_depth, self.num_predicted_coords)
             fast_rcnn_bbox_head = bbox_head
 
             fast_rcnn_cls_head = nn.Linear(fast_rcnn_fe_output_depth, self.num_classes)
@@ -83,25 +82,7 @@ class FasterRCNNMetaArch(nn.Module):
         return faster_rcnn
 
 
-    @classmethod
-    def create_from_ckpt(cls, feature_extractors, ckpt_path):
-        logger.info("Loading ckpt from {}.".format(ckpt_path))
-        # TODO check what happens if pretrained_model_path file doesn't exist
-        state_dict = torch.load(os.path.expanduser(ckpt_path))
-
-        # TODO maybe the extraction od conf should be a EXTERNAL FUN
-        cnf = state_dict['cnf']  # TODO maybe all these (and additional) should be in conf in constractor...
-        class_names = cnf['class_names']
-        is_class_agnostic = cnf['is_class_agnostic']
-        num_regression_outputs_per_bbox = cnf['num_regression_outputs']
-        roi_pooler_name = cnf['roi_pooler']
-
-        faster_rcnn = cls(feature_extractors, class_names,
-                          is_class_agnostic, num_regression_outputs_per_bbox, roi_pooler_name)
-
-        faster_rcnn.load_state_dict(state_dict['model'])
-        return faster_rcnn
-
+    #TODO JA - fix - add parameter to init random some layers and number of classes
     def forward(self, im_data, im_info, gt_boxes, num_boxes):
         batch_size = im_data.size(0)
         im_info = im_info.data
@@ -132,15 +113,15 @@ class FasterRCNNMetaArch(nn.Module):
         rois = Variable(rois) # TODO make immutable
 
         #TODO refactor this:
-        if cfg.POOLING_MODE == 'crop':
+        if cfg.roi_pooler_name == 'crop':
             grid_xy = _affine_grid_gen(rois.view(-1, 5), base_feature_map.size()[2:], self.grid_size)
             grid_yx = torch.stack([grid_xy.data[:, :, :, 1], grid_xy.data[:, :, :, 0]], 3).contiguous()
             pooled_rois = self.roi_pooler(base_feature_map, Variable(grid_yx).detach())
             if cfg.CROP_RESIZE_WITH_MAX_POOL:
                 pooled_rois = F.max_pool2d(pooled_rois, 2, 2)
-        elif cfg.POOLING_MODE == 'align':
+        elif cfg.roi_pooler_name == 'align':
             pooled_rois = self.roi_pooler(base_feature_map, rois.view(-1, 5))
-        elif cfg.POOLING_MODE == 'pool':
+        elif cfg.roi_pooler_name == 'pool':
             pooled_rois = self.roi_pooler(base_feature_map, rois.view(-1, 5))
         #TODO this insted : pooled_rois = self.roi_pooler(base_feature_map, rois.view(-1, 5))
         #TODO: IB - what is this 5 in the view? it might be hardcoding the number of bb coords
@@ -176,3 +157,13 @@ class FasterRCNNMetaArch(nn.Module):
         return rois, cls_prob, bbox_pred, \
                rpn_loss_cls, rpn_loss_bbox, \
                self.faster_rcnn_loss_cls, self.faster_rcnn_loss_bbox, rois_label
+
+    # TODO: JA - enable manually overriding num_classes and enable to randomize the last layers
+    @classmethod
+    def create_from_ckpt(cls, ckpt_path):
+        state_dict, loaded_cfg = load_ckpt_file(ckpt_path)
+        feature_extractors = create_feature_extractor_empty(
+            loaded_cfg.net, loaded_cfg.net_variant, loaded_cfg.freeze)
+        model = FasterRCNNMetaArch(feature_extractors, loaded_cfg)
+        model.load_state_dict(state_dict['model'])
+        return model

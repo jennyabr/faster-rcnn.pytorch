@@ -13,5 +13,5 @@ TRAIN:
 
 TEST:
   HAS_RPN: True
-POOLING_MODE: align
+roi_pooler_name: align
 CROP_RESIZE_WITH_MAX_POOL: False

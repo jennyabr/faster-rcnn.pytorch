@@ -21,17 +21,16 @@ class ConfigProvider(dict):#object):
 
     def load(self, config_dir_path):
         """Load a config file and merge it into the default options."""
-
-
-
         if config_dir_path:
             config_path = config_dir_path
         else:
             config_path = os.path.dirname(__file__)
-        cfg = {}
         with open(os.path.join(config_path, 'general.yml'), 'r') as f:
-            cfg = yaml.load(f)
+            cfg_dict = yaml.load(f)
+        cfg = self.load_from_dict(cfg_dict)
+        return cfg
 
+    def load_from_dict(self, cfg):
         if cfg['TRAIN']['large_scale']:
             model_name = "{}{}_ls.yml"
         else:
@@ -40,6 +39,7 @@ class ConfigProvider(dict):#object):
         seed = cfg['RNG_SEED']
         torch.manual_seed(seed)
         torch.cuda.manual_seed_all(seed)
+        np.random.seed(seed)
         model_name = model_name.format(cfg['net'].lower(), cfg['net_variant'])
 
         with open(os.path.join(config_path, model_name), 'r') as f:
@@ -93,8 +93,7 @@ class ConfigProvider(dict):#object):
             if project_name is None or project_name == "":
                 project_name = os.path.basename(cfg['ROOT_DIR'])
 
-            outdir = os.path.abspath(os.path.join(os.path.abspath(cfg['OUTPUT_DIR']),
-                                                  "{}_{}_{}".format(project_name, cfg['net'], cfg['dataset'])))
+            outdir = os.path.abspath(os.path.join(os.path.abspath(cfg['OUTPUT_DIR']),cfg['EXPERIMENT_NAME']))
             if not os.path.exists(outdir):
                 os.makedirs(outdir)
             return outdir
@@ -106,6 +105,7 @@ class ConfigProvider(dict):#object):
         logger.info(pprint.pformat(cfg))
 
         self._cfg = cfg
+        return cfg
 
     def __str__(self):
         return pprint.pformat(self._cfg)
@@ -120,8 +120,18 @@ class ConfigProvider(dict):#object):
         else:
             epoch = epoch_num
         file_name = 'faster_rcnn_{}_{}_{}.pth'.format(self._cfg['checksession'], epoch, self._cfg['checkpoint'])
-        ckpt_path = os.path.join(self._cfg['OUTPUT_PATH'], file_name)
+        ckpt_dir = os.path.join(self._cfg['OUTPUT_PATH'], 'saved_ckpts', file_name)
+        ckpt_path = os.path.join(ckpt_dir, file_name)
         return ckpt_path
+
+    def get_eval_outputs_path(self):
+        eval_dir = os.path.join(self._cfg['OUTPUT_PATH'], 'eval_outputs')
+        return eval_dir
+
+    def get_predictions_path(self):
+        eval_path = self.get_eval_outputs_path()
+        preds_path = os.path.join(eval_path, 'detections.pkl')
+        return preds_path
 
     def __getitem__(self, key):
         return self._cfg[key]
@@ -132,6 +142,3 @@ class ConfigProvider(dict):#object):
             return self._cfg[attr] #TODO make not key sensitive
         except AttributeError:
             raise Exception("{} does not exist in Config.".format(attr))
-
-
-cfg = ConfigProvider()

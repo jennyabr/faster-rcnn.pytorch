@@ -74,23 +74,23 @@ def bbox_transform_batch(ex_rois, gt_rois):
 
     return targets
 
-def bbox_transform_inv(boxes, deltas, batch_size):
-    widths = boxes[:, :, 2] - boxes[:, :, 0] + 1.0
-    heights = boxes[:, :, 3] - boxes[:, :, 1] + 1.0
-    ctr_x = boxes[:, :, 0] + 0.5 * widths
-    ctr_y = boxes[:, :, 1] + 0.5 * heights
+def bbox_transform_inv(reference_boxes, deltas_from_ref, batch_size):
+    widths = reference_boxes[:, :, 2] - reference_boxes[:, :, 0] + 1.0
+    heights = reference_boxes[:, :, 3] - reference_boxes[:, :, 1] + 1.0
+    ctr_x = reference_boxes[:, :, 0] + 0.5 * widths
+    ctr_y = reference_boxes[:, :, 1] + 0.5 * heights
 
-    dx = deltas[:, :, 0::4]
-    dy = deltas[:, :, 1::4]
-    dw = deltas[:, :, 2::4]
-    dh = deltas[:, :, 3::4]
+    dx = deltas_from_ref[:, :, 0::4]
+    dy = deltas_from_ref[:, :, 1::4]
+    dw = deltas_from_ref[:, :, 2::4]
+    dh = deltas_from_ref[:, :, 3::4]
 
     pred_ctr_x = dx * widths.unsqueeze(2) + ctr_x.unsqueeze(2)
     pred_ctr_y = dy * heights.unsqueeze(2) + ctr_y.unsqueeze(2)
     pred_w = torch.exp(dw) * widths.unsqueeze(2)
     pred_h = torch.exp(dh) * heights.unsqueeze(2)
 
-    pred_boxes = deltas.clone()
+    pred_boxes = deltas_from_ref.clone()
     # x1
     pred_boxes[:, :, 0::4] = pred_ctr_x - 0.5 * pred_w
     # y1

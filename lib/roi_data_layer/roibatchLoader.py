@@ -16,7 +16,7 @@ import numpy as np
 
 
 class roibatchLoader(data.Dataset):
-  def __init__(self, roidb, ratio_list, ratio_index, batch_size, num_classes, training=True, normalize=None):
+  def __init__(self, roidb, ratio_list, ratio_index, batch_size, num_classes, training=True):
     self._roidb = roidb
     self._num_classes = num_classes
     # we make the height of image consistent to trim_height, trim_width
@@ -24,7 +24,6 @@ class roibatchLoader(data.Dataset):
     self.trim_width = cfg.TRAIN.TRIM_WIDTH
     self.max_num_box = cfg.MAX_NUM_GT_BOXES
     self.training = training
-    self.normalize = normalize
     self.ratio_list = ratio_list
     self.ratio_index = ratio_index
     self.batch_size = batch_size

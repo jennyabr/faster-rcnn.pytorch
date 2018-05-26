@@ -14,8 +14,8 @@ TRAIN:
   pretrained_model_path: #'/home/jenny/gripper2/data/pretrained_model/resnet101_caffe.pth'
 TEST:
   HAS_RPN: True
-POOLING_SIZE: 7
-POOLING_MODE: align
+roi_pooler_size: 7
+roi_pooler_name: align
 CROP_RESIZE_WITH_MAX_POOL: False
 
 RESNET:

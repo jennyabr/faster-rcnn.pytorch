@@ -3,13 +3,15 @@ import logging
 
 import torch
 import torch.nn as nn
+
+from model.faster_rcnn.ckpt_utils import save_session_to_ckpt
 from model.utils.net_utils import decay_lr_in_optimizer, clip_gradient
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def run_training_session(data_manager, model, create_optimizer_fn, cfg, train_logger):
+def run_training_session(data_manager, model, create_optimizer_fn, cfg, train_logger, first_epoch=0):
     def get_trainable_params():
         trainable_params = []
         for key, value in dict(model.named_parameters()).items():
@@ -56,21 +58,7 @@ def run_training_session(data_manager, model, create_optimizer_fn, cfg, train_lo
         epoch_end_time = time.time()
         logger.info(" Finished epoch {} in {} ms.".format(epoch, epoch_end_time - epoch_start_time))
 
-        def save_checkpoint():
-            if cfg.mGPUs:
-                ckpt_model = model.module.state_dict()
-            else:
-                ckpt_model = model.state_dict()
-            save_to = cfg.get_ckpt_path(epoch)
-            logger.info(' Saving model checkpoint to: {}.'.format(save_to))
-            torch.save({'session': cfg.TRAIN.session,
-                        'epoch': epoch + 1,
-                        'model': ckpt_model,
-                        'optimizer': optimizer.state_dict(),
-                        'pooling_mode': cfg.POOLING_MODE,
-                        'class_agnostic': cfg.TRAIN.class_agnostic}, save_to)
-        save_checkpoint()
-
+        save_session_to_ckpt(model, optimizer, cfg, epoch)
 
 def _train_on_batch(data_manager, model, optimizer, cfg):
     im_data, im_info, gt_boxes, num_boxes = next(data_manager)

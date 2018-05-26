@@ -8,7 +8,7 @@ def create_roi_pooler(roi_pooler_name):
     if roi_pooler_name== 'crop':
         roi_pooler = _RoICrop()
     elif roi_pooler_name == 'align':
-        roi_pooler = RoIAlignAvg(cfg.POOLING_SIZE, cfg.POOLING_SIZE, 1.0/16.0)
+        roi_pooler = RoIAlignAvg(cfg.roi_pooler_size, cfg.roi_pooler_size, 1.0/16.0)
     elif roi_pooler_name == 'pool':
-        roi_pooler = _RoIPooling(cfg.POOLING_SIZE, cfg.POOLING_SIZE, 1.0/16.0)
+        roi_pooler = _RoIPooling(cfg.roi_pooler_size, cfg.roi_pooler_size, 1.0/16.0)
     return roi_pooler

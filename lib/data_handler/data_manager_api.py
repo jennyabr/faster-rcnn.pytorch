@@ -7,12 +7,12 @@ from torch.autograd import Variable
 
 class Mode(Enum):
     TRAIN = 1
-    TEST = 2
+    INFER = 2
 
 
 class DataManager(ABC):
     def __init__(self, mode, is_cuda):
-        self.is_test = mode == Mode.TEST
+        self.is_infer = mode == Mode.INFER
         self.is_train = mode == Mode.TRAIN
 
         def create_input_tensors():
@@ -27,10 +27,10 @@ class DataManager(ABC):
                 num_boxes = num_boxes.cuda()
                 gt_boxes = gt_boxes.cuda()
 
-            im_data = Variable(im_data, volatile=self.is_test)
-            im_info = Variable(im_info, volatile=self.is_test)
-            num_boxes = Variable(num_boxes, volatile=self.is_test)
-            gt_boxes = Variable(gt_boxes, volatile=self.is_test)
+            im_data = Variable(im_data, volatile=self.is_infer)
+            im_info = Variable(im_info, volatile=self.is_infer)
+            num_boxes = Variable(num_boxes, volatile=self.is_infer)
+            gt_boxes = Variable(gt_boxes, volatile=self.is_infer)
 
             return im_data, im_info, gt_boxes, num_boxes
         self.im_data, self.im_info, self.gt_boxes, self.num_boxes = create_input_tensors()
@@ -48,9 +48,16 @@ class DataManager(ABC):
         self.im_data, self.im_info, self.gt_boxes, self.num_boxes = self.transform_data_tensors(data)
         return self.im_data, self.im_info, self.gt_boxes, self.num_boxes
 
+    @abstractmethod
     def __len__(self):
         raise NotImplementedError
 
     @property
+    @abstractmethod
     def num_classes(self):
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def classes(self):
         raise NotImplementedError

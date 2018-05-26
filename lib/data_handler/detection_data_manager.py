@@ -50,6 +50,7 @@ class FasterRCNNDataManager(DataManager):
                                                                    training=self.is_train)
         dataset = roibatchLoader(roidb, ratio_list, ratio_index, batch_size,
                                  self.imdb.num_classes, training=self.is_train)
+        self.batch_size = batch_size
 
         if mode == Mode.TRAIN:
             train_size = len(roidb)
@@ -58,15 +59,13 @@ class FasterRCNNDataManager(DataManager):
             sampler_batch = BDSampler(train_size, batch_size, seed)
             data_loader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers,
                                      sampler=sampler_batch)
-        elif mode == Mode.TEST:
+            self.iters_per_epoch = int(self.train_size / self.batch_size)
+        elif mode == Mode.INFER:
             self.imdb.competition_mode(on=True)  # TODO this function is not implemented...
             data_loader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers,
                                      shuffle=False, pin_memory=True)
         else:
             raise Exception("Not valid mode {} - should be TRAIN or TEST".format(mode))
-
-        self.batch_size = batch_size
-        self.iters_per_epoch = int(self.train_size / self.batch_size)
         self.data_iter = iter(data_loader)
 
     def transform_data_tensors(self, data):
@@ -82,4 +81,8 @@ class FasterRCNNDataManager(DataManager):
     @property
     def num_classes(self):
         return self.imdb.num_classes
+
+    @property
+    def classes(self):
+        return self.imdb.classes
 

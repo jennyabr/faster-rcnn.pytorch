@@ -122,14 +122,14 @@ def _crop_pool_layer(bottom, rois, max_pool=True):
       (y1 + y2 - height + 1) / (height - 1)], 1).view(-1, 2, 3)
 
     if max_pool:
-      pre_pool_size = cfg.POOLING_SIZE * 2
+      pre_pool_size = cfg.roi_pooler_size * 2
       grid = F.affine_grid(theta, torch.Size((rois.size(0), 1, pre_pool_size, pre_pool_size)))
       bottom = bottom.view(1, batch_size, D, H, W).contiguous().expand(roi_per_batch, batch_size, D, H, W)\
                                                                 .contiguous().view(-1, D, H, W)
       crops = F.grid_sample(bottom, grid)
       crops = F.max_pool2d(crops, 2, 2)
     else:
-      grid = F.affine_grid(theta, torch.Size((rois.size(0), 1, cfg.POOLING_SIZE, cfg.POOLING_SIZE)))
+      grid = F.affine_grid(theta, torch.Size((rois.size(0), 1, cfg.roi_pooler_size, cfg.roi_pooler_size)))
       bottom = bottom.view(1, batch_size, D, H, W).contiguous().expand(roi_per_batch, batch_size, D, H, W)\
                                                                 .contiguous().view(-1, D, H, W)
       crops = F.grid_sample(bottom, grid)
