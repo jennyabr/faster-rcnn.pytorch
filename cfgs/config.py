@@ -14,7 +14,6 @@ from easydict import EasyDict as edict, EasyDict
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
 class ConfigProvider(dict):#object):
     def __init__(self):
         self._cfg = edict({})
@@ -142,3 +141,6 @@ class ConfigProvider(dict):#object):
             return self._cfg[attr] #TODO make not key sensitive
         except AttributeError:
             raise Exception("{} does not exist in Config.".format(attr))
+
+
+cfg = ConfigProvider()

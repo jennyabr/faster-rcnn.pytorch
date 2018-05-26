@@ -185,6 +185,9 @@ TRAIN:
   frozen_blocks: 2
   num_regression_outputs_per_bbox: 4
 
+  weights_random_init_mean: 0
+  weights_random_init_std: 0.01
+
 TEST:
   # Scale to use during testing (can NOT list multiple scales)
   # The scale is the pixel size of an image's shortest side

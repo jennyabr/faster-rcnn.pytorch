@@ -1,6 +1,5 @@
 import logging
 from functools import partial
-import os.path
 
 import torch
 import torch.nn as nn
@@ -24,12 +23,14 @@ logger = logging.getLogger(__name__)
 class FasterRCNNMetaArch(nn.Module):
     def __init__(self, feature_extractors, cfg):
         super(FasterRCNNMetaArch, self).__init__()
-        self.state_params = {'num_classes': len(cfg.class_names),
-                             'is_class_agnostic': cfg.is_class_agnostic,
-                             'roi_pooler_name': cfg.roi_pooler_name,
-                             'roi_pooler_size': cfg.roi_pooler_size,
-                             'crop_resize_with_max_pool': cfg.CROP_RESIZE_WITH_MAX_POOL}
+        cfg_params = {'num_classes': len(cfg.class_names),
+                        'is_class_agnostic': cfg.is_class_agnostic,
+                        'roi_pooler_name': cfg.roi_pooler_name,
+                        'roi_pooler_size': cfg.roi_pooler_size,
+                        'crop_resize_with_max_pool': cfg.CROP_RESIZE_WITH_MAX_POOL,
+                        'num_regression_outputs_per_bbox': cfg.num_regression_outputs_per_bbox}
 
+        self.cfg_params = cfg_params
         self.base_feature_extractor = feature_extractors.base_feature_extractor
 
         def create_rpn():
@@ -41,19 +42,19 @@ class FasterRCNNMetaArch(nn.Module):
 
         self.rpn_and_nms, self.rpn_proposal_target = create_rpn()
 
-        self.roi_pooler = create_roi_pooler(roi_pooler_name)
+        self.roi_pooler = create_roi_pooler(cfg_params['roi_pooler_name'])
         # TODO delete next line:
-        self.grid_size = self.state_params['roi_pooler_size'] * 2 if self.state_params['crop_resize_with_max_pool'] else\
-            state_params['roi_pooler_size']
+        self.grid_size = cfg_params['roi_pooler_size'] * 2 if cfg_params['crop_resize_with_max_pool'] else\
+            cfg_params['roi_pooler_size']
 
         def create_fast_rcnn():
             fast_rcnn_fe = feature_extractors.fast_rcnn_feature_extractor
             fast_rcnn_fe_output_depth = feature_extractors.get_output_num_channels(fast_rcnn_fe.feature_extractor)  #TODO this functioncan get any model...
-            #fast_rcnn_fe_output_depth = feature_extractors.get_output_num_channels(fast_rcnn_fe)
             if self.is_class_agnostic:
-                self.num_predicted_coords = num_regression_outputs_per_bbox * self.num_classes
+                self.num_predicted_coords = cfg_params['num_regression_outputs_per_bbox'] * \
+                                            cfg_params['num_classes']
             else:
-                self.num_predicted_coords = num_regression_outputs_per_bbox
+                self.num_predicted_coords = cfg_params['num_regression_outputs_per_bbox']
             bbox_head = nn.Linear(fast_rcnn_fe_output_depth, self.num_predicted_coords)
             fast_rcnn_bbox_head = bbox_head
 
@@ -68,12 +69,10 @@ class FasterRCNNMetaArch(nn.Module):
 
 
     @classmethod
-    def create_with_random_normal_init(cls, feature_extractors, class_names,
-                                       is_class_agnostic, num_regression_outputs_per_bbox, roi_pooler_name,
-                                       mean=0, stddev=0.01):
-        faster_rcnn = cls(feature_extractors, class_names,
-                          is_class_agnostic, num_regression_outputs_per_bbox, roi_pooler_name)
-        configured_normal_init = partial(normal_init, mean=mean, stddev=stddev)
+    def create_with_random_normal_init(cls, feature_extractors, cfg):
+        faster_rcnn = cls(feature_extractors, cfg)
+        configured_normal_init = partial(normal_init,
+                                         mean=cfg.weights_random_init_mean, stddev=cfg.weights_random_init_std)
         configured_normal_init(faster_rcnn.rpn_and_nms.RPN_Conv)
         configured_normal_init(faster_rcnn.rpn_and_nms.RPN_cls_score)
         configured_normal_init(faster_rcnn.rpn_and_nms.RPN_bbox_pred)

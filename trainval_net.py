@@ -13,7 +13,7 @@ import torch
 
 from functools import partial
 
-from cfgs.config import ConfigProvider
+from cfgs.config import cfg
 from data_handler.detection_data_manager import FasterRCNNDataManager
 from data_handler.data_manager_api import Mode
 from loggers.tensorbord_logger import TensorBoardLogger
@@ -35,9 +35,8 @@ if __name__ == '__main__':
 
     # TODO: IB: cfg should be a local variable to enable h.p. sweeps like the following.
     # TODO: IB it can be assigned to the state of the trainer\evaluator\etc.
-    cfg = ConfigProvider()
-    cfg.load(args.config_dir)
     global cfg
+    cfg.load(args.config_dir)
     experiment_name = 'faster_rcnn_vgg_voc'
 
     # possible_anchors_scales = [a,b,c]
@@ -45,19 +44,14 @@ if __name__ == '__main__':
     #     cfg.scale = scale
     #     faster_rcnn = FasterRCNNTrainer(cfg)
 
-    train_data_manager = FasterRCNNDataManager(mode=Mode.TRAIN, imdb_name=cfg.imdb_name,
-                                        seed=cfg.RNG_SEED, num_workers=cfg.NUM_WORKERS, is_cuda=cfg.CUDA,
-                                        batch_size=cfg.TRAIN.batch_size)
+    train_data_manager = FasterRCNNDataManager(
+        mode=Mode.TRAIN, imdb_name=cfg.imdb_name, seed=cfg.RNG_SEED, num_workers=cfg.NUM_WORKERS, is_cuda=cfg.CUDA,
+        batch_size=cfg.TRAIN.batch_size)
     train_logger = TensorBoardLogger(cfg.output_path)
-    feature_extractors = create_feature_extractor_from_ckpt(cfg.net, cfg.net_variant,
-                                                         frozen_blocks=cfg.TRAIN.frozen_blocks,
-                                                         pretrained_model_path=cfg.TRAIN.get("pretrained_model_path", None))
-    model = FasterRCNNMetaArch(
-                      feature_extractors,
-                      class_names=train_data_manager.classes,
-                      is_class_agnostic=cfg.TRAIN.class_agnostic,
-                      num_regression_outputs_per_bbox=4,
-                      roi_pooler_name=cfg.roi_pooler_name)
+    feature_extractors = create_feature_extractor_from_ckpt(
+        cfg.net, cfg.net_variant, frozen_blocks=cfg.TRAIN.frozen_blocks,
+        pretrained_model_path=cfg.TRAIN.get("pretrained_model_path", None))
+    model = FasterRCNNMetaArch.create_with_random_normal_init(feature_extractors, cfg)
     create_optimizer_fn = partial(torch.optim.SGD, momentum=cfg.TRAIN.MOMENTUM)
     run_training_session(train_data_manager, model, create_optimizer_fn, cfg, train_logger)
 
