@@ -45,6 +45,7 @@ def run_training_session(data_manager, model, create_optimizer_fn, cfg, train_lo
             aggregated_stats = _aggregate_stats(aggregated_stats, batch_outputs, cfg.TRAIN.disp_interval)
 
             if step % cfg.TRAIN.disp_interval == 0:
+                save_session_to_ckpt(model, optimizer, cfg, epoch) # TODO: IB - delete this
                 aggregation_end_time = time.time()
                 time_per_sample = (aggregation_end_time - aggregation_start_time) / cfg.TRAIN.disp_interval
                 _write_stats_to_logger(

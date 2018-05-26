@@ -52,7 +52,8 @@ if __name__ == '__main__':
     feature_extractors = create_feature_extractor_from_ckpt(
         cfg.net, cfg.net_variant, frozen_blocks=cfg.TRAIN.frozen_blocks,
         pretrained_model_path=cfg.TRAIN.get("pretrained_model_path", None))
-    model = FasterRCNNMetaArch.create_with_random_normal_init(feature_extractors, cfg)
+    model = FasterRCNNMetaArch.create_with_random_normal_init(feature_extractors, cfg,
+                                                              num_classes=train_data_manager.num_classes)
     create_optimizer_fn = partial(torch.optim.SGD, momentum=cfg.TRAIN.MOMENTUM)
     run_training_session(train_data_manager, model, create_optimizer_fn, cfg, train_logger)
 

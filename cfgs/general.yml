@@ -1,10 +1,9 @@
 # TODO: IB - the config should be code
 DATA_DIR: '/home/jenny/gripper2/data'
 EXPERIMENT_NAME: 'faster_rcnn_resnet_voc'
-OUTPUT_DIR: '/home/jenny/gripper2/faster-rcnn_output'
 dataset: 'pascal_voc'  # training dataset'
-net: 'resnet' #  # {vgg,resnet}
-net_variant: '101' # Currently supported: {16 for vgg, 50, 101, 152 for resnet}
+net: 'vgg' #  # {vgg,resnet}
+net_variant: '16' # Currently supported: {16 for vgg, 50, 101, 152 for resnet}
 
 NUM_WORKERS: 6  # number of worker to load data
 
@@ -61,15 +60,16 @@ CUDA: True
 mGPUs: False  # whether use multiple GPUs
 
 CROP_RESIZE_WITH_MAX_POOL: True
+class_agnostic: False  # whether perform class_agnostic bbox regression',
+num_regression_outputs_per_bbox: 4
 
 TRAIN:
   start_epoch: 1
   max_epochs: 6  # number of epochs to train
-  disp_interval: 20  # number of iterations to display #TODO: IB - change back to 100/500
+  disp_interval: 100  # number of iterations to display
   checkpoint_interval: 10000  # number of iterations to display
   large_scale: False  # whether use large imag scale
   batch_size: 1
-  class_agnostic: False  # whether perform class_agnostic bbox regression',
   session: 1  # training session
   resume: False  # resume checkpoint or not
   checksession: 1  # checksession to load model
@@ -183,7 +183,6 @@ TRAIN:
 
   CLIP_GRADIENTS: False
   frozen_blocks: 2
-  num_regression_outputs_per_bbox: 4
 
   weights_random_init_mean: 0
   weights_random_init_std: 0.01

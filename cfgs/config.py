@@ -113,16 +113,36 @@ class ConfigProvider(dict):#object):
 
     @property
     def output_path(self):
-        return self._cfg['OUTPUT_PATH']
+        return self._cfg['EXPERIMENT_NAME']
 
     def get_ckpt_path(self, epoch_num=None):
-        if epoch_num:
+        if epoch_num is None:
             epoch = self._cfg['checkepoch']
         else:
             epoch = epoch_num
-        file_name = 'faster_rcnn_{}_{}_{}.pth'.format(self._cfg['checksession'], epoch, self._cfg['checkpoint'])
+        file_name = 'ckpt__e{}.pth'.format(epoch)
         ckpt_path = os.path.join(self._cfg['OUTPUT_PATH'], file_name)
         return ckpt_path
+
+    def get_preds_path(self, epoch_num):
+        file_name = 'raw_preds_e{}.pkl'.format(epoch_num)
+        preds_path = os.path.join(self._cfg['OUTPUT_PATH'], 'preds', file_name)
+        return preds_path
+
+    def get_postprocessed_preds_path(self, epoch_num):
+        file_name = 'pp_preds_e{}.pkl'.format(epoch_num)
+        pp_path = os.path.join(self._cfg['OUTPUT_PATH'], 'pp_preds', file_name)
+        return pp_path
+
+    def get_evals_dir_path(self, epoch_num):
+        dir_name = 'evals_e{}.pkl'.format(epoch_num)
+        dir_path = os.path.join(self._cfg['OUTPUT_PATH'], dir_name)
+        return dir_path
+
+    def get_visualizations_dir_path(self):
+        dir_name = 'vis_e{}.pkl'.format(epoch_num)
+        dir_path = os.path.join(self._cfg['OUTPUT_PATH'], dir_name)
+        return dir_path
 
     def __getitem__(self, key):
         return self._cfg[key]

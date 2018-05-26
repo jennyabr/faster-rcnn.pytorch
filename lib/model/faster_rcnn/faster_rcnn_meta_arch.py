@@ -20,14 +20,14 @@ logger = logging.getLogger(__name__)
 
 
 class FasterRCNNMetaArch(nn.Module):
-    def __init__(self, feature_extractors, cfg):
+    def __init__(self, feature_extractors, cfg, num_classes):
         super(FasterRCNNMetaArch, self).__init__()
-        cfg_params = {'num_classes': len(cfg.class_names),
-                        'is_class_agnostic': cfg.is_class_agnostic,
-                        'roi_pooler_name': cfg.roi_pooler_name,
-                        'roi_pooler_size': cfg.roi_pooler_size,
-                        'crop_resize_with_max_pool': cfg.CROP_RESIZE_WITH_MAX_POOL,
-                        'num_regression_outputs_per_bbox': cfg.num_regression_outputs_per_bbox}
+        cfg_params = {'num_classes': num_classes,
+                      'is_class_agnostic': cfg.class_agnostic,
+                      'roi_pooler_name': cfg.roi_pooler_name,
+                      'roi_pooler_size': cfg.roi_pooler_size,
+                      'crop_resize_with_max_pool': cfg.CROP_RESIZE_WITH_MAX_POOL,
+                      'num_regression_outputs_per_bbox': cfg.num_regression_outputs_per_bbox}
 
         self.cfg_params = cfg_params
         self.base_feature_extractor = feature_extractors.base_feature_extractor
@@ -36,7 +36,7 @@ class FasterRCNNMetaArch(nn.Module):
             rpn_fe_output_depth = feature_extractors.get_output_num_channels(self.base_feature_extractor)
             rpn_and_nms = _RPN(rpn_fe_output_depth)
             # TODO: the ProposalTargetLayer is not intuitive
-            rpn_proposal_target = _ProposalTargetLayer(self.num_classes)
+            rpn_proposal_target = _ProposalTargetLayer(cfg_params['num_classes'])
             return rpn_and_nms, rpn_proposal_target
 
         self.rpn_and_nms, self.rpn_proposal_target = create_rpn()
@@ -49,7 +49,7 @@ class FasterRCNNMetaArch(nn.Module):
         def create_fast_rcnn():
             fast_rcnn_fe = feature_extractors.fast_rcnn_feature_extractor
             fast_rcnn_fe_output_depth = feature_extractors.get_output_num_channels(fast_rcnn_fe.feature_extractor)  #TODO this functioncan get any model...
-            if self.is_class_agnostic:
+            if cfg_params['is_class_agnostic']:
                 self.num_predicted_coords = cfg_params['num_regression_outputs_per_bbox'] * \
                                             cfg_params['num_classes']
             else:
@@ -57,7 +57,7 @@ class FasterRCNNMetaArch(nn.Module):
             bbox_head = nn.Linear(fast_rcnn_fe_output_depth, self.num_predicted_coords)
             fast_rcnn_bbox_head = bbox_head
 
-            fast_rcnn_cls_head = nn.Linear(fast_rcnn_fe_output_depth, self.num_classes)
+            fast_rcnn_cls_head = nn.Linear(fast_rcnn_fe_output_depth, cfg_params['num_classes'])
 
             return fast_rcnn_fe, fast_rcnn_bbox_head, fast_rcnn_cls_head
         self.fast_rcnn_feature_extractor, self.fast_rcnn_bbox_head, self.fast_rcnn_cls_head = create_fast_rcnn()
@@ -68,10 +68,11 @@ class FasterRCNNMetaArch(nn.Module):
 
 
     @classmethod
-    def create_with_random_normal_init(cls, feature_extractors, cfg):
-        faster_rcnn = cls(feature_extractors, cfg)
+    def create_with_random_normal_init(cls, feature_extractors, cfg, num_classes):
+        faster_rcnn = cls(feature_extractors, cfg, num_classes)
         configured_normal_init = partial(normal_init,
-                                         mean=cfg.weights_random_init_mean, stddev=cfg.weights_random_init_std)
+                                         mean=cfg.TRAIN.weights_random_init_mean,
+                                         stddev=cfg.TRAIN.weights_random_init_std)
         configured_normal_init(faster_rcnn.rpn_and_nms.RPN_Conv)
         configured_normal_init(faster_rcnn.rpn_and_nms.RPN_cls_score)
         configured_normal_init(faster_rcnn.rpn_and_nms.RPN_bbox_pred)
@@ -127,7 +128,7 @@ class FasterRCNNMetaArch(nn.Module):
         def run_fast_rcnn():
             fast_rcnn_feature_map = self.fast_rcnn_feature_extractor(pooled_rois)
             bbox_pred = self.fast_rcnn_bbox_head(fast_rcnn_feature_map)
-            if self.training and self.is_class_agnostic:
+            if self.training and self.cfg_params['is_class_agnostic']:
                 # select the corresponding columns according to roi labels
                 #  TODO: replace the comment with an encapsulating function
                 # TODO: these 4s might be hardcoding the number of output coords
@@ -164,6 +165,6 @@ class FasterRCNNMetaArch(nn.Module):
         loaded_cfg.create_from_dict(state_dict['ckpt_cfg'])
         feature_extractors = create_feature_extractor_empty(
             loaded_cfg.net, loaded_cfg.net_variant, loaded_cfg.freeze)
-        model = FasterRCNNMetaArch(feature_extractors, loaded_cfg)
+        model = FasterRCNNMetaArch(feature_extractors, loaded_cfg, state_dict['model']['cfg_params']['num_classes'])
         model.load_state_dict(state_dict['model'])
         return model

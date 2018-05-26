@@ -57,6 +57,8 @@ def create_feature_extractor_with_random_normal_init(net_name, net_variant, mean
 
 
 def create_feature_extractor_from_ckpt(net_name, net_variant, frozen_blocks, pretrained_model_path):
+    if pretrained_model_path is None or not os.path.exists(pretrained_model_path):
+        raise ValueError('Pretrained model path given does not exist')
     fe_cls = _get_feature_extractor_cls(net_name)
     fe = fe_cls(net_variant=net_variant, frozen_blocks=frozen_blocks)
     logger.info(" Loading feature extractors pretrained weights from: {}.".format(pretrained_model_path))

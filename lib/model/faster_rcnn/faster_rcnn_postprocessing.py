@@ -1,4 +1,3 @@
-import os
 import time
 import logging
 import numpy as np
@@ -22,15 +21,16 @@ logger = logging.getLogger(__name__)
 # TODO: IB - another alternative is to save all the configs together with the model weights in the same file,
 # TODO: IB - instead of in a separate config file - if possible
 
-def faster_rcnn_prediction(data_manager, model, cfg):
+def faster_rcnn_postprocessing(data_manager, model, cfg):
+    start_time = time.time()
     num_images = len(data_manager)
-    model.eval()
-    raw_preds = np.empty(num_images, dtype='object')
+    num_classes = data_manager.num_classes
 
-    pred_start = time.time()
+    output_dir = cfg.get_eval_outputs_path()
+    preds_file = cfg.get_preds_path()
     for i in range(num_images):
         im_data, im_info, gt_boxes, num_boxes = next(data_manager)
-        curr_pred_start = time.time()
+        pred_start = time.time()
         rois, cls_prob, bbox_pred, rpn_loss_cls, rpn_loss_box, RCNN_loss_cls, RCNN_loss_bbox = \
             model(im_data, im_info, gt_boxes, num_boxes)
 
@@ -54,18 +54,45 @@ def faster_rcnn_prediction(data_manager, model, cfg):
         bbox_coords = transform_preds_to_img_coords()
         scores = scores.squeeze()
         bbox_coords = bbox_coords.squeeze()
-        model_output = torch.cat((bbox_coords, scores), 1)
-        curr_pred_end = time.time()
-        pred_time = curr_pred_end - curr_pred_start
-        avg_pred_time = (curr_pred_end - pred_start) / (i+1)
-        logger.info('Prediction progress: {}/{}. Time for current image: {}. Avg time per image: {}.'.format(
-            i+1, num_images, pred_time, avg_pred_time))
-        raw_preds[i] = model_output.cpu().numpy()
+        pred_end = time.time()
+        pred_time = pred_end - pred_start
+        postprocessing_start = time.time()
+        for j in range(1, num_classes):
+            inds = torch.nonzero(scores[:, j] > cfg.TEST.DETECTION_THRESH).view(-1)
+            if inds.numel() > 0:
+                cls_scores = scores[:, j][inds]
+                _, order = torch.sort(cls_scores, 0, True)
+                if cfg.TRAIN.class_agnostic:
+                    cls_boxes = bbox_coords[inds, :]
+                else:
+                    cls_boxes = bbox_coords[inds][:, j * 4:(j + 1) * 4]
 
-    preds_file_path = cfg.get_preds_path()
-    os.makedirs(os.path.dirname(preds_file_path), exist_ok=True)
-    with open(preds_file_path, 'wb') as f:
-        pickle.dump(raw_preds, f, pickle.HIGHEST_PROTOCOL)
+                cls_dets = torch.cat((cls_boxes, cls_scores.unsqueeze(1)), 1)
+                cls_dets = cls_dets[order]
+                keep = nms(cls_dets, cfg.TEST.NMS)
+                cls_dets = cls_dets[keep.view(-1).long()]
 
-    pred_end = time.time()
-    logger.info("Total prediction time: {}".format(pred_end - pred_start))
+                all_boxes[j][i] = cls_dets.cpu().numpy()
+            else:
+                all_boxes[j][i] = empty_prediction
+
+        max_per_image = cfg.TEST.max_per_image
+        if max_per_image > 0:
+            image_scores = np.hstack([all_boxes[c][i][:, -1]
+                                      for c in range(1, num_classes)])
+            if len(image_scores) > max_per_image:
+                image_thresh = np.sort(image_scores)[-max_per_image]
+                for c in range(1, num_classes):
+                    keep = np.where(all_boxes[c][i][:, -1] >= image_thresh)[0]
+                    all_boxes[c][i] = all_boxes[c][i][keep, :]
+
+        misc_toc = time.time()
+        nms_time = misc_toc - misc_tic
+
+        logger.info('im_detect: {:d}/{:d} {:.3f}s {:.3f}s'.format(i + 1, num_images, detect_time, nms_time))
+
+    with open(cfg.get_predictions_path(), 'wb') as f:
+        pickle.dump(all_boxes, f, pickle.HIGHEST_PROTOCOL)
+
+    end_time = time.time()
+    logger.info("Prediction time: %0.4fs" % (end_time - start_time))
