@@ -14,6 +14,7 @@ from easydict import EasyDict as edict, EasyDict
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 class ConfigProvider(dict):#object):
     def __init__(self):
         self._cfg = edict({})
@@ -24,21 +25,15 @@ class ConfigProvider(dict):#object):
             config_path = config_dir_path
         else:
             config_path = os.path.dirname(__file__)
+        cfg = {}
         with open(os.path.join(config_path, 'general.yml'), 'r') as f:
-            cfg_dict = yaml.load(f)
-        cfg = self.load_from_dict(cfg_dict)
-        return cfg
+            cfg = yaml.load(f)
 
-    def load_from_dict(self, cfg):
         if cfg['TRAIN']['large_scale']:
             model_name = "{}{}_ls.yml"
         else:
             model_name = "{}{}.yml"
 
-        seed = cfg['RNG_SEED']
-        torch.manual_seed(seed)
-        torch.cuda.manual_seed_all(seed)
-        np.random.seed(seed)
         model_name = model_name.format(cfg['net'].lower(), cfg['net_variant'])
 
         with open(os.path.join(config_path, model_name), 'r') as f:
@@ -92,18 +87,25 @@ class ConfigProvider(dict):#object):
             if project_name is None or project_name == "":
                 project_name = os.path.basename(cfg['ROOT_DIR'])
 
-            outdir = os.path.abspath(os.path.join(os.path.abspath(cfg['OUTPUT_DIR']),cfg['EXPERIMENT_NAME']))
+            outdir = os.path.abspath(os.path.join(os.path.abspath(cfg['OUTPUT_DIR']),
+                                                  "{}_{}_{}".format(project_name, cfg['net'], cfg['dataset'])))
             if not os.path.exists(outdir):
                 os.makedirs(outdir)
             return outdir
         cfg['OUTPUT_PATH'] = create_output_path()
+        self.create_from_dict(cfg)
 
-        cfg = edict(cfg)
+    def create_from_dict(self, cfg_dict):
+        cfg = edict(cfg_dict)
 
         logger.info('Called with args:')
         logger.info(pprint.pformat(cfg))
 
         self._cfg = cfg
+
+        seed = cfg.RNG_SEED
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
         return cfg
 
     def __str__(self):
@@ -119,18 +121,8 @@ class ConfigProvider(dict):#object):
         else:
             epoch = epoch_num
         file_name = 'faster_rcnn_{}_{}_{}.pth'.format(self._cfg['checksession'], epoch, self._cfg['checkpoint'])
-        ckpt_dir = os.path.join(self._cfg['OUTPUT_PATH'], 'saved_ckpts', file_name)
-        ckpt_path = os.path.join(ckpt_dir, file_name)
+        ckpt_path = os.path.join(self._cfg['OUTPUT_PATH'], file_name)
         return ckpt_path
-
-    def get_eval_outputs_path(self):
-        eval_dir = os.path.join(self._cfg['OUTPUT_PATH'], 'eval_outputs')
-        return eval_dir
-
-    def get_predictions_path(self):
-        eval_path = self.get_eval_outputs_path()
-        preds_path = os.path.join(eval_path, 'detections.pkl')
-        return preds_path
 
     def __getitem__(self, key):
         return self._cfg[key]

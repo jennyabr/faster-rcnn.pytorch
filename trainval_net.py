@@ -27,7 +27,8 @@ logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train a Faster R-CNN network')
-    parser.add_argument('--config_dir', dest='config_dir', help='Path to config dir', type=str)
+    parser.add_argument('--config_dir', dest='config_dir', help='Path to config dir', type=str,
+                        default='/home/jenny/gripper2/dev_version/cfgs/') #TODO: IB - delete the default
     args = parser.parse_args()
 
     if not args.config_dir:

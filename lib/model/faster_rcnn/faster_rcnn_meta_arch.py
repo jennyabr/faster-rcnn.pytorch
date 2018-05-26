@@ -6,7 +6,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
-from model.faster_rcnn.ckpt_utils import load_ckpt_file
 from model.feature_extractors.faster_rcnn_feature_extractors import create_feature_extractor_empty
 from model.roi_poolers.roi_pooler_factory import create_roi_pooler
 from model.rpn.rpn import _RPN
@@ -160,7 +159,9 @@ class FasterRCNNMetaArch(nn.Module):
     # TODO: JA - enable manually overriding num_classes and enable to randomize the last layers
     @classmethod
     def create_from_ckpt(cls, ckpt_path):
-        state_dict, loaded_cfg = load_ckpt_file(ckpt_path)
+        state_dict = torch.load(os.path.expanduser(ckpt_path))
+        loaded_cfg = ConfigProvider()
+        loaded_cfg.create_from_dict(state_dict['ckpt_cfg'])
         feature_extractors = create_feature_extractor_empty(
             loaded_cfg.net, loaded_cfg.net_variant, loaded_cfg.freeze)
         model = FasterRCNNMetaArch(feature_extractors, loaded_cfg)
