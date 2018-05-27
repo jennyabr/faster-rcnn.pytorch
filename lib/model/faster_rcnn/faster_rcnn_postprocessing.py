@@ -4,7 +4,7 @@ import numpy as np
 import pickle
 
 import torch
-
+from torch.autograd import Variable
 from model.nms.nms_wrapper import nms
 
 
@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 def faster_rcnn_postprocessing(data_manager, model, cfg, num_epoch):
+    logger.info("Starting postprocessing.")
     start_time = time.time()
     num_images = 20
     # num_images = len(data_manager) #TODO: JA - uncomment this
@@ -24,8 +25,13 @@ def faster_rcnn_postprocessing(data_manager, model, cfg, num_epoch):
     bbox_coords = raw_preds['bbox_coords']
     cls_probs = raw_preds['cls_probs']
 
+    bbox_coords = torch.from_numpy(bbox_coords)
+    cls_probs = torch.from_numpy(cls_probs)
+
+
     def keep_boxes_above_thresh_per_cls(probs, coords):
-        nonzero_idxs = torch.nonzero(probs[:, j] > cfg.TEST.DETECTION_THRESH).view(-1)
+        nonzero_idxs = torch.nonzero(probs[:, j] > cfg.TEST.DETECTION_THRESH)
+        nonzero_idxs = nonzero_idxs.view(-1)
         if nonzero_idxs.numel() > 0:
             filtered_probs = probs[:, j][nonzero_idxs]
             if model.cfg_params['is_class_agnostic']:
@@ -63,18 +69,18 @@ def faster_rcnn_postprocessing(data_manager, model, cfg, num_epoch):
         pp_start = time.time()
         detections_after_nms = np.empty(num_classes, dtype='object')
         for j in range(1, num_classes):
-            coords_after_thresh, probs_after_thresh = keep_boxes_above_thresh_per_cls(
-                curr_cls_probs, curr_coords)
+            coords_after_thresh, probs_after_thresh = keep_boxes_above_thresh_per_cls(curr_cls_probs, curr_coords)
             detections_after_nms[j] = run_nms_on_unsorted_boxes(probs_after_thresh, coords_after_thresh).cpu().numpy()
         postprocessed_detections[i] = keep_top_k_detections_in_image(detections_after_nms)
         pp_end = time.time()
-        logger.info('Postprocessing progress: {}/{}. Time for current image: {}. Avg time per image: {}.'.format(
-            i, num_images, pp_end - pp_start, (pp_end-start_time) / i))
+        logger.info('Postprocessing progress: {0}/{1}: '
+                    'Time for current image: {2:.4f}s '
+                    '[Avg time per image: {3:.4f}s].'.format(i, num_images, pp_end - pp_start, (pp_end-start_time) / i))
 
     pp_preds_path = cfg.get_postprocessed_preds_path(num_epoch)
     with open(pp_preds_path, 'wb') as f:
         pickle.dump(postprocessed_detections, f)
 
     end_time = time.time()
-    logger.info("Total prediction time {:.4f}s".format(end_time - start_time))
+    logger.info("Total postprocessing time {:.4f}s.".format(end_time - start_time))
 

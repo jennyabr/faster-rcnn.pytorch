@@ -40,7 +40,7 @@ def run_training_session(data_manager, model, create_optimizer_fn, cfg, train_lo
         decay_lr_in_optimizer(epoch, cfg.TRAIN.lr_decay_step + 1, optimizer, cfg.TRAIN.GAMMA)
 
         epoch_start_time = aggregation_start_time = time.time()
-        data_manager.prepare_iter_to_next_epoch()
+        data_manager.prepare_iter_for_new_epoch()
         for step in range(iters_per_epoch):
             batch_outputs = _train_on_batch(data_manager, model, optimizer, cfg)
             aggregated_stats = _aggregate_stats(aggregated_stats, batch_outputs, cfg.TRAIN.disp_interval)

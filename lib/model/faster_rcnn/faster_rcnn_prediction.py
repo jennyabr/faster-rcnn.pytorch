@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 def faster_rcnn_prediction(data_manager, model, cfg, epoch_num):
+    logger.info("Starting prediction.")
     num_images = 20
     # num_images = len(data_manager) #TODO: JA - uncomment this
     model.eval()
@@ -21,6 +22,7 @@ def faster_rcnn_prediction(data_manager, model, cfg, epoch_num):
                  'cls_probs': np.zeros((num_images, cfg.TEST.RPN_POST_NMS_TOP_N, model.cfg_params['num_classes']))}
 
     pred_start = time.time()
+    data_manager.prepare_iter_for_new_epoch()
     for i in range(num_images):
         im_data, im_info, gt_boxes, num_boxes = next(data_manager)
         curr_pred_start = time.time()
@@ -54,8 +56,9 @@ def faster_rcnn_prediction(data_manager, model, cfg, epoch_num):
         curr_pred_end = time.time()
         pred_time = curr_pred_end - curr_pred_start
         avg_pred_time = (curr_pred_end - pred_start) / (i+1)
-        logger.info('Prediction progress: {}/{}. Time for current image: {}. Avg time per image: {}.'.format(
-            i+1, num_images, pred_time, avg_pred_time))
+        logger.info('Prediction progress: {0}/{1}: '
+                    'Time for current image: {2:.4f}s, '
+                    '[Avg time per image: {3:.4f}s].'.format(i+1, num_images, pred_time, avg_pred_time))
         raw_preds['bbox_coords'][i, ...] = bbox_coords.cpu().numpy()
         raw_preds['cls_probs'][i, ...] = cls_probs.cpu().numpy()
 
