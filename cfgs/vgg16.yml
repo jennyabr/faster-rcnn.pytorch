@@ -10,6 +10,7 @@ TRAIN:
   LEARNING_RATE: 0.01
   pretrained_model_path: '/home/jenny/gripper2/data/pretrained_model/vgg16_caffe.pth' #TODO
   CLIP_GRADIENTS: 10.  #TODO: IB - Make sure this is a good config (copied from the author)
+  frozen_blocks: 2
 
 TEST:
   HAS_RPN: True
