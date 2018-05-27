@@ -17,6 +17,8 @@ if __name__ == '__main__':
     global cfg
     cfg.load(args.config_dir)
 
+    model = FasterRCNNMetaArch.create_from_ckpt(cfg.get_ckpt_path(1))
+    model.cuda()
     eval_data_manager = FasterRCNNDataManager(mode=Mode.INFER,
                                               imdb_name=cfg.imdbval_name,
                                               seed=cfg.RNG_SEED,
@@ -24,6 +26,6 @@ if __name__ == '__main__':
                                               is_cuda=cfg.CUDA,
                                               batch_size=cfg.TRAIN.batch_size)
 
-    faster_rcnn_prediction(eval_data_manager, model, cfg)
+    faster_rcnn_prediction(eval_data_manager, model, cfg, 1)
 
     print("fin")

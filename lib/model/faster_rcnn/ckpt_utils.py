@@ -18,8 +18,9 @@ def save_session_to_ckpt(model, optimizer, cfg, epoch):
     logger.info('Saving model checkpoint to {}.'.format(save_to))
     torch.save({'last_performed_epoch': epoch,
                 'model': model_state_dict,
+                'model_cfg_params': model.cfg_params,
                 'optimizer': optimizer.state_dict(),
-                'ckpt_cfg': cfg}, save_to)
+                'ckpt_cfg': cfg.get_state_dict()}, save_to)
 
 
 def load_session_from_ckpt(ckpt_path):
@@ -36,4 +37,4 @@ def load_session_from_ckpt(ckpt_path):
         return optimizer
 
     last_performed_epoch = state_dict['last_performed_epoch']
-    return model, create_optimizer_from_ckpt_fn, loaded_cfg, last_performed_epoch
+    return model,create_optimizer_from_ckpt_fn, loaded_cfg, last_performed_epoch

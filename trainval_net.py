@@ -55,7 +55,7 @@ if __name__ == '__main__':
     model = FasterRCNNMetaArch.create_with_random_normal_init(feature_extractors, cfg,
                                                               num_classes=train_data_manager.num_classes)
     create_optimizer_fn = partial(torch.optim.SGD, momentum=cfg.TRAIN.MOMENTUM)
-    run_training_session(train_data_manager, model, create_optimizer_fn, cfg, train_logger)
+    run_training_session(train_data_manager, model, create_optimizer_fn, cfg, train_logger, cfg.TRAIN.start_epoch)
 
     # eval_data_manager = FasterRCNNDataManager(mode=Mode.EVAL, imdb_name=cfg.imdbval_name,
     #                                           seed=cfg.RNG_SEED, num_workers=cfg.NUM_WORKERS, is_cuda=cfg.CUDA,

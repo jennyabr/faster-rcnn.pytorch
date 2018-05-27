@@ -1,5 +1,6 @@
 import logging
 from functools import partial
+import os
 
 import torch
 import torch.nn as nn
@@ -12,8 +13,7 @@ from model.rpn.rpn import _RPN
 from model.rpn.proposal_target_layer_cascade import _ProposalTargetLayer
 from model.utils.net_utils import _smooth_l1_loss, _affine_grid_gen, normal_init
 
-from cfgs.config import cfg
-
+from cfgs.config import cfg, ConfigProvider
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -139,7 +139,7 @@ class FasterRCNNMetaArch(nn.Module):
                 bbox_pred = bbox_pred_select.squeeze(1)
 
             cls_score = self.fast_rcnn_cls_head(fast_rcnn_feature_map)
-            cls_prob = F.softmax(cls_score, dim=0) # TODO UserWarning: Implicit dimension choice for softmax has been deprecated. Change the call to include dim=X as an argument.
+            cls_prob = F.softmax(cls_score, dim=-1)
             return bbox_pred, cls_score, cls_prob
         bbox_pred, cls_score, cls_prob = run_fast_rcnn()
 
@@ -164,7 +164,7 @@ class FasterRCNNMetaArch(nn.Module):
         loaded_cfg = ConfigProvider()
         loaded_cfg.create_from_dict(state_dict['ckpt_cfg'])
         feature_extractors = create_feature_extractor_empty(
-            loaded_cfg.net, loaded_cfg.net_variant, loaded_cfg.freeze)
-        model = FasterRCNNMetaArch(feature_extractors, loaded_cfg, state_dict['model']['cfg_params']['num_classes'])
+            loaded_cfg.net, loaded_cfg.net_variant, loaded_cfg.TRAIN.frozen_blocks)
+        model = FasterRCNNMetaArch(feature_extractors, loaded_cfg, state_dict['model_cfg_params']['num_classes'])
         model.load_state_dict(state_dict['model'])
         return model

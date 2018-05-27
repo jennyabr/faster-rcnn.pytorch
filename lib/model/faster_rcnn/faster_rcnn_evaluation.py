@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 # TODO: IB - instead of in a separate config file - if possible
 
 def faster_rcnn_evaluation(data_manager, model, cfg):
-
+    #TODO: Continue from here
     print('Evaluating detections')
     imdb.evaluate_detections(all_boxes, output_dir)
 

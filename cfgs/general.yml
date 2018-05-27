@@ -1,5 +1,6 @@
 # TODO: IB - the config should be code
 DATA_DIR: '/home/jenny/gripper2/data'
+OUTPUT_DIR: '/home/jenny/gripper2/outputs'
 EXPERIMENT_NAME: 'faster_rcnn_resnet_voc'
 dataset: 'pascal_voc'  # training dataset'
 net: 'vgg' #  # {vgg,resnet}

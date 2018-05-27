@@ -87,8 +87,7 @@ class ConfigProvider(dict):#object):
             if project_name is None or project_name == "":
                 project_name = os.path.basename(cfg['ROOT_DIR'])
 
-            outdir = os.path.abspath(os.path.join(os.path.abspath(cfg['OUTPUT_DIR']),
-                                                  "{}_{}_{}".format(project_name, cfg['net'], cfg['dataset'])))
+            outdir = os.path.abspath(os.path.join(os.path.abspath(cfg['OUTPUT_DIR']), cfg['EXPERIMENT_NAME']))
             if not os.path.exists(outdir):
                 os.makedirs(outdir)
             return outdir
@@ -113,14 +112,14 @@ class ConfigProvider(dict):#object):
 
     @property
     def output_path(self):
-        return self._cfg['EXPERIMENT_NAME']
+        return self._cfg['OUTPUT_PATH']
 
     def get_ckpt_path(self, epoch_num=None):
         if epoch_num is None:
             epoch = self._cfg['checkepoch']
         else:
             epoch = epoch_num
-        file_name = 'ckpt__e{}.pth'.format(epoch)
+        file_name = 'ckpt_e{}.pth'.format(epoch)
         ckpt_path = os.path.join(self._cfg['OUTPUT_PATH'], file_name)
         return ckpt_path
 
@@ -153,6 +152,9 @@ class ConfigProvider(dict):#object):
             return self._cfg[attr] #TODO make not key sensitive
         except AttributeError:
             raise Exception("{} does not exist in Config.".format(attr))
+
+    def get_state_dict(self):
+        return cfg._cfg
 
 
 cfg = ConfigProvider()

@@ -21,78 +21,71 @@ logger = logging.getLogger(__name__)
 # TODO: IB - another alternative is to save all the configs together with the model weights in the same file,
 # TODO: IB - instead of in a separate config file - if possible
 
-def faster_rcnn_postprocessing(data_manager, model, cfg):
+def faster_rcnn_postprocessing(data_manager, model, cfg, num_epoch):
     start_time = time.time()
     num_images = len(data_manager)
     num_classes = data_manager.num_classes
+    preds_file_path = cfg.get_preds_path(epoch_num)
+    postprocessed_detections = np.empty((num_images, num_classes), dtype='object')
+    with open(preds_file_path, 'wb') as f:
+        raw_preds = pickle.load(f)
+    bbox_coords = raw_preds['bbox_coords']
+    cls_probs = raw_preds['cls_probs']
 
-    output_dir = cfg.get_eval_outputs_path()
-    preds_file = cfg.get_preds_path()
-    for i in range(num_images):
-        im_data, im_info, gt_boxes, num_boxes = next(data_manager)
-        pred_start = time.time()
-        rois, cls_prob, bbox_pred, rpn_loss_cls, rpn_loss_box, RCNN_loss_cls, RCNN_loss_bbox = \
-            model(im_data, im_info, gt_boxes, num_boxes)
-
-        scores = cls_prob.data
-        rpn_proposals = rois.data[:, :, 1:5]
-
-        def transform_preds_to_img_coords():
-            deltas_from_proposals = bbox_pred.data
-            def unnormalize_preds():
-                means = torch.FloatTensor(cfg.TRAIN.BBOX_NORMALIZE_MEANS).cuda()
-                stds = torch.FloatTensor(cfg.TRAIN.BBOX_NORMALIZE_STDS).cuda()
-                unnormalized_deltas = deltas_from_proposals.view(-1, 4) * stds + means
-                return unnormalized_deltas
-            unnormalized_deltas = unnormalize_preds(deltas_from_proposals)
-            reshaped_deltas = unnormalized_deltas.view(1, -1, model.num_predicted_coords)
-            preds_in_img_coords = bbox_transform_inv(rpn_proposals, reshaped_deltas, 1)
-            preds_clipped_to_img_size = clip_boxes(preds_in_img_coords, im_info.data, 1)
-            inference_scaling_factor = im_info[0][2]
-            bbox_coords = preds_clipped_to_img_size / inference_scaling_factor
-            return bbox_coords
-        bbox_coords = transform_preds_to_img_coords()
-        scores = scores.squeeze()
-        bbox_coords = bbox_coords.squeeze()
-        pred_end = time.time()
-        pred_time = pred_end - pred_start
-        postprocessing_start = time.time()
-        for j in range(1, num_classes):
-            inds = torch.nonzero(scores[:, j] > cfg.TEST.DETECTION_THRESH).view(-1)
-            if inds.numel() > 0:
-                cls_scores = scores[:, j][inds]
-                _, order = torch.sort(cls_scores, 0, True)
-                if cfg.TRAIN.class_agnostic:
-                    cls_boxes = bbox_coords[inds, :]
-                else:
-                    cls_boxes = bbox_coords[inds][:, j * 4:(j + 1) * 4]
-
-                cls_dets = torch.cat((cls_boxes, cls_scores.unsqueeze(1)), 1)
-                cls_dets = cls_dets[order]
-                keep = nms(cls_dets, cfg.TEST.NMS)
-                cls_dets = cls_dets[keep.view(-1).long()]
-
-                all_boxes[j][i] = cls_dets.cpu().numpy()
+    def keep_boxes_above_thresh_per_cls(probs, coords):
+        nonzero_idxs = torch.nonzero(probs[:, j] > cfg.TEST.DETECTION_THRESH).view(-1)
+        if nonzero_idxs.numel() > 0:
+            filtered_probs = probs[:, j][nonzero_idxs]
+            if model.cfg_params['is_class_agnostic']:
+                filtered_coords = coords[nonzero_idxs, :]
             else:
-                all_boxes[j][i] = empty_prediction
+                coord_idxs_cls_j = range(j * 4, (j + 1) * 4, 1)
+                filtered_coords = coords[nonzero_idxs][:, coord_idxs_cls_j]
+        else:
+            filtered_coords = np.array([])
+            filtered_probs = np.array([])
+        return filtered_coords, filtered_probs
 
-        max_per_image = cfg.TEST.max_per_image
-        if max_per_image > 0:
-            image_scores = np.hstack([all_boxes[c][i][:, -1]
+    def run_nms_on_thresholded_boxes(filtered_probs, filtered_coords):
+        _, sorted_probs_idxs = torch.sort(filtered_probs, 0, True)
+        detections_to_keep = torch.cat((filtered_coords, filtered_probs.unsqueeze(1)), 1)
+        detections_to_keep = detections_to_keep[sorted_probs_idxs]
+        idxs_to_keep = nms(detections_to_keep, cfg.TEST.NMS)
+        detections_to_keep = detections_to_keep[idxs_to_keep.view(-1).long()]
+        return detections_to_keep
+
+    def keep_top_k_detections_in_image(image_detections):
+        k = cfg.TEST.max_per_image
+        if k > 0:
+            cls_probs_per_image = np.hstack([image_detections[i, c][:, -1]
                                       for c in range(1, num_classes)])
-            if len(image_scores) > max_per_image:
-                image_thresh = np.sort(image_scores)[-max_per_image]
+            if len(cls_probs_per_image) > k:
+                prob_thresh = np.sort(cls_probs_per_image)[-k]
                 for c in range(1, num_classes):
-                    keep = np.where(all_boxes[c][i][:, -1] >= image_thresh)[0]
-                    all_boxes[c][i] = all_boxes[c][i][keep, :]
+                    boxes_idxs_to_keep = np.where(image_detections[i, c][:, -1] >= prob_thresh)[0]
+                    image_detections[i, c] = image_detections[i, c][boxes_idxs_to_keep, :]
+        return image_detections
 
-        misc_toc = time.time()
-        nms_time = misc_toc - misc_tic
 
-        logger.info('im_detect: {:d}/{:d} {:.3f}s {:.3f}s'.format(i + 1, num_images, detect_time, nms_time))
+    for i in range(20): #TODO: JA - change to num_images
+        curr_coords = bbox_coords[i]
+        curr_cls_probs = cls_probs[i]
+        pp_start = time.time()
+        for j in range(1, num_classes):
+            coords_after_thresh, probs_after_thresh = keep_boxes_above_thresh_per_cls(
+                curr_cls_probs, curr_coords)
+            detections_after_nms = run_nms_on_thresholded_boxes(probs_after_thresh, coords_after_thresh)
+            postprocessed_detections[i, j] = detections_after_nms.cpu().numpy()
+        #todo: continue from here
+        final_detections = keep_top_k_detections_in_image(postprocessed_detections)
+        pp_end = time.time()
+        logger.info('Postprocessing progress: {}/{}. Time for current image: {}. Avg time per image: {}.'.format(
+            i, num_images, pp_end - pp_start, (pp_end-start_time) / i))
 
-    with open(cfg.get_predictions_path(), 'wb') as f:
-        pickle.dump(all_boxes, f, pickle.HIGHEST_PROTOCOL)
+    pp_preds_path = cfg.get_postprocessed_preds_path(num_epoch)
+    with open(pp_preds_path, 'wb') as f:
+        pickle.dump(final_detections, f,)
 
     end_time = time.time()
-    logger.info("Prediction time: %0.4fs" % (end_time - start_time))
+    logger.info("Total prediction time - {}".format(end_time - start_time))
+
