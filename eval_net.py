@@ -16,8 +16,8 @@ if __name__ == '__main__':
     # TODO: IB it can be assigned to the state of the trainer\evaluator\etc.
     global cfg
     cfg.load(args.config_dir)
-
-    model = FasterRCNNMetaArch.create_from_ckpt(cfg.get_ckpt_path(1))
+    predict_on_epoch = 1  # TODO: JA - enable this to get the value 'last'
+    model = FasterRCNNMetaArch.create_from_ckpt(cfg.get_ckpt_path(predict_on_epoch))
     model.cuda()
     eval_data_manager = FasterRCNNDataManager(mode=Mode.INFER,
                                               imdb_name=cfg.imdbval_name,
@@ -26,6 +26,6 @@ if __name__ == '__main__':
                                               is_cuda=cfg.CUDA,
                                               batch_size=cfg.TRAIN.batch_size)
 
-    faster_rcnn_prediction(eval_data_manager, model, cfg, 1)
+    faster_rcnn_prediction(eval_data_manager, model, cfg, predict_on_epoch)
 
     print("fin")

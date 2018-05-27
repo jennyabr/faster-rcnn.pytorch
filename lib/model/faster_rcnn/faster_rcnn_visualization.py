@@ -1,46 +1,46 @@
 import time
-import os
+import pickle
 import logging
 import numpy as np
-import torch
-import torch.nn as nn
+import cv2
 
-from model.feature_extractors.feature_extractors_factory import FeatureExtractorsFactory
-from model.utils.net_utils import decay_lr_in_optimizer, clip_gradient
-from model.faster_rcnn.faster_rcnn_meta_arch import FasterRCNNMetaArch
-from model.feature_extractors.resnet_for_faster_rcnn import ResNetForFasterRCNN
-from model.feature_extractors.vgg_for_faster_rcnn import VGGForFasterRCNN
-from data_handler.data_with_test import DataPrep, Mode
-
-from cfgs.config import cfg
-from roi_data_layer.roidb import combined_roidb
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+def vis_detections(im, class_name, dets, thresh=0.8):
+    """Visual debugging of detections."""
+    for i in range(np.minimum(10, dets.shape[0])):
+        bbox = tuple(int(np.round(x)) for x in dets[i, :4])
+        score = dets[i, -1]
+        if score > thresh:
+            cv2.rectangle(im, bbox[0:2], bbox[2:4], (0, 204, 0), 2)
+            cv2.putText(im, '%s: %.3f' % (class_name, score), (bbox[0], bbox[1] + 15), cv2.FONT_HERSHEY_PLAIN,
+                        1.0, (0, 0, 255), thickness=1)
+    return im
 
-# TODO: IB - the path to the saved model dir should be passed to the init. The init should load the model
-# TODO: IB - currently this is in test_model, and look for the config file in the saved model dir.
-# TODO: IB - if the config file doesn't exist - it should raise an exception and not use the global config file
-# TODO: IB - another alternative is to save all the configs together with the model weights in the same file,
-# TODO: IB - instead of in a separate config file - if possible
+def faster_rcnn_visualization(data_manager, cfg, epoch_num):
+    pp_preds_path = cfg.get_postprocessed_preds_path(epoch_num)
+    with open(pp_preds_path, 'rb') as f:
+        bboxs = pickle.load(f)
 
-def faster_rcnn_visualization(data_manager, model, cfg):
     start_time = time.time()
-
-    for i in range(num_images):
-        im = cv2.imread(imdb.image_path_at(i))
+    bboxs = bboxs.numpy()  # TODO JA maybe this needed?
+    for i in range(data_manager.num_images):
+        im = cv2.imread(data_manager.imdb.image_path_at(i))
         im2show = np.copy(im)
-        for j in xrange(1, imdb.num_classes):
-            im2show = vis_detections(im2show, imdb.classes[j], cls_dets.cpu().numpy(), 0.3)
+        for j in range(1, data_manager.num_classes):
+            cls_bboxs = bboxs[i][j]  # TODO JA check this
+            for x in range(np.minimum(10, cls_bboxs.shape[0])):
+                bbox = tuple(int(np.round(x)) for x in cls_bboxs[x, :4])
+                score = cls_bboxs[x, -1]
+                if score > 0.3:
+                    cv2.rectangle(im, bbox[0:2], bbox[2:4], (0, 204, 0), 2)
+                    class_name = data_manager.imdb.classes[j]
+                    cv2.putText(im, '%s: %.3f' % (class_name, score), (bbox[0], bbox[1] + 15), cv2.FONT_HERSHEY_PLAIN,
+                                1.0, (0, 0, 255), thickness=1)
 
-            out_image_path = os.path.join(output_dir, 'result{}.png'.format(i))
-            cv2.imwrite(out_image_path, im2show)
-
-
-
-
-
+        cv2.imwrite(cfg.get_visualizations_path(epoch_num, i), im2show)
 
     end_time = time.time()
-    print("test time: %0.4fs" % (end_time - start_time))
+    logger.info("Visualization time: {:.4f}s".format(end_time - start_time))

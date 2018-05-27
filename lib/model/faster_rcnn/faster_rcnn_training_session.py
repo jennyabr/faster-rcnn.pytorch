@@ -40,6 +40,7 @@ def run_training_session(data_manager, model, create_optimizer_fn, cfg, train_lo
         decay_lr_in_optimizer(epoch, cfg.TRAIN.lr_decay_step + 1, optimizer, cfg.TRAIN.GAMMA)
 
         epoch_start_time = aggregation_start_time = time.time()
+        data_manager.prepare_iter_to_next_epoch()
         for step in range(iters_per_epoch):
             batch_outputs = _train_on_batch(data_manager, model, optimizer, cfg)
             aggregated_stats = _aggregate_stats(aggregated_stats, batch_outputs, cfg.TRAIN.disp_interval)
@@ -56,7 +57,8 @@ def run_training_session(data_manager, model, create_optimizer_fn, cfg, train_lo
                 aggregation_start_time = time.time()
 
         epoch_end_time = time.time()
-        logger.info(" Finished epoch {} in {} ms.".format(epoch, epoch_end_time - epoch_start_time))
+        epoch_duration_hrs = (epoch_end_time - epoch_start_time) / 3600
+        logger.info(" Finished epoch {} in {} hrs.".format(epoch, epoch_duration_hrs))
 
         save_session_to_ckpt(model, optimizer, cfg, epoch)
 

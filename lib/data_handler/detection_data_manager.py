@@ -46,43 +46,48 @@ class BDSampler(Sampler):
 class FasterRCNNDataManager(DataManager):
     def __init__(self, mode, imdb_name, seed, num_workers, is_cuda, batch_size=1):
         super(FasterRCNNDataManager, self).__init__(mode, is_cuda)
-        self.imdb, roidb, ratio_list, ratio_index = combined_roidb(imdb_name,
-                                                                   training=self.is_train)
+        self._imdb, roidb, ratio_list, ratio_index = combined_roidb(imdb_name, training=self.is_train)
         dataset = roibatchLoader(roidb, ratio_list, ratio_index, batch_size,
                                  self.imdb.num_classes, training=self.is_train)
         self.batch_size = batch_size
 
-        if mode == Mode.TRAIN:
-            train_size = len(roidb)
-            self.train_size = train_size
+        if self.is_train:
+            self._train_size = train_size = len(roidb)
             logger.info('{:d} roidb entries.'.format(train_size))
             sampler_batch = BDSampler(train_size, batch_size, seed)
-            data_loader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers,
-                                     sampler=sampler_batch)
-            self.iters_per_epoch = int(self.train_size / self.batch_size)
+            self._data_loader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers,
+                                           sampler=sampler_batch)
+            self.iters_per_epoch = int(self._train_size / batch_size)
         elif mode == Mode.INFER:
             self.imdb.competition_mode(on=True)  # TODO this function is not implemented...
-            data_loader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers,
-                                     shuffle=False, pin_memory=True)
+            self._data_loader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers,
+                                           shuffle=False, pin_memory=True)
         else:
             raise Exception("Not valid mode {} - should be TRAIN or TEST".format(mode))
-        self.data_iter = iter(data_loader)
 
     def transform_data_tensors(self, data):
-        self.im_data.data.resize_(data[0].size()).copy_(data[0])
-        self.im_info.data.resize_(data[1].size()).copy_(data[1])
-        self.gt_boxes.data.resize_(data[2].size()).copy_(data[2])
-        self.num_boxes.data.resize_(data[3].size()).copy_(data[3])
-        return self.im_data, self.im_info, self.gt_boxes, self.num_boxes
+        self._im_data.data.resize_(data[0].size()).copy_(data[0])
+        self._im_info.data.resize_(data[1].size()).copy_(data[1])
+        self._gt_boxes.data.resize_(data[2].size()).copy_(data[2])
+        self._num_boxes.data.resize_(data[3].size()).copy_(data[3])
+        return self._im_data, self._im_info, self._gt_boxes, self._num_boxes
 
     def __len__(self):
-        return len(self.imdb.image_index)
+        return len(self._imdb.image_index)
 
     @property
     def num_classes(self):
-        return self.imdb.num_classes
+        return self._imdb.num_classes
 
     @property
     def classes(self):
-        return self.imdb.classes
+        return self._imdb.classes
+
+    @property
+    def data_loader(self):
+        return self._data_loader
+
+    @property
+    def imdb(self):
+        return self._imdb
 

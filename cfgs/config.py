@@ -138,8 +138,8 @@ class ConfigProvider(dict):#object):
         dir_path = os.path.join(self._cfg['OUTPUT_PATH'], dir_name)
         return dir_path
 
-    def get_visualizations_dir_path(self):
-        dir_name = 'vis_e{}.pkl'.format(epoch_num)
+    def get_visualizations_path(self, epoch_num, im_num):
+        dir_name = 'epoch_{}/{}.png'.format(epoch_num, im_num)
         dir_path = os.path.join(self._cfg['OUTPUT_PATH'], dir_name)
         return dir_path
 
