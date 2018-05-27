@@ -14,7 +14,7 @@ from easydict import EasyDict as edict, EasyDict
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
+logger.info("!!!!!!!!!!!!!!!!!!!!!!!!!19999999999999999999999999999")
 class ConfigProvider(dict):#object):
     def __init__(self):
         self._cfg = edict({})
@@ -121,6 +121,7 @@ class ConfigProvider(dict):#object):
             epoch = epoch_num
         file_name = 'ckpt_e{}.pth'.format(epoch)
         ckpt_path = os.path.join(self._cfg['OUTPUT_PATH'], file_name)
+        logger.info("get_ckpt_path: {}.".format(ckpt_path))
         return ckpt_path
 
     def get_preds_path(self, epoch_num):

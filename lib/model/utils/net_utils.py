@@ -220,8 +220,5 @@ def assert_sequential(model):
 
 
 def normal_init(nn_module, mean=0, stddev=1):
-    if hasattr(nn_module, 'weight') and nn_module is not None:
-        # TODO: IB - enable using all available initializations in pytorch (not only normal)
-        nn.init.normal(nn_module.weight, mean, stddev)
-    if hasattr(nn_module, 'bias') and nn_module.bias is not None:
-        nn.init.constant(nn_module.bias, 0)
+    nn_module.weight.data.normal_(mean, stddev)
+    nn_module.bias.data.zero_()

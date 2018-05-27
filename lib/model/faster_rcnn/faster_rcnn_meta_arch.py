@@ -50,10 +50,10 @@ class FasterRCNNMetaArch(nn.Module):
             fast_rcnn_fe = feature_extractors.fast_rcnn_feature_extractor
             fast_rcnn_fe_output_depth = feature_extractors.get_output_num_channels(fast_rcnn_fe.feature_extractor)  #TODO this functioncan get any model...
             if cfg_params['is_class_agnostic']:
+                self.num_predicted_coords = cfg_params['num_regression_outputs_per_bbox']
+            else:
                 self.num_predicted_coords = cfg_params['num_regression_outputs_per_bbox'] * \
                                             cfg_params['num_classes']
-            else:
-                self.num_predicted_coords = cfg_params['num_regression_outputs_per_bbox']
             bbox_head = nn.Linear(fast_rcnn_fe_output_depth, self.num_predicted_coords)
             fast_rcnn_bbox_head = bbox_head
 
@@ -70,14 +70,12 @@ class FasterRCNNMetaArch(nn.Module):
     @classmethod
     def create_with_random_normal_init(cls, feature_extractors, cfg, num_classes):
         faster_rcnn = cls(feature_extractors, cfg, num_classes)
-        configured_normal_init = partial(normal_init,
-                                         mean=cfg.TRAIN.weights_random_init_mean,
-                                         stddev=cfg.TRAIN.weights_random_init_std)
-        configured_normal_init(faster_rcnn.rpn_and_nms.RPN_Conv)
-        configured_normal_init(faster_rcnn.rpn_and_nms.RPN_cls_score)
-        configured_normal_init(faster_rcnn.rpn_and_nms.RPN_bbox_pred)
-        configured_normal_init(faster_rcnn.fast_rcnn_cls_head)
-        configured_normal_init(faster_rcnn.fast_rcnn_bbox_head)
+        configured_normal_init = partial(normal_init, mean=0)
+        configured_normal_init(faster_rcnn.rpn_and_nms.RPN_Conv, std=0.01)
+        configured_normal_init(faster_rcnn.rpn_and_nms.RPN_cls_score, std=0.01)
+        configured_normal_init(faster_rcnn.rpn_and_nms.RPN_bbox_pred, std=0.01)
+        configured_normal_init(faster_rcnn.fast_rcnn_cls_head, std=0.01)
+        configured_normal_init(faster_rcnn.fast_rcnn_bbox_head, std=0.001)
         return faster_rcnn
 
 

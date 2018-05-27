@@ -1,7 +1,7 @@
 # TODO: IB - the config should be code
 DATA_DIR: '/home/jenny/gripper2/data'
-OUTPUT_DIR: '/home/jenny/gripper2/outputs'
-EXPERIMENT_NAME: 'reproduce_faster_rcnn_vgg16_voc'
+OUTPUT_DIR: '/home/jenny/gripper2/outputs/05_27'
+EXPERIMENT_NAME: 'jenny-run3'
 dataset: 'pascal_voc'  # training dataset'
 net: 'vgg' #  # {vgg,resnet}
 net_variant: '16' # Currently supported: {16 for vgg, 50, 101, 152 for resnet}
@@ -15,7 +15,7 @@ MATLAB: 'matlab'
 EXP_DIR: 'default'
 
 # For reproducibility
-RNG_SEED: 3
+RNG_SEED: 5
 
 # Use GPU implementation of non-maximum suppression
 USE_GPU_NMS: True

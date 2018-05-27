@@ -18,7 +18,7 @@ if __name__ == '__main__':
     # TODO: IB it can be assigned to the state of the trainer\evaluator\etc.
     global cfg
     cfg.load(args.config_dir)
-    predict_on_epoch = 1  # TODO: JA - enable this to get the value 'last'
+    predict_on_epoch = 3  # TODO: JA - enable this to get the value 'last'
     model = FasterRCNNMetaArch.create_from_ckpt(cfg.get_ckpt_path(predict_on_epoch))
     model.cuda()
     data_manager = FasterRCNNDataManager(mode=Mode.INFER,

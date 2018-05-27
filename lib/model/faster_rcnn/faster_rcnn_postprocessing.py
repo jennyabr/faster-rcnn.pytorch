@@ -13,12 +13,12 @@ logger = logging.getLogger(__name__)
 
 
 def faster_rcnn_postprocessing(data_manager, model, cfg, num_epoch):
-    logger.info("Starting postprocessing.")
     start_time = time.time()
     num_images = 20
     # num_images = len(data_manager) #TODO: JA - uncomment this
     num_classes = data_manager.num_classes
     preds_file_path = cfg.get_preds_path(num_epoch)
+    logger.info("Starting postprocessing from :{}.".format(preds_file_path))
     postprocessed_detections = np.empty(num_images, dtype='object')
     with open(preds_file_path, 'rb') as f:
         raw_preds = pickle.load(f)
@@ -63,7 +63,7 @@ def faster_rcnn_postprocessing(data_manager, model, cfg, num_epoch):
                     image_detections[i, c] = image_detections[i, c][boxes_idxs_to_keep, :]
         return image_detections
 
-    for i in range(20):  # TODO: JA - change to num_images
+    for i in range(num_images):
         curr_coords = bbox_coords[i]
         curr_cls_probs = cls_probs[i]
         pp_start = time.time()

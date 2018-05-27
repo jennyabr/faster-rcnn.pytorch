@@ -69,12 +69,12 @@ def _train_on_batch(data_manager, model, optimizer, cfg):
     rois, cls_prob, bbox_pred, rpn_loss_cls, rpn_loss_bbox, RCNN_loss_cls, RCNN_loss_bbox, rois_label = \
         model(im_data, im_info, gt_boxes, num_boxes)
     loss_tensors = {
-        'rpn_cls': rpn_loss_cls.mean(),
-        'rpn_bbox': rpn_loss_bbox.mean(),
-        'RCNN_cls': RCNN_loss_cls.mean(),
-        'RCNN_bbox':  RCNN_loss_bbox.mean()
+        'loss_rpn_cls': rpn_loss_cls.mean(),
+        'loss_rpn_box': rpn_loss_bbox.mean(),
+        'loss_rcnn_cls': RCNN_loss_cls.mean(),
+        'loss_rcnn_box':  RCNN_loss_bbox.mean()
         }
-    loss_tensors['total'] = torch.cat(list(loss_tensors.values())).sum()
+    loss_tensors['loss'] = torch.cat(list(loss_tensors.values())).sum()
 
     batch_outputs = {
         'rois': rois,
@@ -85,7 +85,7 @@ def _train_on_batch(data_manager, model, optimizer, cfg):
         }
 
     optimizer.zero_grad()
-    loss_tensors['total'].backward()
+    loss_tensors['loss'].backward()
 
     if cfg.TRAIN.CLIP_GRADIENTS:
         clip_gradient(model, cfg.TRAIN.CLIP_GRADIENTS)
