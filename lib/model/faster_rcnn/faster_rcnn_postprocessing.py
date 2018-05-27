@@ -40,8 +40,8 @@ def faster_rcnn_postprocessing(data_manager, model, cfg, num_epoch):
                 coord_idxs_cls_j = range(j * 4, (j + 1) * 4, 1)
                 filtered_coords = coords[nonzero_idxs][:, coord_idxs_cls_j]
         else:
-            filtered_coords = np.array([])
-            filtered_probs = np.array([])
+            filtered_coords = np.array([[] * 4])  # TODO
+            filtered_probs = np.array([[] * num_classes])  # TODO
         return filtered_coords, filtered_probs
 
     def run_nms_on_unsorted_boxes(probs, coords):
