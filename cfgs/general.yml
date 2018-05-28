@@ -1,7 +1,7 @@
 # TODO: IB - the config should be code
 DATA_DIR: '/home/jenny/gripper2/data'
 OUTPUT_DIR: '/home/jenny/gripper2/outputs/05_27'
-EXPERIMENT_NAME: 'jenny-run3'
+EXPERIMENT_NAME: 'vgg6'
 dataset: 'pascal_voc'  # training dataset'
 net: 'vgg' #  # {vgg,resnet}
 net_variant: '16' # Currently supported: {16 for vgg, 50, 101, 152 for resnet}
@@ -183,10 +183,8 @@ TRAIN:
   BN_TRAIN: False
 
   CLIP_GRADIENTS: False
-  frozen_blocks: 2
 
-  weights_random_init_mean: 0
-  weights_random_init_std: 0.01
+  frozen_blocks: 2
 
 TEST:
   # Scale to use during testing (can NOT list multiple scales)

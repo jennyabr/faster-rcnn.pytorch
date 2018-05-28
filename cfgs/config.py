@@ -104,9 +104,9 @@ class ConfigProvider(dict):#object):
 
         self._cfg = cfg
 
-        seed = cfg.RNG_SEED
-        torch.manual_seed(seed)
-        torch.cuda.manual_seed_all(seed)
+        # seed = cfg.RNG_SEED
+        # torch.manual_seed(seed)
+        # torch.cuda.manual_seed_all(seed)
         return cfg
 
     def __str__(self):
