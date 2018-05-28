@@ -18,8 +18,12 @@ def faster_rcnn_prediction(data_manager, model, cfg, epoch_num):
     num_images = 20
     # num_images = len(data_manager) #TODO: JA - uncomment this
     model.eval()
-    raw_preds = {'bbox_coords': np.zeros((num_images, cfg.TEST.RPN_POST_NMS_TOP_N, model.num_predicted_coords)),
-                 'cls_probs': np.zeros((num_images, cfg.TEST.RPN_POST_NMS_TOP_N, model.cfg_params['num_classes']))}
+    raw_preds = {'bbox_coords':
+                     np.zeros((num_images, cfg.TEST.RPN_POST_NMS_TOP_N, model.num_predicted_coords),
+                              dtype=np.float32),
+                 'cls_probs':
+                     np.zeros((num_images, cfg.TEST.RPN_POST_NMS_TOP_N, model.cfg_params['num_classes']),
+                              dtype=np.float32)}
 
     pred_start = time.time()
     data_manager.prepare_iter_for_new_epoch()

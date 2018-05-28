@@ -9,7 +9,7 @@ TRAIN:
   BATCH_SIZE: 256
   LEARNING_RATE: 0.001
   pretrained_model_path: '/home/jenny/gripper2/data/pretrained_model/vgg16_caffe.pth' #TODO
-  CLIP_GRADIENTS: 10.  #TODO: IB - Make sure this is a good config (copied from the author)
+  CLIP_GRADIENTS: 10.  #TODO: JA - Make sure this is a good config (copied from the author)
   frozen_blocks: 2
 
 TEST:

@@ -14,7 +14,7 @@ from easydict import EasyDict as edict, EasyDict
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-logger.info("!!!!!!!!!!!!!!!!!!!!!!!!!19999999999999999999999999999")
+logger.info("!!!!!!!!!!!!!!!!!!!!!!!!!19999999999999999999999999999") #TODO: JA -delete this
 
 
 class ConfigProvider(dict):#object):
@@ -104,10 +104,10 @@ class ConfigProvider(dict):#object):
 
         self._cfg = cfg
 
-        # TODO: JA - return seed
-        # seed = cfg.RNG_SEED
-        # torch.manual_seed(seed)
-        # torch.cuda.manual_seed_all(seed)
+        #TODO: JA - the seed should be somewhere else
+        seed = cfg.RNG_SEED
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
         return cfg
 
     def __str__(self):
