@@ -71,11 +71,11 @@ class FasterRCNNMetaArch(nn.Module):
     def create_with_random_normal_init(cls, feature_extractors, cfg, num_classes):
         faster_rcnn = cls(feature_extractors, cfg, num_classes)
         configured_normal_init = partial(normal_init, mean=0)
-        configured_normal_init(faster_rcnn.rpn_and_nms.RPN_Conv, std=0.01)
-        configured_normal_init(faster_rcnn.rpn_and_nms.RPN_cls_score, std=0.01)
-        configured_normal_init(faster_rcnn.rpn_and_nms.RPN_bbox_pred, std=0.01)
-        configured_normal_init(faster_rcnn.fast_rcnn_cls_head, std=0.01)
-        configured_normal_init(faster_rcnn.fast_rcnn_bbox_head, std=0.001)
+        configured_normal_init(faster_rcnn.rpn_and_nms.RPN_Conv, stddev=0.01)
+        configured_normal_init(faster_rcnn.rpn_and_nms.RPN_cls_score, stddev=0.01)
+        configured_normal_init(faster_rcnn.rpn_and_nms.RPN_bbox_pred, stddev=0.01)
+        configured_normal_init(faster_rcnn.fast_rcnn_cls_head, stddev=0.01)
+        configured_normal_init(faster_rcnn.fast_rcnn_bbox_head, stddev=0.001)
         return faster_rcnn
 
 
