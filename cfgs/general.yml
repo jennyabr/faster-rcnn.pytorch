@@ -15,7 +15,7 @@ MATLAB: 'matlab'
 EXP_DIR: 'default'
 
 # For reproducibility
-RNG_SEED: 5
+RNG_SEED: 3
 
 # Use GPU implementation of non-maximum suppression
 USE_GPU_NMS: True
@@ -44,6 +44,7 @@ roi_pooler_name: 'align'
 
 # Size of the pooled region after RoI pooling
 roi_pooler_size: 7
+POOLING_SIZE: 7 #TODO JA - delete this
 
 # Maximal number of gt rois in an image during Training
 MAX_NUM_GT_BOXES: 20
@@ -78,7 +79,7 @@ TRAIN:
   checkpoint: 0  # checkpoint to load model
   use_tfboard: True  # whether use tensorflow tensorboard
   optimizer: 'sgd'  # training optimizer
-  LEARNING_RATE: 1e-3
+  LEARNING_RATE: 0.001
   lr_decay_step: 5  # step to do learning rate decay, unit is epoch
   GAMMA: 0.1 # Factor for reducing the learning rate | learning rate decay ratio
   MOMENTUM: 0.9

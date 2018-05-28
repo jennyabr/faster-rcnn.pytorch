@@ -104,6 +104,7 @@ class ConfigProvider(dict):#object):
 
         self._cfg = cfg
 
+        # TODO: JA - return seed
         # seed = cfg.RNG_SEED
         # torch.manual_seed(seed)
         # torch.cuda.manual_seed_all(seed)

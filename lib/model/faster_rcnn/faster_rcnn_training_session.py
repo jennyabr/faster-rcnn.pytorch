@@ -43,14 +43,14 @@ def run_training_session(data_manager, model, create_optimizer_fn, cfg, train_lo
         data_manager.prepare_iter_for_new_epoch()
         for step in range(iters_per_epoch):
             batch_outputs = _train_on_batch(data_manager, model, optimizer, cfg)
-            aggregated_stats = _aggregate_stats(aggregated_stats, batch_outputs, cfg.TRAIN.disp_interval)
+            aggregated_stats = _aggregate_stats(aggregated_stats, batch_outputs['loss_tensors'], cfg.TRAIN.disp_interval)
 
             if step % cfg.TRAIN.disp_interval == 0 and step > 0:
                 aggregation_end_time = time.time()
                 time_per_sample = (aggregation_end_time - aggregation_start_time) / cfg.TRAIN.disp_interval
                 _write_stats_to_logger(
                     train_logger=train_logger,
-                    aggregated_stats=aggregated_stats,
+                    metrics=aggregated_stats,
                     time_per_sample=time_per_sample,
                     epoch=epoch, step=step, iters_per_epoch=iters_per_epoch)
                 aggregated_stats = {}
@@ -62,26 +62,31 @@ def run_training_session(data_manager, model, create_optimizer_fn, cfg, train_lo
 
         save_session_to_ckpt(model, optimizer, cfg, epoch)
 
+
 def _train_on_batch(data_manager, model, optimizer, cfg):
     im_data, im_info, gt_boxes, num_boxes = next(data_manager)
 
     model.zero_grad()
     rois, cls_prob, bbox_pred, rpn_loss_cls, rpn_loss_bbox, RCNN_loss_cls, RCNN_loss_bbox, rois_label = \
         model(im_data, im_info, gt_boxes, num_boxes)
-    loss_tensors = {
-        'loss_rpn_cls': rpn_loss_cls.mean(),
-        'loss_rpn_box': rpn_loss_bbox.mean(),
-        'loss_rcnn_cls': RCNN_loss_cls.mean(),
-        'loss_rcnn_box':  RCNN_loss_bbox.mean()
-        }
+
+    loss_tensors = {'loss_rpn_cls': rpn_loss_cls.mean(),
+                    'loss_rpn_box': rpn_loss_bbox.mean(),
+                    'loss_rcnn_cls': RCNN_loss_cls.mean(),
+                    'loss_rcnn_box':  RCNN_loss_bbox.mean()}
+
     loss_tensors['loss'] = torch.cat(list(loss_tensors.values())).sum()
+
+    # TODO variable?
+    loss_tensors['fg_cnt'] = torch.sum(rois_label.data.ne(0))
+    loss_tensors['bg_cnt'] = rois_label.data.numel() - loss_tensors['fg_cnt']
 
     batch_outputs = {
         'rois': rois,
         'rois_label': rois_label,
         'cls_prob': cls_prob,
         'bbox_pred': bbox_pred,
-        'loss_tensors': loss_tensors
+        'loss_tensors': loss_tensors #TODO remane to metrics
         }
 
     optimizer.zero_grad()
@@ -94,23 +99,15 @@ def _train_on_batch(data_manager, model, optimizer, cfg):
     return batch_outputs
 
 
-def _write_stats_to_logger(train_logger, aggregated_stats, time_per_sample,
+def _write_stats_to_logger(train_logger, metrics, time_per_sample,
                            epoch, step, iters_per_epoch):
-
-    agg_metrics = {}
-    for loss_name, agg_loss_tensor in aggregated_stats['loss_tensors'].items():
-        agg_metrics[loss_name] = agg_loss_tensor.data[0]
-    rois_label = aggregated_stats['rois_label']
-    agg_metrics['fg_cnt'] = torch.sum(rois_label.data.ne(0))
-    agg_metrics['bg_cnt'] = rois_label.data.numel() - agg_metrics['fg_cnt']
-
     current_step = epoch * iters_per_epoch + step
-    logged_string = " [epoch {0}] [iter {1}/{2}]: time per sample: {3:.3f}".format(
+    logged_string = " [epoch {}] [iter {}/{}]: time per sample: {}".format(
         epoch, step, iters_per_epoch, time_per_sample)
 
-    for metric_name, metric_value in agg_metrics.items():
+    for metric_name, metric_value in metrics.items():
         train_logger.scalar_summary(metric_name, metric_value, current_step)
-        logged_string += "\n\t\t{0}: {1:.3f}".format(metric_name, metric_value)
+        logged_string += "\n\t\t{}: {}".format(metric_name, metric_value)
 
     logger.info(logged_string)
     return logged_string
@@ -119,10 +116,9 @@ def _write_stats_to_logger(train_logger, aggregated_stats, time_per_sample,
 def _aggregate_stats(aggregated_stats, new_stats, disp_interval):
     res = {}
     for stat_name, stat_value in new_stats.items():
-        if isinstance(stat_value, dict):
-            res[stat_name] = _aggregate_stats(aggregated_stats.get(stat_name, {}), stat_value, disp_interval)
-        else:
-            current = new_stats[stat_name]
-            aggregated = aggregated_stats.get(stat_name, torch.zeros_like(current)) #TODO check with idan
-            res[stat_name] = aggregated + current / disp_interval  # TODO: ib - make sure it happens on the gpu
+        current = new_stats[stat_name]
+        if type(current) is Variable:
+            current = current .data[0] # TODO: JA - can we aggregate the stats on the gpu instead of the cpu?
+        aggregated = aggregated_stats.get(stat_name, 0)
+        res[stat_name] = aggregated + current / disp_interval  # TODO: ib - make sure it happens on the gpu
     return res
