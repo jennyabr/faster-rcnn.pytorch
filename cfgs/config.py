@@ -138,14 +138,14 @@ class ConfigProvider(dict):#object):
         return pp_path
 
     def get_evals_dir_path(self, epoch_num):
-        dir_name = 'evals_e{}.pkl'.format(epoch_num)
+        dir_name = 'evals_e{}'.format(epoch_num)
         dir_path = os.path.join(self._cfg['OUTPUT_PATH'], dir_name)
         return dir_path
 
-    def get_visualizations_path(self, epoch_num, im_num):
-        dir_name = 'epoch_{}/{}.png'.format(epoch_num, im_num)
-        dir_path = os.path.join(self._cfg['OUTPUT_PATH'], dir_name)
-        return dir_path
+    def get_img_visualization_path(self, epoch_num, im_num):
+        rel_file_path = 'visualizations_e{}/{}.png'.format(epoch_num, im_num)
+        full_file_path = os.path.join(self._cfg['OUTPUT_PATH'], rel_file_path)
+        return full_file_path
 
     def __getitem__(self, key):
         return self._cfg[key]
