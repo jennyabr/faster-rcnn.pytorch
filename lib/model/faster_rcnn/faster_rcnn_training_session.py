@@ -3,6 +3,7 @@ import logging
 
 import torch
 import torch.nn as nn
+import torch.autograd as Variable
 
 from model.faster_rcnn.ckpt_utils import save_session_to_ckpt
 from model.utils.net_utils import decay_lr_in_optimizer, clip_gradient
@@ -99,8 +100,7 @@ def _train_on_batch(data_manager, model, optimizer, cfg):
     return batch_outputs
 
 
-def _write_stats_to_logger(train_logger, metrics, time_per_sample,
-                           epoch, step, iters_per_epoch):
+def _write_stats_to_logger(train_logger, metrics, time_per_sample, epoch, step, iters_per_epoch):
     current_step = epoch * iters_per_epoch + step
     logged_string = " [epoch {}] [iter {}/{}]: time per sample: {}".format(
         epoch, step, iters_per_epoch, time_per_sample)

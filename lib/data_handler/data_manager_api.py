@@ -66,6 +66,11 @@ class DataManager(ABC):
 
     @property
     @abstractmethod
+    def num_images(self):
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
     def data_loader(self):
         raise NotImplementedError
 

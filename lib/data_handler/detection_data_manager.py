@@ -88,6 +88,10 @@ class FasterRCNNDataManager(DataManager):
         return self._data_loader
 
     @property
+    def num_images(self):
+        return self._imdb.num_images
+
+    @property
     def imdb(self):
         return self._imdb
 

@@ -15,7 +15,7 @@ def save_session_to_ckpt(model, optimizer, cfg, epoch):
     else:
         model_state_dict = model.state_dict()
     save_to = cfg.get_ckpt_path(epoch)
-    logger.info('Saving model checkpoint to {}.'.format(save_to))
+    logger.info(' --->>> Saving model checkpoint to: {}'.format(save_to))
     torch.save({'last_performed_epoch': epoch,
                 'model': model_state_dict,
                 'model_cfg_params': model.cfg_params,
