@@ -32,9 +32,9 @@ if __name__ == '__main__':
     #
     # faster_rcnn_postprocessing(data_manager, model, cfg, predict_on_epoch)
     #
-    # detections_path = cfg.get_postprocessed_detections_path(predict_on_epoch)
-    # eval_path = cfg.get_evals_dir_path(predict_on_epoch)
-    # faster_rcnn_evaluation(data_manager, cfg, detections_path, eval_path)
+    detections_path = cfg.get_postprocessed_detections_path(predict_on_epoch)
+    eval_path = cfg.get_evals_dir_path(predict_on_epoch)
+    faster_rcnn_evaluation(data_manager, cfg, detections_path, eval_path)
 
     faster_rcnn_visualization(data_manager, cfg, predict_on_epoch)
 

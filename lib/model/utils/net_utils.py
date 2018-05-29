@@ -23,7 +23,7 @@ def clip_gradient(model, clip_norm):
 
 
 def decay_lr_in_optimizer(epoch, lr_decay_step, optimizer, decay=0.1):
-    if epoch % (lr_decay_step + 1) == 0:
+    if epoch % lr_decay_step == 0:
         for param_group in optimizer.param_groups:
             param_group['lr'] = decay * param_group['lr']
     return optimizer
