@@ -1,11 +1,10 @@
+import numpy as np
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
-import numpy as np
-from cfgs.config import cfg
-import pdb
-import random
+
 
 
 def clip_gradient(model, clip_norm):
