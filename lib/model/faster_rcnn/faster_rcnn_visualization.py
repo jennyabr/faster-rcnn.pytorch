@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 def faster_rcnn_visualization(data_manager, cfg, epoch_num):
-    pp_preds_path = cfg.get_postprocessed_preds_path(epoch_num)
+    pp_preds_path = cfg.get_postprocessed_detections_path(epoch_num)
     with open(pp_preds_path, 'rb') as f:
         bboxs = pickle.load(f)
 

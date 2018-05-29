@@ -132,7 +132,7 @@ class ConfigProvider(dict):#object):
         preds_path = os.path.join(self._cfg['OUTPUT_PATH'], 'preds', file_name)
         return preds_path
 
-    def get_postprocessed_preds_path(self, epoch_num):
+    def get_postprocessed_detections_path(self, epoch_num):
         file_name = 'pp_preds_e{}.pkl'.format(epoch_num)
         pp_path = os.path.join(self._cfg['OUTPUT_PATH'], 'pp_preds', file_name)
         return pp_path
