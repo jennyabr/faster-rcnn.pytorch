@@ -26,9 +26,9 @@ def faster_rcnn_visualization(data_manager, cfg, epoch_num):
                 bbox_coords = tuple(int(np.round(coords)) for coords in cls_bboxes[bbox_ind, :4])
                 bbox_score = cls_bboxes[bbox_ind, -1]
                 if bbox_score > 0.3:
-                    cv2.rectangle(im, bbox_coords[0:2][::-1], bbox_coords[2:4][::-1], (0, 204, 0), 2)
+                    cv2.rectangle(im2show, bbox_coords[0:2][::-1], bbox_coords[2:4][::-1], (0, 204, 0), 2)
                     class_name = data_manager.imdb.classes[j]
-                    cv2.putText(im,
+                    cv2.putText(im2show,
                                 '%s: %.3f' % (class_name, bbox_score),
                                 (bbox_coords[1], bbox_coords[0] + 15),
                                 cv2.FONT_HERSHEY_PLAIN,
