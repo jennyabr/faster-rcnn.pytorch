@@ -1,7 +1,7 @@
 # TODO: IB - the config should be code
 DATA_DIR: '/home/jenny/gripper2/data'
 OUTPUT_DIR: '/home/jenny/gripper2/outputs/05_27'
-EXPERIMENT_NAME: 'reproducing_sota_vgg_with_our_branch_after_bug'
+EXPERIMENT_NAME: 'reproducing_sota_vgg_with_our_branch_after_bug2'
 dataset: 'pascal_voc'  # training dataset'
 net: 'vgg' #  # {vgg,resnet}
 net_variant: '16' # Currently supported: {16 for vgg, 50, 101, 152 for resnet}
