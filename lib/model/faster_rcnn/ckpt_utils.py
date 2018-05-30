@@ -1,5 +1,4 @@
 import os
-
 import torch
 
 from cfgs.config import ConfigProvider, get_logger

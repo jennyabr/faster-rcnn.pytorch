@@ -1,3 +1,4 @@
+import logging
 import time
 
 import torch
@@ -6,11 +7,10 @@ from torch.autograd.variable import Variable
 
 from model.faster_rcnn.ckpt_utils import save_session_to_ckpt
 from model.utils.net_utils import decay_lr_in_optimizer, clip_gradient
-from cfgs.config import get_logger
 
 
 def run_training_session(data_manager, model, create_optimizer_fn, cfg, train_logger, first_epoch=0):
-    logger = get_logger(__name__)
+    logger = logging.get_logger(__name__)
 
     def get_trainable_params():
         trainable_params = []

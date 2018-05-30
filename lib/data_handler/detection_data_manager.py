@@ -1,10 +1,10 @@
 import torch
+from torch.utils.data import DataLoader
 from torch.utils.data.sampler import Sampler
 
 from data_handler.data_manager_api import DataManager, Mode
-from roi_data_layer.roidb import combined_roidb
 from roi_data_layer.roibatchLoader import roibatchLoader
-from torch.utils.data import DataLoader
+from roi_data_layer.roidb import combined_roidb
 
 
 class BDSampler(Sampler):

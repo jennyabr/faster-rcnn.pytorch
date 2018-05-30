@@ -1,7 +1,7 @@
-from abc import ABC, abstractmethod
 from enum import Enum
 
 import torch
+from abc import ABC, abstractmethod
 from torch.autograd import Variable
 
 

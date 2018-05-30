@@ -3,13 +3,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-# import datasets
+import PIL
 import numpy as np
 
 import datasets.imdb
 from cfgs.config import cfg
 from datasets.factory import get_imdb
-import PIL
 
 
 def prepare_roidb(imdb):

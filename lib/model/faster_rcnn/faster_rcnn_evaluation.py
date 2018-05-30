@@ -1,5 +1,5 @@
-import time
 import pickle
+import time
 
 from cfgs.config import get_logger
 

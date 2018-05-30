@@ -1,15 +1,16 @@
-import os
-import time
-import numpy as np
+import logging
 import pickle
+import time
 
+import numpy as np
+import os
 import torch
 
 from model.rpn.bbox_transform import bbox_transform_inv, clip_boxes
-from cfgs.config import get_logger
+
 
 def faster_rcnn_prediction(data_manager, model, cfg, epoch_num):
-    logger = get_logger(__name__)
+    logger = logging.get_logger(__name__)
     logger.info(" --->>> Starting prediction...")
     num_images = len(data_manager)
     model.eval()

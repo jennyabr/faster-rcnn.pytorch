@@ -28,10 +28,10 @@ if __name__ == '__main__':
                                               is_cuda=cfg.CUDA,
                                               batch_size=cfg.TRAIN.batch_size)
 
-    # faster_rcnn_prediction(data_manager, model, cfg, predict_on_epoch)
-    #
-    # faster_rcnn_postprocessing(data_manager, model, cfg, predict_on_epoch)
-    #
+    faster_rcnn_prediction(data_manager, model, cfg, predict_on_epoch)
+
+    faster_rcnn_postprocessing(data_manager, model, cfg, predict_on_epoch)
+
     detections_path = cfg.get_postprocessed_detections_path(predict_on_epoch)
     eval_path = cfg.get_evals_dir_path(predict_on_epoch)
     faster_rcnn_evaluation(data_manager, cfg, detections_path, eval_path)
