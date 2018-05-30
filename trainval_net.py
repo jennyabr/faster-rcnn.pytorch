@@ -34,8 +34,6 @@ if __name__ == '__main__':
     # TODO: IB it can be assigned to the state of the trainer\evaluator\etc.
     global cfg
     cfg.load(args.config_dir)
-    experiment_name = 'faster_rcnn_vgg_voc'
-
     # possible_anchors_scales = [a,b,c]
     # for scale in possible_anchors_scales:
     #     cfg.scale = scale
@@ -54,7 +52,3 @@ if __name__ == '__main__':
                                                               num_classes=train_data_manager.num_classes)
     create_optimizer_fn = partial(torch.optim.SGD, momentum=cfg.TRAIN.MOMENTUM)
     run_training_session(train_data_manager, model, create_optimizer_fn, cfg, train_logger, cfg.TRAIN.start_epoch)
-
-    # eval_data_manager = FasterRCNNDataManager(mode=Mode.EVAL, imdb_name=cfg.imdbval_name,
-    #                                           seed=cfg.RNG_SEED, num_workers=cfg.NUM_WORKERS, is_cuda=cfg.CUDA,
-    #                                           batch_size=cfg.TRAIN.batch_size)

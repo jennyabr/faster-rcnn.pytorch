@@ -1,7 +1,7 @@
 # TODO: IB - the config should be code
 DATA_DIR: '/home/jenny/gripper2/data'
-OUTPUT_DIR: '/home/jenny/gripper2/outputs/05_29'
-EXPERIMENT_NAME: 'vgg_voc_sota_e2e_fixed_lr_decay'
+OUTPUT_DIR: '/home/jenny/gripper2/outputs/05_30'
+EXPERIMENT_NAME: 'train_final'
 dataset: 'pascal_voc'  # training dataset'
 net: 'vgg' #  # {vgg,resnet}
 net_variant: '16' # Currently supported: {16 for vgg, 50, 101, 152 for resnet}
