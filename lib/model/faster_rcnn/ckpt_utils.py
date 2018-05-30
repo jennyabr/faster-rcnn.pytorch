@@ -1,15 +1,12 @@
-import logging
 import os
 
 import torch
 
-from cfgs.config import ConfigProvider
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from cfgs.config import ConfigProvider, get_logger
 
 
 def save_session_to_ckpt(model, optimizer, cfg, epoch):
+    logger = get_logger(__name__)
     if cfg.mGPUs:
         model_state_dict = model.module.state_dict()
     else:

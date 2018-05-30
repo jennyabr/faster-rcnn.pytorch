@@ -2,7 +2,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import logging
 from functools import partial
 from abc import ABC, abstractmethod
 import os.path
@@ -10,10 +9,6 @@ import os.path
 import torch
 
 from model.utils.net_utils import normal_init
-
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 class FasterRCNNFeatureExtractors(ABC):
@@ -61,7 +56,6 @@ def create_feature_extractor_from_ckpt(net_name, net_variant, frozen_blocks, pre
         raise ValueError('Pretrained model path given does not exist')
     fe_cls = _get_feature_extractor_cls(net_name)
     fe = fe_cls(net_variant=net_variant, frozen_blocks=frozen_blocks)
-    logger.info(" Loading feature extractors pretrained weights from: {}.".format(pretrained_model_path))
     orig_state_dict = torch.load(os.path.expanduser(pretrained_model_path))
     fe_subnets = fe.recreate_state_dict(orig_state_dict)
     for fe_subnet, new_state_dict in fe_subnets:

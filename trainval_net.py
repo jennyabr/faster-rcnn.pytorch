@@ -8,7 +8,6 @@ from __future__ import division
 from __future__ import print_function
 
 import argparse
-import logging
 import torch
 
 from functools import partial
@@ -20,10 +19,7 @@ from loggers.tensorbord_logger import TensorBoardLogger
 from model.faster_rcnn.faster_rcnn_meta_arch import FasterRCNNMetaArch
 from model.faster_rcnn.faster_rcnn_training_session import run_training_session
 from model.feature_extractors.faster_rcnn_feature_extractors import create_feature_extractor_from_ckpt
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
+from cfgs.config import get_logger
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train a Faster R-CNN network')
@@ -44,6 +40,8 @@ if __name__ == '__main__':
     # for scale in possible_anchors_scales:
     #     cfg.scale = scale
     #     faster_rcnn = FasterRCNNTrainer(cfg)
+
+    logger = get_logger(__name__)
 
     train_data_manager = FasterRCNNDataManager(
         mode=Mode.TRAIN, imdb_name=cfg.imdb_name, seed=cfg.RNG_SEED, num_workers=cfg.NUM_WORKERS, is_cuda=cfg.CUDA,

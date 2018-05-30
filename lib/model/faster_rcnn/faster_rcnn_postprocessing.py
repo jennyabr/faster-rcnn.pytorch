@@ -1,18 +1,15 @@
 import time
-import logging
 import numpy as np
 import pickle
 import os
 
 import torch
 from model.nms.nms_wrapper import nms
-
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from cfgs.config import get_logger
 
 
 def faster_rcnn_postprocessing(data_manager, model, cfg, num_epoch):
+    logger = get_logger(__name__)
     start_time = time.time()
     num_images = len(data_manager)
     num_classes = data_manager.num_classes

@@ -1,15 +1,15 @@
 import time
 import pickle
-import logging
 import numpy as np
 import cv2
 import os
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from cfgs.config import get_logger
 
 
 def faster_rcnn_visualization(data_manager, cfg, epoch_num):
+    logger = get_logger(__name__)
+
     pp_preds_path = cfg.get_postprocessed_detections_path(epoch_num)
     logger.info(" --->>> Reading post-processing data from: {}".format(pp_preds_path))
     with open(pp_preds_path, 'rb') as f:

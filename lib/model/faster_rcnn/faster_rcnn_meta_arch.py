@@ -1,4 +1,3 @@
-import logging
 from functools import partial
 import os
 
@@ -14,9 +13,6 @@ from model.rpn.proposal_target_layer_cascade import _ProposalTargetLayer
 from model.utils.net_utils import _smooth_l1_loss, _affine_grid_gen, normal_init
 
 from cfgs.config import cfg, ConfigProvider
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 class FasterRCNNMetaArch(nn.Module):

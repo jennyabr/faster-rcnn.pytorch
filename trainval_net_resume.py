@@ -8,16 +8,12 @@ from __future__ import division
 from __future__ import print_function
 
 import argparse
-import logging
 
 from data_handler.detection_data_manager import FasterRCNNDataManager
 from data_handler.data_manager_api import Mode
 from loggers.tensorbord_logger import TensorBoardLogger
 from model.faster_rcnn.ckpt_utils import load_session_from_ckpt
 from model.faster_rcnn.faster_rcnn_training_session import run_training_session
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 if __name__ == '__main__':

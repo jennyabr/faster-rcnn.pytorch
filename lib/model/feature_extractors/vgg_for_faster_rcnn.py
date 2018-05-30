@@ -2,16 +2,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import logging
 
 import torch.nn as nn
 import torchvision.models as models
 
 from model.feature_extractors.faster_rcnn_feature_extractors import FasterRCNNFeatureExtractors
 from model.utils.net_utils import assert_sequential
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 class VGGForFasterRCNN(FasterRCNNFeatureExtractors):

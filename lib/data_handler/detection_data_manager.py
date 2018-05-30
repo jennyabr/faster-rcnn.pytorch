@@ -1,5 +1,3 @@
-import logging
-
 import torch
 from torch.utils.data.sampler import Sampler
 
@@ -7,10 +5,6 @@ from data_handler.data_manager_api import DataManager, Mode
 from roi_data_layer.roidb import combined_roidb
 from roi_data_layer.roibatchLoader import roibatchLoader
 from torch.utils.data import DataLoader
-
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 class BDSampler(Sampler):
@@ -53,7 +47,6 @@ class FasterRCNNDataManager(DataManager):
 
         if self.is_train:
             self._train_size = train_size = len(roidb)
-            logger.info('{:d} roidb entries.'.format(train_size))
             sampler_batch = BDSampler(train_size, batch_size, seed)
             self._data_loader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers,
                                            sampler=sampler_batch)

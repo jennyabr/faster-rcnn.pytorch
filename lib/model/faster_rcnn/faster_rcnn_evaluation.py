@@ -1,12 +1,11 @@
 import time
-import logging
 import pickle
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from cfgs.config import get_logger
 
 
 def faster_rcnn_evaluation(data_manager, cfg, detections_path, eval_dir_path):  # TODO JA alternative prams
+    logger = get_logger(__name__)
     logger.info(' --->>> Evaluating detections from: {}'.format(detections_path))
     with open(detections_path, 'rb') as f:
         dets_to_evaluate = pickle.load(f)

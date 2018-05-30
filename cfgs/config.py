@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import time
 import os
 import numpy as np
 import logging
@@ -20,6 +21,9 @@ logger.info("!!!!!!!!!!!!!!!!!!!!!!!!!19999999999999999999999999999") #TODO: JA 
 class ConfigProvider(dict):#object):
     def __init__(self):
         self._cfg = edict({})
+
+        from time import gmtime, strftime
+        self.start_run_time_str = strftime("%Y_%b_%d_%H_%M", gmtime())
 
     def load(self, config_dir_path):
         """Load a config file and merge it into the default options."""
@@ -147,6 +151,11 @@ class ConfigProvider(dict):#object):
         full_file_path = os.path.join(self._cfg['OUTPUT_PATH'], rel_file_path)
         return full_file_path
 
+    def get_log_path(self):
+        file_name = '{}.log'.format(self.start_run_time_str)
+        path = os.path.join(self._cfg['OUTPUT_PATH'], file_name)
+        return path
+
     def __getitem__(self, key):
         return self._cfg[key]
 
@@ -162,3 +171,26 @@ class ConfigProvider(dict):#object):
 
 
 cfg = ConfigProvider()
+
+
+def get_logger(name):
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.INFO)
+
+    # create file handler which logs even debug messages
+    fh = logging.FileHandler(filename=cfg.get_log_path(), mode='a')
+    fh.setLevel(logging.INFO)
+
+    # create console handler with a higher log level
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.INFO)
+
+    # create formatter and add it to the handlers
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(message)s')
+    fh.setFormatter(formatter)
+    ch.setFormatter(formatter)
+    # add the handlers to the logger
+    logger.addHandler(fh)
+    logger.addHandler(ch)
+
+    return logger

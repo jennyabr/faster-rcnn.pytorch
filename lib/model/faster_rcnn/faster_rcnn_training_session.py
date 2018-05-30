@@ -1,18 +1,17 @@
 import time
-import logging
 
 import torch
 import torch.nn as nn
-import torch.autograd as Variable
+from torch.autograd.variable import Variable
 
 from model.faster_rcnn.ckpt_utils import save_session_to_ckpt
 from model.utils.net_utils import decay_lr_in_optimizer, clip_gradient
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from cfgs.config import get_logger
 
 
 def run_training_session(data_manager, model, create_optimizer_fn, cfg, train_logger, first_epoch=0):
+    logger = get_logger(__name__)
+
     def get_trainable_params():
         trainable_params = []
         for key, value in dict(model.named_parameters()).items():
@@ -49,17 +48,18 @@ def run_training_session(data_manager, model, create_optimizer_fn, cfg, train_lo
             if step % cfg.TRAIN.disp_interval == 0 and step > 0:
                 aggregation_end_time = time.time()
                 time_per_sample = (aggregation_end_time - aggregation_start_time) / cfg.TRAIN.disp_interval
-                _write_stats_to_logger(
+                logged_string = _write_stats_to_logger(
                     train_logger=train_logger,
                     metrics=aggregated_stats,
                     time_per_sample=time_per_sample,
                     epoch=epoch, step=step, iters_per_epoch=iters_per_epoch)
+                logger.info(logged_string)
                 aggregated_stats = {}
                 aggregation_start_time = time.time()
 
         epoch_end_time = time.time()
         epoch_duration_hrs = (epoch_end_time - epoch_start_time) / 3600
-        logger.info(" Finished epoch {} in {} hrs.".format(epoch, epoch_duration_hrs))
+        logger.info(" Finished epoch {0} in {1:.3f} hrs.".format(epoch, epoch_duration_hrs))
 
         save_session_to_ckpt(model, optimizer, cfg, epoch)
 
@@ -102,14 +102,13 @@ def _train_on_batch(data_manager, model, optimizer, cfg):
 
 def _write_stats_to_logger(train_logger, metrics, time_per_sample, epoch, step, iters_per_epoch):
     current_step = epoch * iters_per_epoch + step
-    logged_string = " [epoch {}] [iter {}/{}]: time per sample: {}".format(
+    logged_string = " [epoch {0}] [iter {1}/{2}]: time per sample: {3:.3f} min.".format(
         epoch, step, iters_per_epoch, time_per_sample)
 
     for metric_name, metric_value in metrics.items():
         train_logger.scalar_summary(metric_name, metric_value, current_step)
-        logged_string += "\n\t\t{}: {}".format(metric_name, metric_value)
+        logged_string += "\n\t\t{0}: {1:.4f}".format(metric_name, metric_value)
 
-    logger.info(logged_string)
     return logged_string
 
 
@@ -118,7 +117,7 @@ def _aggregate_stats(aggregated_stats, new_stats, disp_interval):
     for stat_name, stat_value in new_stats.items():
         current = new_stats[stat_name]
         if type(current) is Variable:
-            current = current .data[0] # TODO: JA - can we aggregate the stats on the gpu instead of the cpu?
+            current = current.data[0]  # TODO: JA - can we aggregate the stats on the gpu instead of the cpu?
         aggregated = aggregated_stats.get(stat_name, 0)
         res[stat_name] = aggregated + current / disp_interval  # TODO: ib - make sure it happens on the gpu
     return res
