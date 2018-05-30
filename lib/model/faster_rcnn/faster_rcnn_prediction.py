@@ -14,12 +14,12 @@ def faster_rcnn_prediction(data_manager, model, cfg, epoch_num):
     logger.info(" --->>> Starting prediction...")
     num_images = len(data_manager)
     model.eval()
-    raw_preds = {'bbox_coords':
-                     np.zeros((num_images, cfg.TEST.RPN_POST_NMS_TOP_N, model.num_predicted_coords),
-                              dtype=np.float32),
-                 'cls_probs':
-                     np.zeros((num_images, cfg.TEST.RPN_POST_NMS_TOP_N, model.cfg_params['num_classes']),
-                              dtype=np.float32)}
+    raw_preds = {
+        'bbox_coords': np.zeros((num_images, cfg.TEST.RPN_POST_NMS_TOP_N, model.num_predicted_coords),
+                                dtype=np.float32),
+        'cls_probs': np.zeros((num_images, cfg.TEST.RPN_POST_NMS_TOP_N, model.cfg_params['num_classes']),
+                              dtype=np.float32)
+    }
 
     pred_start = time.time()
     data_manager.prepare_iter_for_new_epoch()
@@ -34,14 +34,13 @@ def faster_rcnn_prediction(data_manager, model, cfg, epoch_num):
         rpn_proposals = rois.data[:, :, 1:5]
 
         def transform_preds_to_img_coords():
-            deltas_from_proposals = bbox_pred.data
 
             def unnormalize_preds():
+                deltas_from_proposals = bbox_pred.data  # TODO why data?
                 means = torch.FloatTensor(cfg.TRAIN.BBOX_NORMALIZE_MEANS).cuda()
                 stds = torch.FloatTensor(cfg.TRAIN.BBOX_NORMALIZE_STDS).cuda()
                 unnormalized_deltas = deltas_from_proposals.view(-1, 4) * stds + means
                 return unnormalized_deltas
-
             unnormalized_deltas = unnormalize_preds()
             reshaped_deltas = unnormalized_deltas.view(1, -1, model.num_predicted_coords)
             preds_in_img_coords = bbox_transform_inv(rpn_proposals, reshaped_deltas, 1)
@@ -56,9 +55,9 @@ def faster_rcnn_prediction(data_manager, model, cfg, epoch_num):
         curr_pred_end = time.time()
         pred_time = curr_pred_end - curr_pred_start
         avg_pred_time = (curr_pred_end - pred_start) / (i+1)
-        logger.info('Prediction progress: {0}/{1}: '
-                    'Time for current image: {2:.4f}s, '
-                    '[Avg time per image: {3:.4f}s].'.format(i+1, num_images, pred_time, avg_pred_time))
+        logger.info('Prediction {0}/{1}: '
+                    'Time for current image: {2:.3f} min, '
+                    '[Avg per image: {3:.3f} min].'.format(i+1, num_images, pred_time, avg_pred_time))
         raw_preds['bbox_coords'][i, ...] = bbox_coords.cpu().numpy()
         raw_preds['cls_probs'][i, ...] = cls_probs.cpu().numpy()
 

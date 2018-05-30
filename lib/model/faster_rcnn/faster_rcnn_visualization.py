@@ -30,8 +30,8 @@ def faster_rcnn_visualization(data_manager, cfg, epoch_num):
 
                     class_name = data_manager.imdb.classes[j]
                     cv2.putText(im2show,
-                                '%s: %.3f' % (class_name, bbox_score),
-                                (bbox_coords[1], bbox_coords[0] + 15),
+                                '{0}: {1:.3f}'.format(class_name, bbox_score),
+                                (bbox_coords[0] + 15, bbox_coords[1]),
                                 cv2.FONT_HERSHEY_PLAIN,
                                 1.0,
                                 (0, 0, 255),
