@@ -8,7 +8,6 @@
 """Compute minibatch blobs for training a Fast R-CNN network."""
 from __future__ import absolute_import
 from __future__ import division
-from __future__ import print_function
 
 import numpy as np
 import numpy.random as npr

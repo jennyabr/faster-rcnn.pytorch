@@ -1,27 +1,26 @@
-from __future__ import print_function
-from __future__ import absolute_import
 # --------------------------------------------------------
 # Fast R-CNN
 # Copyright (c) 2015 Microsoft
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Ross Girshick
 # --------------------------------------------------------
+from __future__ import absolute_import
 
-import os
-import numpy as np
-import scipy.sparse
-import uuid
-import scipy.io as sio
-import xml.etree.ElementTree as ET
+import logging
 import pickle
-from .imdb import imdb
+import uuid
+import xml.etree.ElementTree as ET
+
+import numpy as np
+import os
+import scipy.io as sio
+import scipy.sparse
+
 from . import ds_utils
+from .imdb import imdb
 from .voc_eval import voc_eval
 
-# TODO: make fast_rcnn irrelevant
-# >>>> obsolete, because it depends on sth outside of this project
-
-# <<<< obsolete
+logger = logging.getLogger(__name__)
 
 
 class pascal_voc(imdb):
@@ -29,8 +28,7 @@ class pascal_voc(imdb):
         imdb.__init__(self, 'voc_' + year + '_' + image_set, data_dir=data_dir)
         self._year = year
         self._image_set = image_set
-        self._devkit_path = self._get_default_path() if devkit_path is None \
-            else devkit_path
+        self._devkit_path = self._get_default_path() if devkit_path is None else devkit_path
         self._data_path = os.path.join(self._devkit_path, 'VOC' + self._year)
         self._classes = ('__background__',  # always index 0
                          'aeroplane', 'bicycle', 'bird', 'boat',
@@ -41,8 +39,6 @@ class pascal_voc(imdb):
         self._class_to_ind = dict(zip(self.classes, range(self.num_classes)))
         self._image_ext = '.jpg'
         self._image_index = self._load_image_set_index()
-        # Default to roidb handler
-        # self._roidb_handler = self.selective_search_roidb
         self._roidb_handler = self.gt_roidb
         self._salt = str(uuid.uuid4())
         self._comp_id = 'comp4'
@@ -112,14 +108,14 @@ class pascal_voc(imdb):
         if os.path.exists(cache_file):
             with open(cache_file, 'rb') as fid:
                 roidb = pickle.load(fid)
-            print('{} gt roidb loaded from {}'.format(self.name, cache_file))
+            logger.info('{} gt roidb loaded from {}.'.format(self.name, cache_file))
             return roidb
 
         gt_roidb = [self._load_pascal_annotation(index)
                     for index in self.image_index]
         with open(cache_file, 'wb') as fid:
             pickle.dump(gt_roidb, fid, pickle.HIGHEST_PROTOCOL)
-        print('wrote gt roidb to {}'.format(cache_file))
+        logger.info('Wrote gt roidb to {}.'.format(cache_file))
 
         return gt_roidb
 
@@ -136,7 +132,7 @@ class pascal_voc(imdb):
         if os.path.exists(cache_file):
             with open(cache_file, 'rb') as fid:
                 roidb = pickle.load(fid)
-            print('{} ss roidb loaded from {}'.format(self.name, cache_file))
+            logger.info('{} ss roidb loaded from {}.'.format(self.name, cache_file))
             return roidb
 
         if int(self._year) == 2007 or self._image_set != 'test':
@@ -147,7 +143,7 @@ class pascal_voc(imdb):
             roidb = self._load_selective_search_roidb(None)
         with open(cache_file, 'wb') as fid:
             pickle.dump(roidb, fid, pickle.HIGHEST_PROTOCOL)
-        print('wrote ss roidb to {}'.format(cache_file))
+        logger.info('Wrote ss roidb to {}.'.format(cache_file))
 
         return roidb
 
@@ -163,7 +159,7 @@ class pascal_voc(imdb):
 
     def _load_rpn_roidb(self, gt_roidb):
         filename = self.config['rpn_file']
-        print('loading {}'.format(filename))
+        logger.info('Loading {}.'.format(filename))
         assert os.path.exists(filename), \
             'rpn data not found at: {}'.format(filename)
         with open(filename, 'rb') as f:
@@ -171,11 +167,9 @@ class pascal_voc(imdb):
         return self.create_roidb_from_box_list(box_list, gt_roidb)
 
     def _load_selective_search_roidb(self, gt_roidb):
-        filename = os.path.abspath(os.path.join(self._data_dir,
-                                                'selective_search_data',
-                                                self.name + '.mat'))
-        assert os.path.exists(filename), \
-            'Selective search data not found at: {}'.format(filename)
+        filename = os.path.abspath(
+            os.path.join(self._data_dir, 'selective_search_data', self.name + '.mat'))
+        assert os.path.exists(filename), 'Selective search data not found at: {}'.format(filename)
         raw_data = sio.loadmat(filename)['boxes'].ravel()
 
         box_list = []
@@ -252,7 +246,7 @@ class pascal_voc(imdb):
         for cls_ind, cls in enumerate(self.classes):
             if cls == '__background__':
                 continue
-            print('Writing {} VOC results file'.format(cls))
+            logger.info('Writing {} VOC results file.'.format(cls))
             filename = self._get_voc_results_file_template().format(cls)
             with open(filename, 'wt') as f:
                 for im_ind, index in enumerate(self.image_index):
@@ -282,7 +276,7 @@ class pascal_voc(imdb):
         aps = []
         # The PASCAL VOC metric changed in 2010
         use_07_metric = True if int(self._year) < 2010 else False
-        print('VOC07 metric? ' + ('Yes' if use_07_metric else 'No'))
+        logger.info('VOC07 metric? {}'.format(('Yes' if use_07_metric else 'No')))
         if not os.path.isdir(output_dir):
             os.mkdir(output_dir)
         for i, cls in enumerate(self._classes):
@@ -293,23 +287,23 @@ class pascal_voc(imdb):
                 filename, annopath, imagesetfile, cls, cachedir, ovthresh=0.5,
                 use_07_metric=use_07_metric)
             aps += [ap]
-            print('AP for {} = {:.4f}'.format(cls, ap))
+            logger.info('AP for {} = {:.4f}.'.format(cls, ap))
             with open(os.path.join(output_dir, cls + '_pr.pkl'), 'wb') as f:
                 pickle.dump({'rec': rec, 'prec': prec, 'ap': ap}, f)
-        print('Mean AP = {:.4f}'.format(np.mean(aps)))
-        print('~~~~~~~~')
-        print('Results:')
+        logger.info('Mean AP = {:.4f}.'.format(np.mean(aps)))
+        logger.info('~~~~~~~~')
+        logger.info('Results:')
         for ap in aps:
-            print('{:.3f}'.format(ap))
-        print('{:.3f}'.format(np.mean(aps)))
-        print('~~~~~~~~')
-        print('')
-        print('--------------------------------------------------------------')
-        print('Results computed with the **unofficial** Python eval code.')
-        print('Results should be very close to the official MATLAB eval code.')
-        print('Recompute with `./tools/reval.py --matlab ...` for your paper.')
-        print('-- Thanks, The Management')
-        print('--------------------------------------------------------------')
+            logger.info('{:.3f}'.format(ap))
+        logger.info('{:.3f}'.format(np.mean(aps)))
+        logger.info('~~~~~~~~')
+        logger.info('')
+        logger.info('--------------------------------------------------------------')
+        logger.info('Results computed with the **unofficial** Python eval code. '
+                    'Results should be very close to the official MATLAB eval code. '
+                    'Recompute with `./tools/reval.py --matlab ...` for your paper. '
+                    '-- Thanks, The Management')
+        logger.info('--------------------------------------------------------------')
 
     def evaluate_detections(self, all_boxes, output_dir=None):
         self._write_voc_results_file(all_boxes)

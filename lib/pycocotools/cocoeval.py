@@ -1,8 +1,8 @@
 from __future__ import absolute_import
-from __future__ import print_function
 
 __author__ = 'tsungyi'
 
+import logging
 import numpy as np
 import datetime
 import time
@@ -10,8 +10,10 @@ from collections import defaultdict
 from . import mask
 import copy
 
+
 string_types = (str, )
 
+logger = logging.getLogger(__name__)
 
 class COCOeval:
     # Interface for evaluating detection on the Microsoft COCO dataset.
@@ -97,7 +99,7 @@ class COCOeval:
                 t = coco.imgs[obj['image_id']]
                 if type(obj['segmentation']) == list:
                     if type(obj['segmentation'][0]) == dict:
-                        print('debug')
+                        logger.debug('Debug')
                     obj['segmentation'] = mask.frPyObjects(obj['segmentation'],t['height'],t['width'])
                     if len(obj['segmentation']) == 1:
                         obj['segmentation'] = obj['segmentation'][0]
@@ -138,7 +140,7 @@ class COCOeval:
         :return: None
         '''
         tic = time.time()
-        print('Running per image evaluation...      ')
+        logger.info('Running per image evaluation...      ')
         p = self.params
         p.imgIds = list(np.unique(p.imgIds))
         if p.useCats:
@@ -163,7 +165,7 @@ class COCOeval:
                          for imgId in p.imgIds]
         self._paramsEval = copy.deepcopy(self.params)
         toc = time.time()
-        print('DONE (t=%0.2fs).' % (toc-tic))
+        logger.info('Done (t=%0.2fs).' % (toc-tic))
 
     def computeIoU(self, imgId, catId):
         p = self.params
@@ -216,7 +218,6 @@ class COCOeval:
                 g['_ignore'] = 0
 
         # sort dt highest score first, sort gt ignore last
-        # gt = sorted(gt, key=lambda x: x['_ignore'])
         gtind = [ind for (ind, g) in sorted(enumerate(gt), key=lambda ind_g: ind_g[1]['_ignore'])]
 
         gt = [gt[ind] for ind in gtind]
@@ -280,10 +281,10 @@ class COCOeval:
         :param p: input params for evaluation
         :return: None
         '''
-        print('Accumulating evaluation results...   ')
+        logger.info('Accumulating evaluation results...')
         tic = time.time()
         if not self.evalImgs:
-            print('Please run evaluate() first')
+            logger.info('Please run evaluate() first.')
         # allows input customized parameters
         if p is None:
             p = self.params
@@ -374,14 +375,14 @@ class COCOeval:
             'recall':   recall,
         }
         toc = time.time()
-        print('DONE (t=%0.2fs).'%( toc-tic ))
+        logger.info('Done (t=%0.2fs).' % (toc-tic))
 
     def summarize(self):
         '''
         Compute and display summary metrics for evaluation results.
         Note this functin can *only* be applied on the default parameter setting
         '''
-        def _summarize( ap=1, iouThr=None, areaRng='all', maxDets=100 ):
+        def _summarize(ap=1, iouThr=None, areaRng='all', maxDets=100):
             p = self.params
             iStr = ' {:<18} {} @[ IoU={:<9} | area={:>6} | maxDets={:>3} ] = {}'
             titleStr = 'Average Precision' if ap == 1 else 'Average Recall'
@@ -409,7 +410,7 @@ class COCOeval:
                 mean_s = -1
             else:
                 mean_s = np.mean(s[s > -1])
-            print(iStr.format(titleStr, typeStr, iouStr, areaStr, maxDetsStr, '%.3f' % (float(mean_s))))
+            logger.info(iStr.format(titleStr, typeStr, iouStr, areaStr, maxDetsStr, '%.3f' % (float(mean_s))))
             return mean_s
 
         if not self.eval:

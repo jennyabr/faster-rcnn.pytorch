@@ -1,6 +1,4 @@
-import torch
 from torch.autograd import Function
-
 from .._ext import roi_align
 
 
@@ -31,8 +29,6 @@ class RoIAlignFunction(Function):
                                         self.aligned_width,
                                         self.spatial_scale, features,
                                         rois, output)
-#            raise NotImplementedError
-
         return output
 
     def backward(self, grad_output):
@@ -45,7 +41,4 @@ class RoIAlignFunction(Function):
                                           self.aligned_width,
                                           self.spatial_scale, grad_output,
                                           self.rois, grad_input)
-
-        # print grad_input
-
         return grad_input, None

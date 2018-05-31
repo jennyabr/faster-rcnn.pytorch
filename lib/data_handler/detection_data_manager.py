@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data.sampler import Sampler
 
 from data_handler.data_manager_api import DataManager, Mode
-from roi_data_layer.roibatchLoader import roibatchLoader
+from roi_data_layer.roibatchLoader import roiBatchLoader
 from roi_data_layer.roidb import combined_roidb
 
 
@@ -46,7 +46,7 @@ class FasterRCNNDataManager(DataManager):
             proposal_method=cfg.TRAIN.PROPOSAL_METHOD,
             training=self.is_train,
             data_dir=cfg.DATA_DIR)
-        dataset = roibatchLoader(roidb, ratio_list, ratio_index, batch_size,
+        dataset = roiBatchLoader(roidb, ratio_list, ratio_index, batch_size,
                                  self.imdb.num_classes, cfg, training=self.is_train)
         self.batch_size = batch_size
 
@@ -57,7 +57,7 @@ class FasterRCNNDataManager(DataManager):
                                            sampler=sampler_batch)
             self.iters_per_epoch = int(self._train_size / batch_size)
         elif mode == Mode.INFER:
-            self.imdb.competition_mode(on=True)  # TODO this function is not implemented...
+            self.imdb.competition_mode(on=True)
             self._data_loader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers,
                                            shuffle=False, pin_memory=True)
         else:

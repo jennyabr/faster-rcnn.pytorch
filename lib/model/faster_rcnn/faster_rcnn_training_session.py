@@ -60,7 +60,7 @@ def run_training_session(data_manager, model, create_optimizer_fn, cfg, train_lo
 
         epoch_end_time = time.time()
         epoch_duration_hrs = (epoch_end_time - epoch_start_time) / 3600
-        logger.info(" Finished epoch {0} in {1:.3f} hrs.".format(epoch, epoch_duration_hrs))
+        logger.info("Finished epoch {0} in {1:.3f} hrs.".format(epoch, epoch_duration_hrs))
 
         save_session_to_ckpt(model, optimizer, cfg, epoch)
 

@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 from __future__ import division
-from __future__ import print_function
 
 import os.path
 import torch
@@ -55,7 +54,7 @@ def create_feature_extractor_from_ckpt(net_name, net_variant, frozen_blocks, pre
         raise ValueError('Pretrained model path given does not exist')
     fe_cls = _get_feature_extractor_cls(net_name)
     fe = fe_cls(net_variant=net_variant, frozen_blocks=frozen_blocks)
-    orig_state_dict = torch.load(os.path.expanduser(pretrained_model_path))
+    orig_state_dict = torch.load(os.path.abspath(pretrained_model_path))
     fe_subnets = fe.recreate_state_dict(orig_state_dict)
     for fe_subnet, new_state_dict in fe_subnets:
         fe_subnet.load_state_dict(new_state_dict, strict=False)

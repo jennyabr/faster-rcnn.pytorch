@@ -5,14 +5,15 @@
 # --------------------------------------------------------
 from __future__ import absolute_import
 from __future__ import division
-from __future__ import print_function
 
+import logging
 import pickle
 import xml.etree.ElementTree as ET
 
 import numpy as np
 import os
 
+logger = logging.getLogger(__name__)
 
 def parse_rec(filename):
     """ Parse a PASCAL VOC xml file """
@@ -115,14 +116,11 @@ def voc_eval(detpath,
         for i, imagename in enumerate(imagenames):
             recs[imagename] = parse_rec(annopath.format(imagename))
             if i % 100 == 0:
-                print('Reading annotation for {:d}/{:d}'.format(
-                    i + 1, len(imagenames)))
-        # save
-        print('Saving cached annotations to {:s}'.format(cachefile))
+                logger.info('Reading annotation for {:d}/{:d}.'.format(i + 1, len(imagenames)))
+        logger.info('Saving cached annotations to {:s}.'.format(cachefile))
         with open(cachefile, 'wb') as f:
             pickle.dump(recs, f)
     else:
-        # load
         with open(cachefile, 'rb') as f:
             try:
                 recs = pickle.load(f)

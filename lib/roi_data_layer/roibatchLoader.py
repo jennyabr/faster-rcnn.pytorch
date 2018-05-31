@@ -3,7 +3,6 @@
 
 from __future__ import absolute_import
 from __future__ import division
-from __future__ import print_function
 
 import numpy as np
 import torch
@@ -156,26 +155,20 @@ class roiBatchLoader(data.Dataset):
             if ratio < 1:
                 # this means that data_width < data_height
                 trim_size = int(np.floor(data_width / ratio))
-
-                padding_data = torch.FloatTensor(
-                    int(np.ceil(data_width / ratio)), data_width, 3).zero_()
-
+                padding_data = torch.FloatTensor(int(np.ceil(data_width / ratio)), data_width, 3).zero_()
                 padding_data[:data_height, :, :] = data[0]
                 # update im_info
                 im_info[0, 0] = padding_data.size(0)
-                # print("height %d %d \n" %(index, anchor_idx))
             elif ratio > 1:
                 # this means that data_width > data_height
                 # if the image need to crop.
-                padding_data = torch.FloatTensor(
-                    data_height, int(np.ceil(data_height * ratio)), 3).zero_()
+                padding_data = torch.FloatTensor(data_height, int(np.ceil(data_height * ratio)), 3).zero_()
                 padding_data[:, :data_width, :] = data[0]
                 im_info[0, 1] = padding_data.size(1)
             else:
                 trim_size = min(data_height, data_width)
                 padding_data = torch.FloatTensor(trim_size, trim_size, 3).zero_()
                 padding_data = data[0][:trim_size, :trim_size, :]
-                # gt_boxes.clamp_(0, trim_size)
                 gt_boxes[:, :4].clamp_(0, trim_size)
                 im_info[0, 0] = trim_size
                 im_info[0, 1] = trim_size
@@ -192,18 +185,17 @@ class roiBatchLoader(data.Dataset):
             else:
                 num_boxes = 0
 
-                # permute trim_data to adapt to downstream processing
+            # permute trim_data to adapt to downstream processing
             padding_data = padding_data.permute(2, 0, 1).contiguous()
             im_info = im_info.view(3)
 
             return padding_data, im_info, gt_boxes_padding, num_boxes
+
         else:
             data = data.permute(0, 3, 1, 2).contiguous().view(3, data_height, data_width)
             im_info = im_info.view(3)
-
             gt_boxes = torch.FloatTensor([1, 1, 1, 1, 1])
             num_boxes = 0
-
             return data, im_info, gt_boxes, num_boxes
 
     def __len__(self):

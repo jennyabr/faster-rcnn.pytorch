@@ -16,7 +16,7 @@ def faster_rcnn_postprocessing(data_manager, model, cfg, num_epoch):
     num_images = len(data_manager)
     num_classes = data_manager.num_classes
     preds_file_path = cfg.get_preds_path(num_epoch)
-    logger.info(" --->>> Starting postprocessing from :{}".format(preds_file_path))
+    logger.info("--->>> Starting postprocessing from :{}".format(preds_file_path))
     with open(preds_file_path, 'rb') as f:
         raw_preds = pickle.load(f)
     bbox_coords = raw_preds['bbox_coords']
@@ -84,5 +84,5 @@ def faster_rcnn_postprocessing(data_manager, model, cfg, num_epoch):
         pickle.dump(postprocessed_detections, f)
 
     end_time = time.time()
-    logger.info(" ----------- Total postprocessing time {:.4f}s. ----------- ".format(end_time - start_time))
+    logger.info("----------- Total postprocessing time {:.4f}s. -----------".format(end_time - start_time))
 

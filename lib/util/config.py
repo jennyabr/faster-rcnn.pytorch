@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 from __future__ import division
-from __future__ import print_function
 
 import logging
 import pprint
@@ -18,16 +17,14 @@ logger = logging.getLogger(__name__)
 class ConfigProvider(dict):
     def __init__(self):
         self._cfg = edict({})
-        self._cfg['start_run_time_str'] = strftime("%Y_%b_%d_%H_%M", gmtime())
 
     def load(self, config_path):
         """Load a config file and override defaults."""
-        cfg = {}
-        with open('defaults.yml', 'r') as f:
+        with open(os.path.join(os.path.dirname(__file__), 'defaults.yml'), 'r') as f:
             cfg = yaml.load(f)
 
         if config_path:
-            with open(os.path.expanduser(config_path), 'r') as f:
+            with open(os.path.abspath(config_path), 'r') as f:
                 model_cfg = yaml.load(f)
 
             if model_cfg:
@@ -38,25 +35,26 @@ class ConfigProvider(dict):
                     else:
                         cfg[k] = v
 
-        cfg['ROOT_DIR'] = os.path.expanduser(os.path.join(os.path.dirname(__file__), '..'))  # todo check
+        cfg['start_run_time_str'] = strftime("%Y_%b_%d_%H_%M", gmtime())
 
-        cfg['DATA_DIR'] = os.path.expanduser(cfg['DATA_DIR'])
+        cfg['DATA_DIR'] = os.path.abspath(cfg['DATA_DIR'])
 
         def create_output_path():
             """Return the directory where experimental artifacts are placed.
             If the directory does not exist, it is created.
             """
-            outdir = os.path.join(os.path.expanduser(cfg['OUTPUT_DIR']), cfg['EXPERIMENT_NAME'])
+            outdir = os.path.join(os.path.abspath(cfg['OUTPUT_DIR']), cfg['EXPERIMENT_NAME'])
             if not os.path.exists(outdir):
                 os.makedirs(outdir)
             return outdir
         cfg['OUTPUT_PATH'] = create_output_path()
 
-        cfg['imdb_name'] = cfg['dataset']['imdb_name']
-        cfg['imdbval_name'] = cfg['dataset']['imdbval_name']
-        cfg['ANCHOR_SCALES'] = cfg['dataset']['ANCHOR_SCALES']
-        cfg['ANCHOR_RATIOS'] = cfg['dataset']['ANCHOR_RATIOS']
-        cfg['MAX_NUM_GT_BOXES'] = cfg['dataset']['MAX_NUM_GT_BOXES']
+        dataset = cfg['dataset']
+        cfg['imdb_name'] = cfg[dataset]['imdb_name']
+        cfg['imdbval_name'] = cfg[dataset]['imdbval_name']
+        cfg['ANCHOR_SCALES'] = cfg[dataset]['ANCHOR_SCALES']
+        cfg['ANCHOR_RATIOS'] = cfg[dataset]['ANCHOR_RATIOS']
+        cfg['MAX_NUM_GT_BOXES'] = cfg[dataset]['MAX_NUM_GT_BOXES']
 
         cfg['DEDUP_BOXES'] = float(cfg['DEDUP_BOXES_numerator']) / float(cfg['DEDUP_BOXES_denominator'])
 
@@ -64,21 +62,21 @@ class ConfigProvider(dict):
 
         cfg['EPS'] = float(cfg['EPS'])
 
-        torch.manual_seed(cfg.RNG_SEED)
-        torch.cuda.manual_seed_all(cfg.RNG_SEED)
+        torch.manual_seed(cfg['RNG_SEED'])
+        torch.cuda.manual_seed_all(cfg['RNG_SEED'])
 
         if torch.cuda.is_available() and not cfg['CUDA']:  # todo del
             logger.warning("You have a CUDA device, so you should probably run with --cuda")
 
         def create_from_dict(cfg_dict):
             cfg = edict(cfg_dict)
-            logger.info('Called with args:')
-            logger.info(pprint.pformat(cfg))
+            logger.info('--->>> Config:\n{}'.format(pprint.pformat(cfg)))
             with open('run_with_config.yml', 'w') as outfile:
                 yaml.dump(cfg, outfile, default_flow_style=False)
 
             return cfg
         self._cfg = create_from_dict(cfg)
+
 
     def __str__(self):
         return pprint.pformat(self._cfg)
@@ -94,7 +92,7 @@ class ConfigProvider(dict):
             epoch = epoch_num
         file_name = self.ckpt_file_format.format(epoch)
         path = os.path.join(self.output_path, file_name)
-        logger.info("get_ckpt_path: {}.".format(path))
+        logger.info("CKPT path: {}.".format(path))
         return path
 
     def get_last_ckpt_path(self):

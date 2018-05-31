@@ -1,5 +1,4 @@
-from __future__ import print_function
-
+import logging
 import pickle
 import xml.dom.minidom as minidom
 
@@ -10,13 +9,15 @@ import scipy.sparse
 
 from datasets.imdb import imdb
 
-
 # --------------------------------------------------------
 # Fast R-CNN
 # Copyright (c) 2015 Microsoft
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Ross Girshick
 # --------------------------------------------------------
+
+
+logger = logging.getLogger(__name__)
 
 
 class imagenet(imdb):
@@ -102,7 +103,6 @@ class imagenet(imdb):
                 return image_index
 
             for i in range(1, 200):
-                print(i)
                 image_set_file = os.path.join(self._data_path, 'ImageSets', 'DET', 'train_' + str(i) + '.txt')
                 with open(image_set_file) as f:
                     tmp_index = [x.strip() for x in f.readlines()]
@@ -154,14 +154,14 @@ class imagenet(imdb):
         if os.path.exists(cache_file):
             with open(cache_file, 'rb') as fid:
                 roidb = pickle.load(fid)
-            print('{} gt roidb loaded from {}'.format(self.name, cache_file))
+            logger.info('{} gt roidb loaded from {}.'.format(self.name, cache_file))
             return roidb
 
         gt_roidb = [self._load_imagenet_annotation(index)
                     for index in self.image_index]
         with open(cache_file, 'wb') as fid:
             pickle.dump(gt_roidb, fid, pickle.HIGHEST_PROTOCOL)
-        print('wrote gt roidb to {}'.format(cache_file))
+        logger.info('Wrote gt roidb to {}.'.format(cache_file))
 
         return gt_roidb
 

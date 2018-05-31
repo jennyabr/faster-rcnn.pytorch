@@ -1,6 +1,6 @@
-DATA_DIR: '/home/jenny/gripper2/data'
-OUTPUT_DIR: '/home/jenny/gripper2/outputs/05_30'
-EXPERIMENT_NAME: 'train_final'
+DATA_DIR:
+OUTPUT_DIR:
+EXPERIMENT_NAME:
 ckpt_file_format: 'ckpt_e{}.pth'
 raw_preds_file_format: 'raw_preds_e{}.pkl'
 postprocessed_file_format: 'pp_preds_e{}.pkl'
@@ -12,9 +12,6 @@ net: 'vgg' #  # {vgg,resnet}
 net_variant: '16' # Currently supported: {16 for vgg, 50, 101, 152 for resnet}
 
 NUM_WORKERS: 6  # number of worker to load data
-
-# Name (or path to) the matlab executable
-MATLAB: 'matlab'
 
 # Place outputs under an experiments directory
 EXP_DIR: 'default'

@@ -1,7 +1,5 @@
-from __future__ import print_function
-
 import sys
-
+import logging
 import os
 
 
@@ -14,6 +12,9 @@ import os
 #
 # NB: Boxes from the MCG website are in (y1, x1, y2, x2) order.
 # Boxes from Hosang et al. are in (x1, y1, x2, y2) order.
+
+
+logger = logging.getLogger(__name__)
 
 
 def munge(src_dir):
@@ -32,7 +33,7 @@ def munge(src_dir):
             os.makedirs(dst_dir)
         src = os.path.join(src_dir, fn)
         dst = os.path.join(dst_dir, fn)
-        print('MV: {} -> {}'.format(src, dst))
+        logger.info('MV: {} -> {}'.format(src, dst))
         os.rename(src, dst)
 
 

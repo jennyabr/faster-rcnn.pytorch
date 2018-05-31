@@ -5,7 +5,6 @@
 # --------------------------------------------------------
 from __future__ import absolute_import
 from __future__ import division
-from __future__ import print_function
 
 import argparse
 import logging
@@ -38,7 +37,8 @@ if __name__ == '__main__':
 
     try:
         train_data_manager = FasterRCNNDataManager(
-            mode=Mode.TRAIN, imdb_name=cfg.imdb_name, seed=cfg.RNG_SEED, num_workers=cfg.NUM_WORKERS, is_cuda=cfg.CUDA,
+            mode=Mode.TRAIN, imdb_name=cfg.imdb_name,
+            seed=cfg.RNG_SEED, num_workers=cfg.NUM_WORKERS, is_cuda=cfg.CUDA,
             cfg=cfg, batch_size=cfg.TRAIN.batch_size)
 
         train_logger = TensorBoardLogger(cfg.output_path)

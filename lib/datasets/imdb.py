@@ -6,7 +6,6 @@
 # --------------------------------------------------------
 from __future__ import absolute_import
 from __future__ import division
-from __future__ import print_function
 
 import PIL
 import numpy as np
@@ -93,8 +92,8 @@ class imdb(object):
     def image_id_at(self, i):
         raise NotImplementedError
 
-    # def default_roidb(self):
-    #     raise NotImplementedError
+    def default_roidb(self):
+        raise NotImplementedError
 
     def evaluate_detections(self, all_boxes, output_dir=None):
         """

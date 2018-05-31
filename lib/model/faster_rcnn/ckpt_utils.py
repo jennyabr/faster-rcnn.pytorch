@@ -13,7 +13,7 @@ def save_session_to_ckpt(model, optimizer, cfg, epoch):
     else:
         model_state_dict = model.state_dict()
     save_to = cfg.get_ckpt_path(epoch)
-    logger.info(' --->>> Saving model checkpoint to: {}'.format(save_to))
+    logger.info('--->>> Saving model checkpoint to: {}'.format(save_to))
     torch.save({'last_performed_epoch': epoch,
                 'model': model_state_dict,
                 'model_cfg_params': model.cfg_params,
@@ -23,7 +23,7 @@ def save_session_to_ckpt(model, optimizer, cfg, epoch):
 
 def load_session_from_ckpt(ckpt_path):
     from model.faster_rcnn.faster_rcnn_meta_arch import FasterRCNNMetaArch
-    state_dict = torch.load(os.path.expanduser(ckpt_path))
+    state_dict = torch.load(os.path.abspath(ckpt_path))
     loaded_cfg = ConfigProvider()
     loaded_cfg.create_from_dict(state_dict['ckpt_cfg'])
     # TODO: JA - don't be hard coded to faster-rcnn (uses FasterRCNN constructor)

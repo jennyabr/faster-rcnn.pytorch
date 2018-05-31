@@ -1,10 +1,9 @@
 from __future__ import absolute_import
-from __future__ import print_function
 
 import gzip
 import pickle
 import xml.etree.ElementTree as ET
-
+import logging
 import PIL
 import numpy as np
 import os
@@ -20,6 +19,9 @@ from .vg_eval import vg_eval
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Ross Girshick
 # --------------------------------------------------------
+
+
+logger = logging.getLogger(__name__)
 
 
 class vg(imdb):
@@ -174,7 +176,7 @@ class vg(imdb):
             fid = gzip.open(cache_file, 'rb')
             roidb = pickle.load(fid)
             fid.close()
-            print('{} gt roidb loaded from {}'.format(self.name, cache_file))
+            logger.info('{} gt roidb loaded from {}.'.format(self.name, cache_file))
             return roidb
 
         gt_roidb = [self._load_vg_annotation(index)
@@ -182,7 +184,7 @@ class vg(imdb):
         fid = gzip.open(cache_file, 'wb')
         pickle.dump(gt_roidb, fid, pickle.HIGHEST_PROTOCOL)
         fid.close()
-        print('wrote gt roidb to {}'.format(cache_file))
+        logger.info('Wrote gt roidb to {}.'.format(cache_file))
         return gt_roidb
 
     def _get_size(self, index):
@@ -223,7 +225,7 @@ class vg(imdb):
                 y2 = min(height-1, float(bbox.find('ymax').text))
                 # If bboxes are not positive, just give whole image coords (there are a few examples)
                 if x2 < x1 or y2 < y1:
-                    print('Failed bbox in %s, object %s' % (filename, obj_name))
+                    logger.info('Failed bbox in %s, object %s.' % (filename, obj_name))
                     x1 = 0
                     y1 = 0
                     x2 = width-1
@@ -308,7 +310,7 @@ class vg(imdb):
         for cls_ind, cls in enumerate(classes):
             if cls == '__background__':
                 continue
-            print('Writing "{}" vg results file'.format(cls))
+            logger.info('Writing "{}" vg results file.'.format(cls))
             filename = self._get_vg_results_file_template(output_dir).format(cls)
             with open(filename, 'wt') as f:
                 for im_ind, index in enumerate(self.image_index):
@@ -329,7 +331,7 @@ class vg(imdb):
         thresh = []
         # The PASCAL VOC metric changed in 2010
         use_07_metric = False
-        print('VOC07 metric? ' + ('Yes' if use_07_metric else 'No'))
+        logger.info('VOC07 metric? {}'.format(('Yes' if use_07_metric else 'No')))
         if not os.path.isdir(output_dir):
             os.mkdir(output_dir)
         # Load ground truth
@@ -354,7 +356,7 @@ class vg(imdb):
                 thresh += [0]
             aps += [ap]
             nposs += [float(npos)]
-            print('AP for {} = {:.4f} (npos={:,})'.format(cls, ap, npos))
+            logger.info('AP for {} = {:.4f} (npos={:,}).'.format(cls, ap, npos))
             if pickle:
                 with open(os.path.join(output_dir, cls + '_pr.pkl'), 'wb') as f:
                     pickle.dump({'rec': rec, 'prec': prec, 'ap': ap,
@@ -375,16 +377,16 @@ class vg(imdb):
 
         weights = np.array(nposs)
         weights /= weights.sum()
-        print('Mean AP = {:.4f}'.format(np.mean(aps)))
-        print('Weighted Mean AP = {:.4f}'.format(np.average(aps, weights=weights)))
-        print('Mean Detection Threshold = {:.3f}'.format(avg_thresh))
-        print('~~~~~~~~')
-        print('Results:')
+        logger.info('Mean AP = {:.4f}'.format(np.mean(aps)))
+        logger.info('Weighted Mean AP = {:.4f}'.format(np.average(aps, weights=weights)))
+        logger.info('Mean Detection Threshold = {:.3f}'.format(avg_thresh))
+        logger.info('~~~~~~~~')
+        logger.info('Results:')
         for ap, npos in zip(aps, nposs):
-            print('{:.3f}\t{:.3f}'.format(ap, npos))
-        print('{:.3f}'.format(np.mean(aps)))
-        print('~~~~~~~~')
-        print('')
-        print('--------------------------------------------------------------')
-        print('Results computed with the **unofficial** PASCAL VOC Python eval code.')
-        print('--------------------------------------------------------------')
+            logger.info('{:.3f}\t{:.3f}'.format(ap, npos))
+        logger.info('{:.3f}'.format(np.mean(aps)))
+        logger.info('~~~~~~~~')
+        logger.info('')
+        logger.info('--------------------------------------------------------------')
+        logger.info('Results computed with the **unofficial** PASCAL VOC Python eval code.')
+        logger.info('--------------------------------------------------------------')

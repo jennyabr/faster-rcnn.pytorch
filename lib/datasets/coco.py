@@ -5,9 +5,9 @@
 # --------------------------------------------------------
 from __future__ import absolute_import
 from __future__ import division
-from __future__ import print_function
 
 import json
+import logging
 import pickle
 import uuid
 
@@ -18,9 +18,11 @@ import scipy.sparse
 
 import datasets.ds_utils as ds_utils
 from datasets.imdb import imdb
-# COCO API
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
+
+
+logger = logging.getLogger(__name__)
 
 
 class coco(imdb):
@@ -118,7 +120,7 @@ class coco(imdb):
         if osp.exists(cache_file):
             with open(cache_file, 'rb') as fid:
                 roidb = pickle.load(fid)
-            print('{} gt roidb loaded from {}'.format(self.name, cache_file))
+            logger.info('{} gt roidb loaded from {}.'.format(self.name, cache_file))
             return roidb
 
         gt_roidb = [self._load_coco_annotation(index)
@@ -126,7 +128,7 @@ class coco(imdb):
 
         with open(cache_file, 'wb') as fid:
             pickle.dump(gt_roidb, fid, pickle.HIGHEST_PROTOCOL)
-        print('wrote gt roidb to {}'.format(cache_file))
+        logger.info('Wrote gt roidb to {}.'.format(cache_file))
         return gt_roidb
 
     def _load_coco_annotation(self, index):
@@ -237,18 +239,17 @@ class coco(imdb):
         precision = \
             coco_eval.eval['precision'][ind_lo:(ind_hi + 1), :, :, 0, 2]
         ap_default = np.mean(precision[precision > -1])
-        print(('~~~~ Mean and per-category AP @ IoU=[{:.2f},{:.2f}] '
-               '~~~~').format(IoU_lo_thresh, IoU_hi_thresh))
-        print('{:.1f}'.format(100 * ap_default))
+        logger.info('~~~~ Mean and per-category AP @ IoU=[{:.2f},{:.2f}] ~~~~'.format(IoU_lo_thresh, IoU_hi_thresh))
+        logger.info('{:.1f}'.format(100 * ap_default))
         for cls_ind, cls in enumerate(self.classes):
             if cls == '__background__':
                 continue
             # minus 1 because of __background__
             precision = coco_eval.eval['precision'][ind_lo:(ind_hi + 1), :, cls_ind - 1, 0, 2]
             ap = np.mean(precision[precision > -1])
-            print('{:.1f}'.format(100 * ap))
+            logger.info('{:.1f}'.format(100 * ap))
 
-        print('~~~~ Summary metrics ~~~~')
+        logger.info('~~~~ Summary metrics ~~~~')
         coco_eval.summarize()
 
     def _do_detection_eval(self, res_file, output_dir):
@@ -262,7 +263,7 @@ class coco(imdb):
         eval_file = osp.join(output_dir, 'detection_results.pkl')
         with open(eval_file, 'wb') as fid:
             pickle.dump(coco_eval, fid, pickle.HIGHEST_PROTOCOL)
-        print('Wrote COCO eval results to: {}'.format(eval_file))
+        logger.info('Wrote COCO eval results to: {}.'.format(eval_file))
 
     def _coco_results_one_category(self, boxes, cat_id):
         results = []
@@ -291,20 +292,16 @@ class coco(imdb):
         for cls_ind, cls in enumerate(self.classes):
             if cls == '__background__':
                 continue
-            print('Collecting {} results ({:d}/{:d})'.format(cls, cls_ind,
-                                                             self.num_classes - 1))
+            logger.info('Collecting {} results ({:d}/{:d}).'.format(cls, cls_ind, self.num_classes - 1))
             coco_cat_id = self._class_to_coco_cat_id[cls]
             results.extend(self._coco_results_one_category(all_boxes[cls_ind],
                                                            coco_cat_id))
-        print('Writing results json to {}'.format(res_file))
+        logger.info('Writing results json to {}.'.format(res_file))
         with open(res_file, 'w') as fid:
             json.dump(results, fid)
 
     def evaluate_detections(self, all_boxes, output_dir=None):
-        res_file = osp.join(output_dir, ('detections_' +
-                                         self._image_set +
-                                         self._year +
-                                         '_results'))
+        res_file = osp.join(output_dir, 'detections_{}_{}_results'.format(self._image_set + self._year))
         if self.config['use_salt']:
             res_file += '_{}'.format(str(uuid.uuid4()))
         res_file += '.json'

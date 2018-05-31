@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 def faster_rcnn_prediction(data_manager, model, cfg, epoch_num):
-    logger.info(" --->>> Starting prediction...")
+    logger.info("--->>> Starting prediction...")
     num_images = len(data_manager)
     model.eval()
     raw_preds = {
@@ -68,4 +68,4 @@ def faster_rcnn_prediction(data_manager, model, cfg, epoch_num):
         pickle.dump(raw_preds, f, pickle.HIGHEST_PROTOCOL)
 
     pred_end = time.time()
-    logger.info(" ------------ Total prediction time: {:.4f}s. ------------- ".format(pred_end - pred_start))
+    logger.info("------------ Total prediction time: {:.4f}s. -------------".format(pred_end - pred_start))

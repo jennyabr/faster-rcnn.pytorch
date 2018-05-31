@@ -1,7 +1,6 @@
 """Transform a roidb into a trainable roidb by adding a bunch of metadata."""
 from __future__ import absolute_import
 from __future__ import division
-from __future__ import print_function
 
 import logging
 
@@ -79,7 +78,7 @@ def rank_roidb_ratio(roidb):
 
 def filter_roidb(roidb):
     # filter the image without bounding box.
-    logger.info('before filtering, there are %d images...' % (len(roidb)))
+    logger.info('Before filtering, there are %d images...' % (len(roidb)))
     i = 0
     while i < len(roidb):
         if len(roidb[i]['boxes']) == 0:
@@ -87,7 +86,7 @@ def filter_roidb(roidb):
             i -= 1
         i += 1
 
-    logger.info('after filtering, there are %d images...' % (len(roidb)))
+    logger.info('After filtering, there are %d images...' % (len(roidb)))
     return roidb
 
 
@@ -101,20 +100,20 @@ def combined_roidb(imdb_names, data_dir, use_flipped, proposal_method, training=
         if use_flipped:
             logger.info('Appending horizontally-flipped training examples...')
             imdb.append_flipped_images()
-            logger.info('done')
+            logger.info('Done.')
 
         logger.info('Preparing training data...')
 
         prepare_roidb(imdb)
-        logger.info('done')
+        logger.info('Done.')
 
         return imdb.roidb
 
     def get_roidb(imdb_name):
-        imdb = get_imdb(imdb_name)
-        logger.info('Loaded dataset `{:s}` for training'.format(imdb.name))
+        imdb = get_imdb(imdb_name, data_dir=data_dir)
+        logger.info('Loaded dataset `{}` for training.'.format(imdb.name))
         imdb.set_proposal_method(proposal_method)
-        logger.info('Set proposal method: {:s}'.format(proposal_method))
+        logger.info('Set proposal method: {}.'.format(proposal_method))
         roidb = get_training_roidb(imdb)
         return roidb
 
@@ -124,10 +123,10 @@ def combined_roidb(imdb_names, data_dir, use_flipped, proposal_method, training=
     if len(roidbs) > 1:
         for r in roidbs[1:]:
             roidb.extend(r)
-        tmp = get_imdb(imdb_names.split('+')[1])
-        imdb = datasets.imdb.imdb(imdb_names, data_dir, tmp.classes)
+        tmp = get_imdb(imdb_names.split('+')[1], data_dir=data_dir)
+        imdb = datasets.imdb.imdb(imdb_names, data_dir=data_dir, classes=tmp.classes)
     else:
-        imdb = get_imdb(imdb_names)
+        imdb = get_imdb(imdb_names, data_dir=data_dir)
 
     if training:
         roidb = filter_roidb(roidb)

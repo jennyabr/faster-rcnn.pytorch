@@ -6,8 +6,8 @@
 # --------------------------------------------------------
 from __future__ import absolute_import
 from __future__ import division
-from __future__ import print_function
 
+import logging
 import pdb
 import pickle
 import uuid
@@ -20,6 +20,7 @@ import scipy.sparse
 from datasets.imdb import imdb
 from .voc_eval import voc_eval
 
+logger = logging.getLogger(__name__)
 
 class pascal_voc(imdb):
     def __init__(self, image_set, year, data_dir, devkit_path=None):
@@ -105,14 +106,14 @@ class pascal_voc(imdb):
                     roidb = pickle.load(fid)
                 except:
                     roidb = pickle.load(fid, encoding='bytes')
-            print('{} gt roidb loaded from {}'.format(self.name, cache_file))
+            logger.info('{} gt roidb loaded from {}.'.format(self.name, cache_file))
             return roidb
 
         gt_roidb = [self._load_pascal_annotation(index)
                     for index in self.image_index]
         with open(cache_file, 'wb') as fid:
             pickle.dump(gt_roidb, fid, pickle.HIGHEST_PROTOCOL)
-        print('wrote gt roidb to {}'.format(cache_file))
+        logger.info('Wrote gt roidb to {}.'.format(cache_file))
 
         return gt_roidb
 
@@ -128,7 +129,7 @@ class pascal_voc(imdb):
 
     def _load_rpn_roidb(self, gt_roidb):
         filename = self.config['rpn_file']
-        print('loading {}'.format(filename))
+        logger.info('Loading {}.'.format(filename))
         assert os.path.exists(filename), \
             'rpn data not found at: {}'.format(filename)
         with open(filename, 'rb') as f:
@@ -145,11 +146,7 @@ class pascal_voc(imdb):
         objs = tree.findall('object')
         if not self.config['use_diff']:
             # Exclude the samples labeled as difficult
-            non_diff_objs = [
-                obj for obj in objs if int(obj.find('difficult').text) == 0]
-            # if len(non_diff_objs) != len(objs):
-            #     print 'Removed {} difficult objects'.format(
-            #         len(objs) - len(non_diff_objs))
+            non_diff_objs = [obj for obj in objs if int(obj.find('difficult').text) == 0]
             objs = non_diff_objs
         num_objs = len(objs)
 
@@ -201,7 +198,7 @@ class pascal_voc(imdb):
         for cls_ind, cls in enumerate(self.classes):
             if cls == '__background__':
                 continue
-            print('Writing {} VOC results file'.format(cls))
+            logger.info('Writing {} VOC results file.'.format(cls))
             filename = self._get_voc_results_file_template().format(cls)
             with open(filename, 'wt') as f:
                 for im_ind, index in enumerate(self.image_index):
@@ -231,7 +228,7 @@ class pascal_voc(imdb):
         aps = []
         # The PASCAL VOC metric changed in 2010
         use_07_metric = True if int(self._year) < 2010 else False
-        print('VOC07 metric? ' + ('Yes' if use_07_metric else 'No'))
+        logger.info('VOC07 metric? {}'.format(('Yes' if use_07_metric else 'No')))
         if not os.path.isdir(output_dir):
             os.mkdir(output_dir)
         for i, cls in enumerate(self._classes):
@@ -242,45 +239,28 @@ class pascal_voc(imdb):
                 filename, annopath, imagesetfile, cls, cachedir, ovthresh=0.5,
                 use_07_metric=use_07_metric)
             aps += [ap]
-            print(('AP for {} = {:.4f}'.format(cls, ap)))
+            logger.info(('AP for {} = {:.4f}.'.format(cls, ap)))
             with open(os.path.join(output_dir, cls + '_pr.pkl'), 'wb') as f:
                 pickle.dump({'rec': rec, 'prec': prec, 'ap': ap}, f)
-        print(('Mean AP = {:.4f}'.format(np.mean(aps))))
-        print('~~~~~~~~')
-        print('Results:')
+        logger.info(('Mean AP = {:.4f}.'.format(np.mean(aps))))
+        logger.info('~~~~~~~~')
+        logger.info('Results:')
         for ap in aps:
-            print(('{:.3f}'.format(ap)))
-        print(('{:.3f}'.format(np.mean(aps))))
-        print('~~~~~~~~')
-        print('')
-        print('--------------------------------------------------------------')
-        print('Results computed with the **unofficial** Python eval code.')
-        print('Results should be very close to the official MATLAB eval code.')
-        print('Recompute with `./tools/reval.py --matlab ...` for your paper.')
-        print('-- Thanks, The Management')
-        print('--------------------------------------------------------------')
-
-    # def _do_matlab_eval(self, output_dir='output'):
-    #     print('-----------------------------------------------------')
-    #     print('Computing results with the official MATLAB eval code.')
-    #     print('-----------------------------------------------------')
-    #     path = os.path.join(cfg.ROOT_DIR, 'lib', 'datasets',
-    #                         'VOCdevkit-matlab-wrapper')
-    #     cmd = 'cd {} && '.format(path)
-    #     cmd += '{:s} -nodisplay -nodesktop '.format(cfg.MATLAB)
-    #     cmd += '-r "dbstop if error; '
-    #     cmd += 'voc_eval(\'{:s}\',\'{:s}\',\'{:s}\',\'{:s}\'); quit;"' \
-    #         .format(self._devkit_path, self._get_comp_id(),
-    #                 self._image_set, output_dir)
-    #     print(('Running:\n{}'.format(cmd)))
-    #     status = subprocess.call(cmd, shell=True)
+            logger.info(('{:.3f}'.format(ap)))
+        logger.info(('{:.3f}'.format(np.mean(aps))))
+        logger.info('~~~~~~~~')
+        logger.info('')
+        logger.info('--------------------------------------------------------------')
+        logger.info('Results computed with the **unofficial** Python eval code. '
+                    'Results should be very close to the official MATLAB eval code. '
+                    'Recompute with `./tools/reval.py --matlab ...` for your paper. '
+                    '-- Thanks, The Management')
+        logger.info('--------------------------------------------------------------')
 
     def evaluate_detections(self, all_boxes, output_dir=None):
         pdb.set_trace()
         self._write_voc_results_file(all_boxes)
         self._do_python_eval(output_dir)
-        # if self.config['matlab_eval']:
-        #     self._do_matlab_eval(output_dir)
         if self.config['cleanup']:
             for cls in self._classes:
                 if cls == '__background__':
