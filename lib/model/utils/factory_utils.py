@@ -2,8 +2,8 @@ from importlib import import_module
 
 
 def get_class_from_package(package_full_path, class_rel_path, abstract_class):
+    module_name, class_name = class_rel_path.rsplit('.', 1)
     try:
-        module_name, class_name = class_rel_path.rsplit('.', 1)
         class_module = import_module(package_full_path + '.' + module_name)
 
         returned_class = getattr(class_module, class_name)

@@ -4,11 +4,12 @@
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Ross Girshick
 # --------------------------------------------------------
-import torch
 
+import torch
+from model.nms.nms_cpu import nms_cpu
 if torch.cuda.is_available():
     from model.nms.nms_gpu import nms_gpu
-from model.nms.nms_cpu import nms_cpu
+
 
 def nms(dets, thresh, force_cpu=False):
     """Dispatch to either CPU or GPU NMS implementations."""

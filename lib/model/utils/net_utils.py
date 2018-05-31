@@ -6,7 +6,6 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 
 
-
 def clip_gradient(model, clip_norm):
     """Computes a gradient clipping coefficient based on gradient norm."""
     totalnorm = 0
@@ -29,7 +28,8 @@ def decay_lr_in_optimizer(epoch, lr_decay_step, optimizer, decay=0.1):
     return optimizer
 
 
-def _smooth_l1_loss(bbox_pred, bbox_targets, bbox_inside_weights, bbox_outside_weights, sigma=1.0, dim=[1]):
+def _smooth_l1_loss(bbox_pred, bbox_targets, bbox_inside_weights, bbox_outside_weights,
+                    sigma=1.0, dim=[1]):
     sigma_2 = sigma ** 2
     box_diff = bbox_pred - bbox_targets
     in_box_diff = bbox_inside_weights * box_diff
@@ -40,7 +40,7 @@ def _smooth_l1_loss(bbox_pred, bbox_targets, bbox_inside_weights, bbox_outside_w
     out_loss_box = bbox_outside_weights * in_loss_box
     loss_box = out_loss_box
     for i in sorted(dim, reverse=True):
-      loss_box = loss_box.sum(i)
+        loss_box = loss_box.sum(i)
     loss_box = loss_box.mean()
     return loss_box
 
@@ -56,16 +56,14 @@ def _affine_grid_gen(rois, input_size, grid_size):
     width = input_size[1]
 
     zero = Variable(rois.data.new(rois.size(0), 1).zero_())
-    theta = torch.cat([\
-      (x2 - x1) / (width - 1),
-      zero,
-      (x1 + x2 - width + 1) / (width - 1),
-      zero,
-      (y2 - y1) / (height - 1),
-      (y1 + y2 - height + 1) / (height - 1)], 1).view(-1, 2, 3)
+    theta = torch.cat([(x2 - x1) / (width - 1),
+                       zero,
+                       (x1 + x2 - width + 1) / (width - 1),
+                       zero,
+                       (y2 - y1) / (height - 1),
+                       (y1 + y2 - height + 1) / (height - 1)], 1).view(-1, 2, 3)
 
     grid = F.affine_grid(theta, torch.Size((rois.size(0), 1, grid_size, grid_size)))
-
     return grid
 
 
@@ -81,22 +79,12 @@ def _affine_theta(rois, input_size):
 
     zero = Variable(rois.data.new(rois.size(0), 1).zero_())
 
-    # theta = torch.cat([\
-    #   (x2 - x1) / (width - 1),
-    #   zero,
-    #   (x1 + x2 - width + 1) / (width - 1),
-    #   zero,
-    #   (y2 - y1) / (height - 1),
-    #   (y1 + y2 - height + 1) / (height - 1)], 1).view(-1, 2, 3)
-
-    theta = torch.cat([\
-      (y2 - y1) / (height - 1),
-      zero,
-      (y1 + y2 - height + 1) / (height - 1),
-      zero,
-      (x2 - x1) / (width - 1),
-      (x1 + x2 - width + 1) / (width - 1)], 1).view(-1, 2, 3)
-
+    theta = torch.cat([(y2 - y1) / (height - 1),
+                       zero,
+                       (y1 + y2 - height + 1) / (height - 1),
+                       zero,
+                       (x2 - x1) / (width - 1),
+                       (x1 + x2 - width + 1) / (width - 1)], 1).view(-1, 2, 3)
     return theta
 
 

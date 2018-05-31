@@ -9,14 +9,14 @@ import numpy as np
 import torch
 import torch.utils.data as data
 
-from cfgs.config import cfg
 from roi_data_layer.minibatch import get_minibatch
 
 
-class roibatchLoader(data.Dataset):
-    def __init__(self, roidb, ratio_list, ratio_index, batch_size, num_classes, training=True):
+class roiBatchLoader(data.Dataset):
+    def __init__(self, roidb, ratio_list, ratio_index, batch_size, num_classes, cfg, training=True):
         self._roidb = roidb
         self._num_classes = num_classes
+        self.cfg = cfg
         # we make the height of image consistent to trim_height, trim_width
         self.trim_height = cfg.TRAIN.TRIM_HEIGHT
         self.trim_width = cfg.TRAIN.TRIM_WIDTH
@@ -56,7 +56,10 @@ class roibatchLoader(data.Dataset):
         # here we set the anchor index to the last one
         # sample in this group
         minibatch_db = [self._roidb[index_ratio]]
-        blobs = get_minibatch(minibatch_db, self._num_classes)
+        blobs = get_minibatch(minibatch_db, self._num_classes,
+                              self.cfg.TRAIN.batch_size, self.cfg.TRAIN.SCALES,
+                              self.cfg.TRAIN.USE_ALL_GT,
+                              self.cfg.PIXEL_MEANS, self.cfg.TRAIN.MAX_SIZE)
         data = torch.from_numpy(blobs['data'])
         im_info = torch.from_numpy(blobs['im_info'])
         # we need to random shuffle the bounding box.
@@ -154,8 +157,8 @@ class roibatchLoader(data.Dataset):
                 # this means that data_width < data_height
                 trim_size = int(np.floor(data_width / ratio))
 
-                padding_data = torch.FloatTensor(int(np.ceil(data_width / ratio)), \
-                                                 data_width, 3).zero_()
+                padding_data = torch.FloatTensor(
+                    int(np.ceil(data_width / ratio)), data_width, 3).zero_()
 
                 padding_data[:data_height, :, :] = data[0]
                 # update im_info
@@ -164,8 +167,8 @@ class roibatchLoader(data.Dataset):
             elif ratio > 1:
                 # this means that data_width > data_height
                 # if the image need to crop.
-                padding_data = torch.FloatTensor(data_height, \
-                                                 int(np.ceil(data_height * ratio)), 3).zero_()
+                padding_data = torch.FloatTensor(
+                    data_height, int(np.ceil(data_height * ratio)), 3).zero_()
                 padding_data[:, :data_width, :] = data[0]
                 im_info[0, 1] = padding_data.size(1)
             else:

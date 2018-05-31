@@ -8,9 +8,10 @@ from torch.autograd.variable import Variable
 from model.faster_rcnn.ckpt_utils import save_session_to_ckpt
 from model.utils.net_utils import decay_lr_in_optimizer, clip_gradient
 
+logger = logging.getLogger(__name__)
+
 
 def run_training_session(data_manager, model, create_optimizer_fn, cfg, train_logger, first_epoch=0):
-    logger = logging.get_logger(__name__)
 
     def get_trainable_params():
         trainable_params = []
@@ -87,7 +88,7 @@ def _train_on_batch(data_manager, model, optimizer, cfg):
         'rois_label': rois_label,
         'cls_prob': cls_prob,
         'bbox_pred': bbox_pred,
-        'loss_tensors': loss_tensors #TODO remane to metrics
+        'loss_tensors': loss_tensors  # TODO rename to metrics
         }
 
     optimizer.zero_grad()

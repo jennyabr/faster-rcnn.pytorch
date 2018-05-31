@@ -8,9 +8,10 @@ import torch
 
 from model.rpn.bbox_transform import bbox_transform_inv, clip_boxes
 
+logger = logging.getLogger(__name__)
+
 
 def faster_rcnn_prediction(data_manager, model, cfg, epoch_num):
-    logger = logging.get_logger(__name__)
     logger.info(" --->>> Starting prediction...")
     num_images = len(data_manager)
     model.eval()

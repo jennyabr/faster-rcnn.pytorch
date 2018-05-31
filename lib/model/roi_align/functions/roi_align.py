@@ -1,5 +1,6 @@
 import torch
 from torch.autograd import Function
+
 from .._ext import roi_align
 
 
@@ -39,8 +40,7 @@ class RoIAlignFunction(Function):
 
         batch_size, num_channels, data_height, data_width = self.feature_size
 
-        grad_input = self.rois.new(batch_size, num_channels, data_height,
-                                  data_width).zero_()
+        grad_input = self.rois.new(batch_size, num_channels, data_height, data_width).zero_()
         roi_align.roi_align_backward_cuda(self.aligned_height,
                                           self.aligned_width,
                                           self.spatial_scale, grad_output,

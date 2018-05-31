@@ -1,17 +1,20 @@
 from __future__ import print_function
-import os
+
 import sys
 
-"""Hacky tool to convert file system layout of MCG boxes downloaded from
-http://www.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/mcg/
-so that it's consistent with those computed by Jan Hosang (see:
-http://www.mpi-inf.mpg.de/departments/computer-vision-and-multimodal-
-  computing/research/object-recognition-and-scene-understanding/how-
-  good-are-detection-proposals-really/)
+import os
 
-NB: Boxes from the MCG website are in (y1, x1, y2, x2) order.
-Boxes from Hosang et al. are in (x1, y1, x2, y2) order.
-"""
+
+# Hacky tool to convert file system layout of MCG boxes downloaded from
+# http://www.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/mcg/
+# so that it's consistent with those computed by Jan Hosang (see:
+# http://www.mpi-inf.mpg.de/departments/computer-vision-and-multimodal-
+#   computing/research/object-recognition-and-scene-understanding/how-
+#   good-are-detection-proposals-really/)
+#
+# NB: Boxes from the MCG website are in (y1, x1, y2, x2) order.
+# Boxes from Hosang et al. are in (x1, y1, x2, y2) order.
+
 
 def munge(src_dir):
     # stored as: ./MCG-COCO-val2014-boxes/COCO_val2014_000000193401.mat
@@ -32,8 +35,9 @@ def munge(src_dir):
         print('MV: {} -> {}'.format(src, dst))
         os.rename(src, dst)
 
+
 if __name__ == '__main__':
     # src_dir should look something like:
-    #  src_dir = 'MCG-COCO-val2014-boxes'
+    # src_dir = 'MCG-COCO-val2014-boxes'
     src_dir = sys.argv[1]
     munge(src_dir)

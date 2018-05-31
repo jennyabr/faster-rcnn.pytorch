@@ -10,7 +10,7 @@ from roi_data_layer.roidb import combined_roidb
 class BDSampler(Sampler):
     def __init__(self, train_size, batch_size, seed):
         super(BDSampler, self).__init__(data_source="")  # TODO what to do with data_source?
-        self.seed = seed  # TODO is it done no the CPU?
+        self.seed = seed
         torch.manual_seed(seed)
 
         self.data_size = train_size
@@ -38,11 +38,16 @@ class BDSampler(Sampler):
 
 
 class FasterRCNNDataManager(DataManager):
-    def __init__(self, mode, imdb_name, seed, num_workers, is_cuda, batch_size=1):
+    def __init__(self, mode, imdb_name, seed, num_workers, is_cuda, cfg, batch_size=1):
         super(FasterRCNNDataManager, self).__init__(mode, is_cuda)
-        self._imdb, roidb, ratio_list, ratio_index = combined_roidb(imdb_name, training=self.is_train)
+        self._imdb, roidb, ratio_list, ratio_index = combined_roidb(
+            imdb_name,
+            use_flipped=cfg.TRAIN.USE_FLIPPED,
+            proposal_method=cfg.TRAIN.PROPOSAL_METHOD,
+            training=self.is_train,
+            data_dir=cfg.DATA_DIR)
         dataset = roibatchLoader(roidb, ratio_list, ratio_index, batch_size,
-                                 self.imdb.num_classes, training=self.is_train)
+                                 self.imdb.num_classes, cfg, training=self.is_train)
         self.batch_size = batch_size
 
         if self.is_train:

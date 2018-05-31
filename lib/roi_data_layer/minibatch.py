@@ -14,22 +14,20 @@ import numpy as np
 import numpy.random as npr
 from scipy.misc import imread
 
-from cfgs.config import cfg
 from model.utils.blob import prep_im_for_blob, im_list_to_blob
 
 
-def get_minibatch(roidb, num_classes):
+def get_minibatch(roidb, num_classes,
+                  batch_size, scales, use_all_gt, pixel_mean, max_size):
     """Given a roidb, construct a minibatch sampled from it."""
     num_images = len(roidb)
     # Sample random scales to use for each image in this batch
-    random_scale_inds = npr.randint(0, high=len(cfg.TRAIN.SCALES),
-                                    size=num_images)
-    assert (cfg.TRAIN.BATCH_SIZE % num_images == 0), \
-        'num_images ({}) must divide BATCH_SIZE ({})'. \
-            format(num_images, cfg.TRAIN.BATCH_SIZE)
+    random_scale_inds = npr.randint(0, high=len(scales), size=num_images)
+    assert (batch_size % num_images == 0), \
+        'num_images ({}) must divide BATCH_SIZE ({})'.format(num_images, batch_size)
 
     # Get the input image blob, formatted for caffe
-    im_blob, im_scales = _get_image_blob(roidb, random_scale_inds)
+    im_blob, im_scales = _get_image_blob(roidb, random_scale_inds, scales, pixel_mean, max_size)
 
     blobs = {'data': im_blob}
 
@@ -37,7 +35,7 @@ def get_minibatch(roidb, num_classes):
     assert len(roidb) == 1, "Single batch only"
 
     # gt boxes: (x1, y1, x2, y2, cls)
-    if cfg.TRAIN.USE_ALL_GT:
+    if use_all_gt:
         # Include all ground truth boxes
         gt_inds = np.where(roidb[0]['gt_classes'] != 0)[0]
     else:
@@ -56,7 +54,7 @@ def get_minibatch(roidb, num_classes):
     return blobs
 
 
-def _get_image_blob(roidb, scale_inds):
+def _get_image_blob(roidb, scale_inds, scales, pixel_mean, max_size):
     """Builds an input blob from the images in the roidb at the specified
     scales.
     """
@@ -65,7 +63,6 @@ def _get_image_blob(roidb, scale_inds):
     processed_ims = []
     im_scales = []
     for i in range(num_images):
-        # im = cv2.imread(roidb[i]['image'])
         im = imread(roidb[i]['image'])
 
         if len(im.shape) == 2:
@@ -77,9 +74,8 @@ def _get_image_blob(roidb, scale_inds):
 
         if roidb[i]['flipped']:
             im = im[:, ::-1, :]
-        target_size = cfg.TRAIN.SCALES[scale_inds[i]]
-        im, im_scale = prep_im_for_blob(im, cfg.PIXEL_MEANS, target_size,
-                                        cfg.TRAIN.MAX_SIZE)
+        target_size = scales[scale_inds[i]]
+        im, im_scale = prep_im_for_blob(im, pixel_mean, target_size, max_size)
         im_scales.append(im_scale)
         processed_ims.append(im)
 

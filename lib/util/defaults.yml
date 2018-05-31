@@ -1,7 +1,12 @@
-# TODO: IB - the config should be code
 DATA_DIR: '/home/jenny/gripper2/data'
 OUTPUT_DIR: '/home/jenny/gripper2/outputs/05_30'
 EXPERIMENT_NAME: 'train_final'
+ckpt_file_format: 'ckpt_e{}.pth'
+raw_preds_file_format: 'raw_preds_e{}.pkl'
+postprocessed_file_format: 'pp_preds_e{}.pkl'
+evals_dir_format: 'evals_e{}'
+vis_path_format: 'visualizations_e{}/{}.png'
+
 dataset: 'pascal_voc'  # training dataset'
 net: 'vgg' #  # {vgg,resnet}
 net_variant: '16' # Currently supported: {16 for vgg, 50, 101, 152 for resnet}
@@ -64,6 +69,26 @@ mGPUs: False  # whether use multiple GPUs
 CROP_RESIZE_WITH_MAX_POOL: True
 class_agnostic: False  # whether perform class_agnostic bbox regression',
 num_regression_outputs_per_bbox: 4
+
+pascal_voc:
+  imdb_name: "voc_2007_trainval"
+  imdbval_name: "voc_2007_test"
+  ANCHOR_SCALES: [8, 16, 32]
+  ANCHOR_RATIOS: [0.5, 1, 2]
+  MAX_NUM_GT_BOXES: 20
+pascal_voc_0712:
+  imdb_name: "voc_2007_trainval+voc_2012_trainval"
+  imdbval_name: "voc_2007_test"
+  ANCHOR_SCALES: [8, 16, 32]
+  ANCHOR_RATIOS: [0.5, 1, 2]
+  MAX_NUM_GT_BOXES: 20
+coco:
+  imdb_name: "coco_2014_train+coco_2014_valminusminival"
+  imdbval_name: "coco_2014_minival"
+  ANCHOR_SCALES: [4, 8, 16, 32]
+  ANCHOR_RATIOS: [0.5, 1, 2]
+  MAX_NUM_GT_BOXES: 50
+
 
 TRAIN:
   start_epoch: 1

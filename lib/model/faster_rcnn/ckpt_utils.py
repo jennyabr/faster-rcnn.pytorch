@@ -1,11 +1,13 @@
+import logging
+
 import os
 import torch
 
-from cfgs.config import ConfigProvider, get_logger
+from util.config import ConfigProvider
 
+logger = logging.getLogger(__name__)
 
 def save_session_to_ckpt(model, optimizer, cfg, epoch):
-    logger = get_logger(__name__)
     if cfg.mGPUs:
         model_state_dict = model.module.state_dict()
     else:
@@ -33,4 +35,5 @@ def load_session_from_ckpt(ckpt_path):
         return optimizer
 
     last_performed_epoch = state_dict['last_performed_epoch']
-    return model,create_optimizer_from_ckpt_fn, loaded_cfg, last_performed_epoch
+    return model, create_optimizer_from_ckpt_fn, loaded_cfg, last_performed_epoch
+

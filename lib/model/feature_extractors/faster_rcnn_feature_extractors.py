@@ -2,11 +2,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from functools import partial
-from abc import ABC, abstractmethod
 import os.path
-
 import torch
+from abc import ABC, abstractmethod
+from functools import partial
 
 from model.utils.net_utils import normal_init
 

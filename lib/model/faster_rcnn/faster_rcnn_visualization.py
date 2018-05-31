@@ -6,9 +6,10 @@ import cv2
 import numpy as np
 import os
 
+logger = logging.getLogger(__name__)
+
 
 def faster_rcnn_visualization(data_manager, cfg, epoch_num):
-    logger = logging.getLogger(__name__)
 
     pp_preds_path = cfg.get_postprocessed_detections_path(epoch_num)
     logger.info(" --->>> Reading post-processing data from: {}".format(pp_preds_path))

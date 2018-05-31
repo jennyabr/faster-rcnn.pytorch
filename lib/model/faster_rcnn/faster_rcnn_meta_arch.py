@@ -1,18 +1,16 @@
-from functools import partial
 import os
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from functools import partial
 from torch.autograd import Variable
 
 from model.feature_extractors.faster_rcnn_feature_extractors import create_feature_extractor_empty
 from model.roi_poolers.roi_pooler_factory import create_roi_pooler
-from model.rpn.rpn import _RPN
 from model.rpn.proposal_target_layer_cascade import _ProposalTargetLayer
+from model.rpn.rpn import _RPN
 from model.utils.net_utils import _smooth_l1_loss, _affine_grid_gen, normal_init
-
-from cfgs.config import cfg, ConfigProvider
+from util.config import ConfigProvider
 
 
 class FasterRCNNMetaArch(nn.Module):
@@ -23,28 +21,29 @@ class FasterRCNNMetaArch(nn.Module):
                       'roi_pooler_name': cfg.roi_pooler_name,
                       'roi_pooler_size': cfg.roi_pooler_size,
                       'crop_resize_with_max_pool': cfg.CROP_RESIZE_WITH_MAX_POOL,
-                      'num_regression_outputs_per_bbox': cfg.num_regression_outputs_per_bbox}
+                      'num_regression_outputs_per_bbox': cfg.num_regression_outputs_per_bbox,
+                      'CROP_RESIZE_WITH_MAX_POOL': cfg.CROP_RESIZE_WITH_MAX_POOL}
 
         self.cfg_params = cfg_params
         self.base_feature_extractor = feature_extractors.base_feature_extractor
 
         def create_rpn():
             rpn_fe_output_depth = feature_extractors.get_output_num_channels(self.base_feature_extractor)
-            rpn_and_nms = _RPN(rpn_fe_output_depth)
+            rpn_and_nms = _RPN(rpn_fe_output_depth, cfg)
             # TODO: the ProposalTargetLayer is not intuitive
-            rpn_proposal_target = _ProposalTargetLayer(cfg_params['num_classes'])
+            rpn_proposal_target = _ProposalTargetLayer(cfg_params['num_classes'], cfg)
             return rpn_and_nms, rpn_proposal_target
 
         self.rpn_and_nms, self.rpn_proposal_target = create_rpn()
 
-        self.roi_pooler = create_roi_pooler(cfg_params['roi_pooler_name'])
+        self.roi_pooler = create_roi_pooler(cfg_params['roi_pooler_name'], cfg_params['roi_pooler_size'])
         # TODO delete next line:
         self.grid_size = cfg_params['roi_pooler_size'] * 2 if cfg_params['crop_resize_with_max_pool'] else\
             cfg_params['roi_pooler_size']
 
         def create_fast_rcnn():
             fast_rcnn_fe = feature_extractors.fast_rcnn_feature_extractor
-            fast_rcnn_fe_output_depth = feature_extractors.get_output_num_channels(fast_rcnn_fe.feature_extractor)  #TODO this functioncan get any model...
+            fast_rcnn_fe_output_depth = feature_extractors.get_output_num_channels(fast_rcnn_fe.feature_extractor)  # TODO this functioncan get any model...
             if cfg_params['is_class_agnostic']:
                 self.num_predicted_coords = cfg_params['num_regression_outputs_per_bbox']
             else:
@@ -62,7 +61,6 @@ class FasterRCNNMetaArch(nn.Module):
         self.faster_rcnn_loss_cls = 0
         self.faster_rcnn_loss_bbox = 0
 
-
     @classmethod
     def create_with_random_normal_init(cls, feature_extractors, cfg, num_classes):
         faster_rcnn = cls(feature_extractors, cfg, num_classes)
@@ -74,8 +72,7 @@ class FasterRCNNMetaArch(nn.Module):
         configured_normal_init(faster_rcnn.fast_rcnn_bbox_head, stddev=0.001)
         return faster_rcnn
 
-
-    #TODO JA - fix - add parameter to init random some layers and number of classes
+    # TODO JA - fix - add parameter to init random some layers and number of classes
     def forward(self, im_data, im_info, gt_boxes, num_boxes):
         batch_size = im_data.size(0)
         im_info = im_info.data
@@ -103,21 +100,21 @@ class FasterRCNNMetaArch(nn.Module):
             rpn_loss_cls = 0
             rpn_loss_bbox = 0
 
-        rois = Variable(rois) # TODO make immutable
+        rois = Variable(rois)  # TODO make immutable
 
-        #TODO refactor this:
-        if cfg.roi_pooler_name == 'crop':
+        # TODO refactor this:
+        if self.cfg_params['roi_pooler_name'] == 'crop':
             grid_xy = _affine_grid_gen(rois.view(-1, 5), base_feature_map.size()[2:], self.grid_size)
             grid_yx = torch.stack([grid_xy.data[:, :, :, 1], grid_xy.data[:, :, :, 0]], 3).contiguous()
             pooled_rois = self.roi_pooler(base_feature_map, Variable(grid_yx).detach())
-            if cfg.CROP_RESIZE_WITH_MAX_POOL:
+            if self.cfg_params['CROP_RESIZE_WITH_MAX_POOL']:
                 pooled_rois = F.max_pool2d(pooled_rois, 2, 2)
-        elif cfg.roi_pooler_name == 'align':
+        elif self.cfg_params['roi_pooler_name'] == 'align':
             pooled_rois = self.roi_pooler(base_feature_map, rois.view(-1, 5))
-        elif cfg.roi_pooler_name == 'pool':
+        elif self.cfg_params['roi_pooler_name'] == 'pool':
             pooled_rois = self.roi_pooler(base_feature_map, rois.view(-1, 5))
-        #TODO this insted : pooled_rois = self.roi_pooler(base_feature_map, rois.view(-1, 5))
-        #TODO: IB - what is this 5 in the view? it might be hardcoding the number of bb coords
+        # TODO this insted : pooled_rois = self.roi_pooler(base_feature_map, rois.view(-1, 5))
+        # TODO: IB - what is this 5 in the view? it might be hardcoding the number of bb coords
 
         def run_fast_rcnn():
             fast_rcnn_feature_map = self.fast_rcnn_feature_extractor(pooled_rois)
@@ -147,8 +144,7 @@ class FasterRCNNMetaArch(nn.Module):
         cls_prob = cls_prob.view(batch_size, rois.size(1), -1)
         bbox_pred = bbox_pred.view(batch_size, rois.size(1), -1)
 
-        return rois, cls_prob, bbox_pred, \
-               rpn_loss_cls, rpn_loss_bbox, \
+        return rois, cls_prob, bbox_pred, rpn_loss_cls, rpn_loss_bbox, \
                self.faster_rcnn_loss_cls, self.faster_rcnn_loss_bbox, rois_label
 
     # TODO: JA - enable manually overriding num_classes and enable to randomize the last layers

@@ -1,7 +1,10 @@
+import pdb
+
 import torch
 from torch.autograd import Function
+
 from .._ext import roi_pooling
-import pdb
+
 
 class RoIPoolFunction(Function):
     def __init__(ctx, pooled_height, pooled_width, spatial_scale):

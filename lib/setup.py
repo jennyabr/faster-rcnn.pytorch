@@ -1,17 +1,20 @@
 from __future__ import print_function
+
+from distutils.core import setup
+from distutils.extension import Extension
+
+import numpy as np
+import os
+from Cython.Distutils import build_ext
+from os.path import join as pjoin
+
+
 # --------------------------------------------------------
 # Fast R-CNN
 # Copyright (c) 2015 Microsoft
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Ross Girshick
 # --------------------------------------------------------
-
-import os
-from os.path import join as pjoin
-import numpy as np
-from distutils.core import setup
-from distutils.extension import Extension
-from Cython.Distutils import build_ext
 
 
 def find_in_path(name, path):

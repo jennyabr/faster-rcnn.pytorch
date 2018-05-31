@@ -8,9 +8,10 @@ import torch
 
 from model.nms.nms_wrapper import nms
 
+logger = logging.getLogger(__name__)
+
 
 def faster_rcnn_postprocessing(data_manager, model, cfg, num_epoch):
-    logger = logging.get_logger(__name__)
     start_time = time.time()
     num_images = len(data_manager)
     num_classes = data_manager.num_classes
@@ -54,7 +55,7 @@ def faster_rcnn_postprocessing(data_manager, model, cfg, num_epoch):
         if k > 0:
             cls_probs_per_image = np.hstack([image_detections[c][:, -1] for c in range(1, num_classes)])
             if len(cls_probs_per_image) > k:
-                #TODO: JA - Make sure to test what happens inside this if
+                # TODO: JA - Make sure to test what happens inside this if
                 prob_thresh = np.sort(cls_probs_per_image)[-k]
                 for c in range(1, num_classes):
                     boxes_idxs_to_keep = np.where(image_detections[c][:, -1] >= prob_thresh)[0]

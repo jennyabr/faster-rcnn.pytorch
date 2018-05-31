@@ -1,19 +1,18 @@
 from __future__ import absolute_import
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
-from cfgs.config import cfg
-
-from .proposal_layer import _ProposalLayer
-from .anchor_target_layer import _AnchorTargetLayer
 from model.utils.net_utils import _smooth_l1_loss
+from .anchor_target_layer import _AnchorTargetLayer
+from .proposal_layer import _ProposalLayer
 
 
 class _RPN(nn.Module):
     """ region proposal network """
-    def __init__(self, din):
+    def __init__(self, din, cfg):
         super(_RPN, self).__init__()
         
         self.din = din  # get depth of input feature map, e.g., 512
@@ -25,18 +24,20 @@ class _RPN(nn.Module):
         self.RPN_Conv = nn.Conv2d(self.din, 512, 3, 1, 1, bias=True)
 
         # define bg/fg classifcation score layer
-        self.nc_score_out = len(self.anchor_scales) * len(self.anchor_ratios) * 2 # 2(bg/fg) * 9 (anchors)
+        # 2 (bg/fg) * 9 (anchors)
+        self.nc_score_out = len(self.anchor_scales) * len(self.anchor_ratios) * 2
         self.RPN_cls_score = nn.Conv2d(512, self.nc_score_out, 1, 1, 0)
 
         # define anchor box offset prediction layer
-        self.nc_bbox_out = len(self.anchor_scales) * len(self.anchor_ratios) * 4 # 4(coords) * 9 (anchors)
+        # 4 (coords) * 9 (anchors)
+        self.nc_bbox_out = len(self.anchor_scales) * len(self.anchor_ratios) * 4
         self.RPN_bbox_pred = nn.Conv2d(512, self.nc_bbox_out, 1, 1, 0)
 
         # define proposal layer
-        self.RPN_proposal = _ProposalLayer(self.feat_stride, self.anchor_scales, self.anchor_ratios)
+        self.RPN_proposal = _ProposalLayer(self.feat_stride, self.anchor_scales, self.anchor_ratios, cfg)
 
         # define anchor target layer
-        self.RPN_anchor_target = _AnchorTargetLayer(self.feat_stride, self.anchor_scales, self.anchor_ratios)
+        self.RPN_anchor_target = _AnchorTargetLayer(self.feat_stride, self.anchor_scales, self.anchor_ratios, cfg)
 
         self.rpn_loss_cls = 0
         self.rpn_loss_box = 0
@@ -48,12 +49,10 @@ class _RPN(nn.Module):
             input_shape[0],
             int(d),
             int(float(input_shape[1] * input_shape[2]) / float(d)),
-            input_shape[3]
-        )
+            input_shape[3])
         return x
 
     def forward(self, base_feat, im_info, gt_boxes, num_boxes):
-
         batch_size = base_feat.size(0)
 
         # return feature map after convrelu layer
@@ -88,7 +87,7 @@ class _RPN(nn.Module):
             rpn_label = rpn_data[0].view(batch_size, -1)
 
             rpn_keep = Variable(rpn_label.view(-1).ne(-1).nonzero().view(-1))
-            rpn_cls_score = torch.index_select(rpn_cls_score.view(-1,2), 0, rpn_keep)
+            rpn_cls_score = torch.index_select(rpn_cls_score.view(-1, 2), 0, rpn_keep)
             rpn_label = torch.index_select(rpn_label.view(-1), 0, rpn_keep.data)
             rpn_label = Variable(rpn_label.long())
             self.rpn_loss_cls = F.cross_entropy(rpn_cls_score, rpn_label)
@@ -101,7 +100,8 @@ class _RPN(nn.Module):
             rpn_bbox_outside_weights = Variable(rpn_bbox_outside_weights)
             rpn_bbox_targets = Variable(rpn_bbox_targets)
 
-            self.rpn_loss_box = _smooth_l1_loss(rpn_bbox_pred, rpn_bbox_targets, rpn_bbox_inside_weights,
-                                                            rpn_bbox_outside_weights, sigma=3, dim=[1,2,3])
+            self.rpn_loss_box = _smooth_l1_loss(
+                rpn_bbox_pred, rpn_bbox_targets, rpn_bbox_inside_weights,
+                rpn_bbox_outside_weights, sigma=3, dim=[1, 2, 3])
 
         return rois, self.rpn_loss_cls, self.rpn_loss_box
