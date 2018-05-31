@@ -73,10 +73,10 @@ def faster_rcnn_postprocessing(data_manager, model, cfg, num_epoch):
             detections_after_nms[j] = run_nms_on_unsorted_boxes(probs_after_thresh, coords_after_thresh)
         postprocessed_detections[:, i] = keep_top_k_detections_in_image(detections_after_nms)
         pp_end = time.time()
-        logger.info('Postprocessing progress: {0}/{1}: '
-                    'Time for current image: {2:.4f}s '
-                    '[Avg time per image: {3:.4f}s].'.format(i, num_images, pp_end - pp_start,
-                                                             (pp_end-start_time) / (i+1)))
+
+        if i % cfg.TRAIN.disp_interval == 0 and i > 0:
+            logger.info('Postprocessing in-progress: {0}/{1}: '
+                        'avg time per image: {2:.4f} s.'.format(i, num_images, (pp_end-start_time) / (i+1)))
 
     pp_dets_path = cfg.get_postprocessed_detections_path(num_epoch)
     os.makedirs(os.path.dirname(pp_dets_path), exist_ok=True)

@@ -56,11 +56,13 @@ def faster_rcnn_prediction(data_manager, model, cfg, epoch_num):
         curr_pred_end = time.time()
         pred_time = curr_pred_end - curr_pred_start
         avg_pred_time = (curr_pred_end - pred_start) / (i+1)
-        logger.info('Prediction {0}/{1}: '
-                    'Time for current image: {2:.3f} min, '
-                    '[Avg per image: {3:.3f} min].'.format(i+1, num_images, pred_time, avg_pred_time))
+
         raw_preds['bbox_coords'][i, ...] = bbox_coords.cpu().numpy()
         raw_preds['cls_probs'][i, ...] = cls_probs.cpu().numpy()
+
+        if i % cfg.TRAIN.disp_interval == 0 and i > 0:
+            logger.info('Prediction in-progress {0}/{1}: '
+                        'avg per image: {2:.3f} s.'.format(i, num_images, avg_pred_time))
 
     preds_file_path = cfg.get_preds_path(epoch_num)
     os.makedirs(os.path.dirname(preds_file_path), exist_ok=True)

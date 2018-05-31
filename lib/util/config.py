@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 class ConfigProvider(dict):
     def __init__(self):
+        super(ConfigProvider, self).__init__()
         self._cfg = edict({})
 
     def load(self, config_path):
@@ -35,6 +36,21 @@ class ConfigProvider(dict):
                     else:
                         cfg[k] = v
 
+        dataset = cfg['dataset']
+        cfg['imdb_name'] = cfg[dataset]['imdb_name']
+        cfg['imdbval_name'] = cfg[dataset]['imdbval_name']
+        cfg['ANCHOR_SCALES'] = cfg[dataset]['ANCHOR_SCALES']
+        cfg['ANCHOR_RATIOS'] = cfg[dataset]['ANCHOR_RATIOS']
+        cfg['MAX_NUM_GT_BOXES'] = cfg[dataset]['MAX_NUM_GT_BOXES']
+
+        cfg['DEDUP_BOXES'] = float(cfg['DEDUP_BOXES_numerator']) / float(cfg['DEDUP_BOXES_denominator'])
+
+        cfg['PIXEL_MEANS'] = np.array(cfg['PIXEL_MEANS'])
+
+        cfg['EPS'] = float(cfg['EPS'])
+        self.create_from_dict(cfg)
+
+    def create_from_dict(self, cfg):
         cfg['start_run_time_str'] = strftime("%Y_%b_%d_%H_%M", gmtime())
 
         cfg['DATA_DIR'] = os.path.abspath(cfg['DATA_DIR'])
@@ -48,35 +64,18 @@ class ConfigProvider(dict):
                 os.makedirs(outdir)
             return outdir
         cfg['OUTPUT_PATH'] = create_output_path()
-
-        dataset = cfg['dataset']
-        cfg['imdb_name'] = cfg[dataset]['imdb_name']
-        cfg['imdbval_name'] = cfg[dataset]['imdbval_name']
-        cfg['ANCHOR_SCALES'] = cfg[dataset]['ANCHOR_SCALES']
-        cfg['ANCHOR_RATIOS'] = cfg[dataset]['ANCHOR_RATIOS']
-        cfg['MAX_NUM_GT_BOXES'] = cfg[dataset]['MAX_NUM_GT_BOXES']
-
-        cfg['DEDUP_BOXES'] = float(cfg['DEDUP_BOXES_numerator']) / float(cfg['DEDUP_BOXES_denominator'])
-
-        cfg['PIXEL_MEANS'] = np.array(cfg['PIXEL_MEANS'])
-
-        cfg['EPS'] = float(cfg['EPS'])
-
         torch.manual_seed(cfg['RNG_SEED'])
         torch.cuda.manual_seed_all(cfg['RNG_SEED'])
 
         if torch.cuda.is_available() and not cfg['CUDA']:  # todo del
             logger.warning("You have a CUDA device, so you should probably run with --cuda")
 
-        def create_from_dict(cfg_dict):
-            cfg = edict(cfg_dict)
-            logger.info('--->>> Config:\n{}'.format(pprint.pformat(cfg)))
-            with open('run_with_config.yml', 'w') as outfile:
-                yaml.dump(cfg, outfile, default_flow_style=False)
+        cfg = edict(cfg)
+        logger.info('--->>> Config:\n{}'.format(pprint.pformat(cfg)))
+        with open(os.path.join(cfg['OUTPUT_PATH'], 'run_with_config.yml'), 'w') as outfile:
+            yaml.dump(cfg, outfile, default_flow_style=False)
 
-            return cfg
-        self._cfg = create_from_dict(cfg)
-
+        self._cfg = cfg
 
     def __str__(self):
         return pprint.pformat(self._cfg)
@@ -97,8 +96,7 @@ class ConfigProvider(dict):
 
     def get_last_ckpt_path(self):
         import glob
-        list_of_files = glob.glob(os.path.join(self.output_path, self.ckpt_file_format('*')))
-        # * means all if need specific format then *.csv
+        list_of_files = glob.glob(os.path.join(self.output_path, self.ckpt_file_format.format('*')))
         latest_file = max(list_of_files, key=os.path.getctime)
         return latest_file
 

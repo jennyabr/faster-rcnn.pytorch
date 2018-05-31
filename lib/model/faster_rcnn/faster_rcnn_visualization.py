@@ -16,6 +16,9 @@ def faster_rcnn_visualization(data_manager, cfg, epoch_num):
     with open(pp_preds_path, 'rb') as f:
         bboxes = pickle.load(f)
 
+    visualizations_dir = os.path.dirname(cfg.get_img_visualization_path(epoch_num, 0))
+    os.makedirs(visualizations_dir, exist_ok=True)
+
     start_time = time.time()
     for i in range(data_manager.num_images):
         im = cv2.imread(data_manager.imdb.image_path_at(i))
@@ -38,10 +41,10 @@ def faster_rcnn_visualization(data_manager, cfg, epoch_num):
                                 (0, 0, 255),
                                 thickness=1)
 
-        visualizations_path_img_i = cfg.get_img_visualization_path(epoch_num, i)
-        os.makedirs(os.path.dirname(visualizations_path_img_i), exist_ok=True)
-        logger.info("Writing image {} visualization to: {}.".format(i, visualizations_path_img_i))
-        cv2.imwrite(visualizations_path_img_i, im2show)
+        cv2.imwrite(cfg.get_img_visualization_path(epoch_num, i), im2show)
+        if i % cfg.TRAIN.disp_interval == 0 and i > 0:
+            logger.info("Visualization in-progress: {}/{}.".format(i, data_manager.num_images))
 
     end_time = time.time()
-    logger.info("-------------- Visualization time: {:.4f}s. --------------".format(end_time - start_time))
+    logger.info("Visualization dir path: {}.".format(visualizations_dir))
+    logger.info("-------------- Visualization time: {:.4f} s. --------------".format(end_time - start_time))
