@@ -1,10 +1,7 @@
-# --------------------------------------------------------
-# Pytorch multi-GPU Faster R-CNN
-# Licensed under The MIT License [see LICENSE for details]
-# Written by Jiasen Lu, Jianwei Yang, based on code from Ross Girshick
-# --------------------------------------------------------
 from __future__ import absolute_import
 from __future__ import division
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 import logging
 import numpy as np
@@ -29,7 +26,6 @@ config_file = '/home/jenny/gripper2/test_on_p100/cfgs/resnet101.yml'
 
 cfg = ConfigProvider()
 cfg.load(config_file)
-cfg.GPU_ID = 0
 np.random.seed(cfg.RNG_SEED)
 
 set_root_logger(cfg.get_log_path())

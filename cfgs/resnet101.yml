@@ -1,6 +1,6 @@
 DATA_DIR: '/home/jenny/gripper2/data'
 OUTPUT_DIR: '/home/jenny/gripper2/outputs/05_31'
-EXPERIMENT_NAME: 'resnet101_exp'
+EXPERIMENT_NAME: 'resnet101_exp2_override_train'
 net: 'resnet' #  # {vgg,resnet}
 net_variant: '101' # Currently supported: {16 for vgg, 50, 101, 152 for resnet}
 

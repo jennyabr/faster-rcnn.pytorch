@@ -24,6 +24,7 @@ class FasterRCNNMetaArch(nn.Module):
                       'num_regression_outputs_per_bbox': cfg.num_regression_outputs_per_bbox}
 
         self.cfg_params = cfg_params
+        self.feature_extractor_train_fn = feature_extractors.train
         self.base_feature_extractor = feature_extractors.base_feature_extractor
 
         def create_rpn():
@@ -141,3 +142,7 @@ class FasterRCNNMetaArch(nn.Module):
         model = FasterRCNNMetaArch(feature_extractors, loaded_cfg, state_dict['model_cfg_params']['num_classes'])
         model.load_state_dict(state_dict['model'])
         return model
+
+    def train(self, mode=True):
+        super(FasterRCNNMetaArch, self).train(mode)
+        self.feature_extractor_train_fn(mode)

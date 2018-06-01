@@ -14,6 +14,8 @@ class FasterRCNNFeatureExtractors(ABC):
     def __init__(self, net_variant, frozen_blocks):
         self.net_variant = net_variant
         self.frozen_blocks = frozen_blocks
+        self._base_feature_extractor = None
+        self._fast_rcnn_feature_extractor = None
 
     @property
     @abstractmethod
@@ -32,6 +34,17 @@ class FasterRCNNFeatureExtractors(ABC):
     @abstractmethod
     def get_output_num_channels(self, model):
         raise NotImplementedError
+
+    #TODO: JA - this was taken nearly as is from the original repo, some of the lines look redundant\wrong
+    def train(self, mode=True):
+        nn.Module.train(self, mode)
+        if mode:
+            def set_bn_eval(m):
+                classname = m.__class__.__name__
+                if classname.find('BatchNorm') != -1:
+                    m.eval()
+            self._base_feature_extractor.apply(set_bn_eval)
+            self._fast_rcnn_feature_extractor.apply(set_bn_eval)
 
 
 def create_feature_extractor_empty(net_name, net_variant, frozen_blocks):
