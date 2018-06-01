@@ -13,7 +13,7 @@ from easydict import EasyDict as edict
 
 logger = logging.getLogger(__name__)
 
-
+# TODO: ConfigProvider should enable setting attributes inside _cfg for h.p. sweeps
 class ConfigProvider(dict):
     def __init__(self):
         super(ConfigProvider, self).__init__()
