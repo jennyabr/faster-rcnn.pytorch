@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 
 
 def run_training_session(data_manager, model, create_optimizer_fn, cfg, train_logger, first_epoch=0):
-
     def get_trainable_params():
         trainable_params = []
         for key, value in dict(model.named_parameters()).items():
@@ -34,7 +33,7 @@ def run_training_session(data_manager, model, create_optimizer_fn, cfg, train_lo
     if cfg.CUDA:
         model.cuda()
     iters_per_epoch = data_manager.iters_per_epoch
-    
+
     aggregated_stats = {}
     for epoch in range(first_epoch, cfg.TRAIN.max_epochs + 1):
         model.train() #TODO: JA - should probably be before the for loop

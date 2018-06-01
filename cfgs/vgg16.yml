@@ -3,7 +3,7 @@ OUTPUT_DIR: '/home/jenny/gripper2/outputs/05_31'
 EXPERIMENT_NAME: 'model_train_inside_the_loop'
 net: 'vgg' #  # {vgg,resnet}
 net_variant: '16' # Currently supported: {16 for vgg, 50, 101, 152 for resnet}
-GPU_ID: 1
+GPU_ID: '1'
 
 TRAIN:
   HAS_RPN: True
