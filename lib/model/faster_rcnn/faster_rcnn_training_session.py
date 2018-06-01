@@ -35,9 +35,9 @@ def run_training_session(data_manager, model, create_optimizer_fn, cfg, train_lo
         model.cuda()
     iters_per_epoch = data_manager.iters_per_epoch
     
-    model.train()
     aggregated_stats = {}
     for epoch in range(first_epoch, cfg.TRAIN.max_epochs + 1):
+        model.train() #TODO: JA - should probably be before the for loop
         decay_lr_in_optimizer(epoch, cfg.TRAIN.lr_decay_step + 1, optimizer, cfg.TRAIN.GAMMA)
 
         epoch_start_time = aggregation_start_time = time.time()

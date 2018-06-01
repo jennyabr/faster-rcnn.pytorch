@@ -1,6 +1,6 @@
 DATA_DIR: '/home/jenny/gripper2/data'
 OUTPUT_DIR: '/home/jenny/gripper2/outputs/05_31'
-EXPERIMENT_NAME: 'only_numpy_seed3'
+EXPERIMENT_NAME: 'model_train_inside_the_loop'
 net: 'vgg' #  # {vgg,resnet}
 net_variant: '16' # Currently supported: {16 for vgg, 50, 101, 152 for resnet}
 
@@ -14,7 +14,7 @@ TRAIN:
   BATCH_SIZE: 256
   LEARNING_RATE: 0.001
   pretrained_model_path: '/home/jenny/gripper2/data/pretrained_model/vgg16_caffe.pth' #TODO
-  CLIP_GRADIENTS: 10.  #TODO: JA - Make sure this is a good config (copied from the author)
+  CLIP_GRADIENTS: 10.
   frozen_blocks: 2
 
 TEST:
