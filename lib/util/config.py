@@ -77,7 +77,6 @@ class ConfigProvider(dict):
             yaml.dump(cfg, outfile, default_flow_style=False)
 
         self._cfg = cfg
-        os.environ['CUDA_VISIBLE_DEVICES'] = cfg['GPU_ID']
 
     def __str__(self):
         return pprint.pformat(self._cfg)

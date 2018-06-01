@@ -23,10 +23,6 @@ RNG_SEED: 3
 # Use GPU implementation of non-maximum suppression
 USE_GPU_NMS: True
 
-# Default GPU device id
-GPU_ID: 0
-
-
 # The mapping from image coordinates to feature map coordinates might cause
 # some boxes that are distinct in image space to become identical in feature
 # coordinates. If DEDUP_BOXES > 0, then DEDUP_BOXES is used as the scale factor
