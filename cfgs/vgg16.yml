@@ -1,6 +1,6 @@
 DATA_DIR: '/home/jenny/gripper2/data'
 OUTPUT_DIR: '/home/jenny/gripper2/outputs/05_31'
-EXPERIMENT_NAME: 'after_config'
+EXPERIMENT_NAME: 'move_roi_poolers1'
 
 EXP_DIR: vgg16
 TRAIN:
