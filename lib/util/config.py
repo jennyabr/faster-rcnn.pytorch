@@ -45,13 +45,14 @@ class ConfigProvider(dict):
 
         cfg['DEDUP_BOXES'] = float(cfg['DEDUP_BOXES_numerator']) / float(cfg['DEDUP_BOXES_denominator'])
 
-        cfg['PIXEL_MEANS'] = np.array(cfg['PIXEL_MEANS'])
-
-        cfg['EPS'] = float(cfg['EPS'])
         self.create_from_dict(cfg)
 
     def create_from_dict(self, cfg):
         cfg['start_run_time_str'] = strftime("%Y_%b_%d_%H_%M", gmtime())
+
+        cfg['PIXEL_MEANS'] = np.array(cfg['PIXEL_MEANS'])
+
+        cfg['EPS'] = float(cfg['EPS'])
 
         cfg['DATA_DIR'] = os.path.abspath(cfg['DATA_DIR'])
 
@@ -64,8 +65,8 @@ class ConfigProvider(dict):
                 os.makedirs(outdir)
             return outdir
         cfg['OUTPUT_PATH'] = create_output_path()
-        torch.manual_seed(cfg['RNG_SEED'])
-        torch.cuda.manual_seed_all(cfg['RNG_SEED'])
+        # torch.manual_seed(cfg['RNG_SEED'])
+        # torch.cuda.manual_seed_all(cfg['RNG_SEED'])
 
         if torch.cuda.is_available() and not cfg['CUDA']:  # todo del
             logger.warning("You have a CUDA device, so you should probably run with --cuda")

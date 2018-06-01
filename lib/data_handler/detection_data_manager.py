@@ -7,11 +7,12 @@ from roi_data_layer.roibatchLoader import roiBatchLoader
 from roi_data_layer.roidb import combined_roidb
 
 
+# TODO: JA - rename to DB
 class BDSampler(Sampler):
     def __init__(self, train_size, batch_size, seed):
         super(BDSampler, self).__init__(data_source="")  # TODO what to do with data_source?
         self.seed = seed
-        torch.manual_seed(seed)
+        # torch.manual_seed(seed)
 
         self.data_size = train_size
         self.num_per_batch = int(train_size / batch_size)

@@ -1,5 +1,6 @@
 import argparse
 import logging
+import numpy as np
 
 from data_handler.data_manager_api import Mode
 from data_handler.detection_data_manager import FasterRCNNDataManager
@@ -18,6 +19,7 @@ if __name__ == '__main__':
 
     cfg = ConfigProvider()
     cfg.load(args.config_dir)
+    np.random.seed(cfg.RNG_SEED)
 
     set_root_logger(cfg.get_log_path())
     logger = logging.getLogger(__name__)

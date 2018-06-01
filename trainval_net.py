@@ -8,7 +8,7 @@ from __future__ import division
 
 import argparse
 import logging
-
+import numpy as np
 import torch
 from functools import partial
 
@@ -31,6 +31,7 @@ if __name__ == '__main__':
 
     cfg = ConfigProvider()
     cfg.load(args.config_dir)
+    np.random.seed(cfg.RNG_SEED)
 
     set_root_logger(cfg.get_log_path())
     logger = logging.getLogger(__name__)
