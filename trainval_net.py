@@ -21,44 +21,39 @@ from model.feature_extractors.faster_rcnn_feature_extractors import create_featu
 from util.config import ConfigProvider
 from util.logging import set_root_logger
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Train a Faster R-CNN network')
-    parser.add_argument('--config_dir', dest='config_dir', help='Path to config dir', type=str)
-    args = parser.parse_args()
 
-    if not args.config_dir:
-        raise Exception("Unable to run without config dir.")
+parser = argparse.ArgumentParser(description='Train a Faster R-CNN network')
+parser.add_argument('--config_dir', dest='config_dir', help='Path to config dir', type=str)
+args = parser.parse_args()
 
-    cfg = ConfigProvider()
-    cfg.load(args.config_dir)
-    np.random.seed(cfg.RNG_SEED)
+if not args.config_dir:
+    raise Exception("Unable to run without config dir.")
 
-    set_root_logger(cfg.get_log_path())
-    logger = logging.getLogger(__name__)
+cfg = ConfigProvider()
+cfg.load(args.config_dir)
+np.random.seed(cfg.RNG_SEED)
 
-    try:
-        train_data_manager = FasterRCNNDataManager(
-            mode=Mode.TRAIN, imdb_name=cfg.imdb_name,
-            seed=cfg.RNG_SEED, num_workers=cfg.NUM_WORKERS, is_cuda=cfg.CUDA,
-            cfg=cfg, batch_size=cfg.TRAIN.batch_size)
+set_root_logger(cfg.get_log_path())
+logger = logging.getLogger(__name__)
 
-        train_logger = TensorBoardLogger(cfg.output_path)
+try:
+    train_data_manager = FasterRCNNDataManager(
+        mode=Mode.TRAIN, imdb_name=cfg.imdb_name,
+        seed=cfg.RNG_SEED, num_workers=cfg.NUM_WORKERS, is_cuda=cfg.CUDA,
+        cfg=cfg, batch_size=cfg.TRAIN.batch_size)
 
-        # possible_anchors_scales = [a,b,c]
-        # for scale in possible_anchors_scales:
-        #     cfg.scale = scale
-        #     faster_rcnn = FasterRCNNTrainer(cfg)
+    train_logger = TensorBoardLogger(cfg.output_path)
 
-        feature_extractors = create_feature_extractor_from_ckpt(
-            cfg.net, cfg.net_variant, frozen_blocks=cfg.TRAIN.frozen_blocks,
-            pretrained_model_path=cfg.TRAIN.get("pretrained_model_path", None))
+    feature_extractors = create_feature_extractor_from_ckpt(
+        cfg.net, cfg.net_variant, frozen_blocks=cfg.TRAIN.frozen_blocks,
+        pretrained_model_path=cfg.TRAIN.get("pretrained_model_path", None))
 
-        model = FasterRCNNMetaArch.create_with_random_normal_init(feature_extractors, cfg,
-                                                                  num_classes=train_data_manager.num_classes)
+    model = FasterRCNNMetaArch.create_with_random_normal_init(feature_extractors, cfg,
+                                                              num_classes=train_data_manager.num_classes)
 
-        create_optimizer_fn = partial(torch.optim.SGD, momentum=cfg.TRAIN.MOMENTUM)
+    create_optimizer_fn = partial(torch.optim.SGD, momentum=cfg.TRAIN.MOMENTUM)
 
-        run_training_session(train_data_manager, model, create_optimizer_fn, cfg, train_logger, cfg.TRAIN.start_epoch)
+    run_training_session(train_data_manager, model, create_optimizer_fn, cfg, train_logger, cfg.TRAIN.start_epoch)
 
-    except Exception:
-        logger.error("Unexpected error: ", exc_info=True)
+except Exception:
+    logger.error("Unexpected error: ", exc_info=True)

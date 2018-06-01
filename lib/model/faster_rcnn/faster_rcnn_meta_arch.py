@@ -9,7 +9,7 @@ from model.feature_extractors.faster_rcnn_feature_extractors import create_featu
 from model.roi_poolers.roi_pooler_factory import create_roi_pooler
 from model.rpn.proposal_target_layer_cascade import _ProposalTargetLayer
 from model.rpn.rpn import _RPN
-from model.utils.net_utils import _smooth_l1_loss, _affine_grid_gen, normal_init
+from model.utils.net_utils import _smooth_l1_loss, normal_init
 from util.config import ConfigProvider
 
 
@@ -21,8 +21,7 @@ class FasterRCNNMetaArch(nn.Module):
                       'roi_pooler_name': cfg.roi_pooler_name,
                       'roi_pooler_size': cfg.roi_pooler_size,
                       'crop_resize_with_max_pool': cfg.CROP_RESIZE_WITH_MAX_POOL,
-                      'num_regression_outputs_per_bbox': cfg.num_regression_outputs_per_bbox,
-                      'CROP_RESIZE_WITH_MAX_POOL': cfg.CROP_RESIZE_WITH_MAX_POOL}
+                      'num_regression_outputs_per_bbox': cfg.num_regression_outputs_per_bbox}
 
         self.cfg_params = cfg_params
         self.base_feature_extractor = feature_extractors.base_feature_extractor
@@ -99,18 +98,7 @@ class FasterRCNNMetaArch(nn.Module):
 
         rois = Variable(rois)
 
-        # TODO refactor this: pooled_rois = self.roi_pooler(base_feature_map, rois.view(-1, 5))
-        if self.cfg_params['roi_pooler_name'] == 'crop':
-            grid_xy = _affine_grid_gen(rois.view(-1, 5), base_feature_map.size()[2:], self.roi_pooler.grid_size)
-            grid_yx = torch.stack([grid_xy.data[:, :, :, 1], grid_xy.data[:, :, :, 0]], 3).contiguous()
-            pooled_rois = self.roi_pooler(base_feature_map, Variable(grid_yx).detach())
-            if self.cfg_params['CROP_RESIZE_WITH_MAX_POOL']:
-                pooled_rois = F.max_pool2d(pooled_rois, 2, 2)
-        elif self.cfg_params['roi_pooler_name'] == 'align':
-            pooled_rois = self.roi_pooler(base_feature_map, rois.view(-1, 5))
-        elif self.cfg_params['roi_pooler_name'] == 'pool':
-            pooled_rois = self.roi_pooler(base_feature_map, rois.view(-1, 5))
-        # TODO: IB - what is this 5 in the view? it might be hardcoding the number of bb coords
+        pooled_rois = self.roi_pooler(base_feature_map, rois.view(-1, 5))
 
         def run_fast_rcnn():
             fast_rcnn_feature_map = self.fast_rcnn_feature_extractor(pooled_rois)
