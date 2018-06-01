@@ -9,11 +9,9 @@ from roi_data_layer.roidb import combined_roidb
 
 # TODO: JA - rename to DB
 class BDSampler(Sampler):
-    def __init__(self, train_size, batch_size, seed):
+    def __init__(self, train_size, batch_size):
         super(BDSampler, self).__init__(data_source="")  # TODO what to do with data_source?
         self.seed = seed
-        # torch.manual_seed(seed)
-
         self.data_size = train_size
         self.num_per_batch = int(train_size / batch_size)
         self.batch_size = batch_size
@@ -39,7 +37,7 @@ class BDSampler(Sampler):
 
 
 class FasterRCNNDataManager(DataManager):
-    def __init__(self, mode, imdb_name, seed, num_workers, is_cuda, cfg, batch_size=1):
+    def __init__(self, mode, imdb_name, num_workers, is_cuda, cfg, batch_size=1):
         super(FasterRCNNDataManager, self).__init__(mode, is_cuda)
         self._imdb, roidb, ratio_list, ratio_index = combined_roidb(
             imdb_name,
@@ -53,7 +51,7 @@ class FasterRCNNDataManager(DataManager):
 
         if self.is_train:
             self._train_size = train_size = len(roidb)
-            sampler_batch = BDSampler(train_size, batch_size, seed)
+            sampler_batch = BDSampler(train_size, batch_size)
             self._data_loader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers,
                                            sampler=sampler_batch)
             self.iters_per_epoch = int(self._train_size / batch_size)

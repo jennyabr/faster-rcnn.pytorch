@@ -31,7 +31,8 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractors):
                                     resnet.layer1,
                                     resnet.layer2,
                                     resnet.layer3)
-            assert (0 <= frozen_blocks < 4)  # TODO move from here  ?
+            if not (0 <= frozen_blocks < 4):
+                raise ValueError('Illegal number of blocks to freeze')
             base_fe_non_trainable = self._freeze_layers(base_fe, frozen_blocks)
             base_fe.apply(self._freeze_batch_norm_layers)
 
@@ -74,7 +75,6 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractors):
         net.apply(_freeze_if_batch_norm)
 
     def _freeze_layers(self, model, upto_block_num):
-        # TODO: enable freezing only conv1
         assert_sequential(model)
 
         curr_block_num = 0

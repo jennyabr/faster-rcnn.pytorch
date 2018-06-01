@@ -116,9 +116,11 @@ def _write_stats_to_logger(train_logger, metrics, time_per_sample, epoch, step, 
 def _aggregate_stats(aggregated_stats, new_stats, disp_interval):
     res = {}
     for stat_name, stat_value in new_stats.items():
-        current = new_stats[stat_name]
-        if type(current) is Variable:
-            current = current.data[0]  # TODO: JA - can we aggregate the stats on the gpu instead of the cpu?
+        if type(stat_value) is Variable:
+            # TODO: JA - can we aggregate the stats on the gpu instead of the cpu?
+            current = stat_value.data[0]
+        else:
+            current = stat_value
         aggregated = aggregated_stats.get(stat_name, 0)
-        res[stat_name] = aggregated + current / disp_interval  # TODO: ib - make sure it happens on the gpu
+        res[stat_name] = aggregated + current / disp_interval
     return res

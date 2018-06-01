@@ -1,6 +1,6 @@
 DATA_DIR: '/home/jenny/gripper2/data'
 OUTPUT_DIR: '/home/jenny/gripper2/outputs/05_31'
-EXPERIMENT_NAME: 'after_config'
+EXPERIMENT_NAME: 'resnet101_exp'
 
 EXP_DIR: resnet101
 TRAIN:
@@ -17,19 +17,9 @@ TRAIN:
   LEARNING_RATE: 0.001
   pretrained_model_path: '/home/jenny/gripper2/data/pretrained_model/resnet101_caffe.pth'
   FROZEN_BLOCKS: 2
+  max_epochs: 7
 TEST:
   HAS_RPN: True
 roi_pooler_size: 7
 roi_pooler_name: align
 CROP_RESIZE_WITH_MAX_POOL: False
-
-RESNET:
-  # Option to set if max-pooling is appended after crop_and_resize.
-  # if true, the region will be resized to a square of 2xPOOLING_SIZE,
-  # then 2x2 max-pooling is applied; otherwise the region will be directly
-  # resized to a square of POOLING_SIZE
-  MAX_POOL: False
-
-  # Number of frozen blocks during training, by default the first of all 4 blocks is frozen
-  # Range: 0 (none) to 3 (all)
-  FROZEN_BLOCKS: 1
