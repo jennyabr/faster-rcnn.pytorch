@@ -30,16 +30,14 @@ class FasterRCNNMetaArch(nn.Module):
         def create_rpn():
             rpn_fe_output_depth = feature_extractors.get_output_num_channels(self.base_feature_extractor)
             rpn_and_nms = _RPN(rpn_fe_output_depth, cfg)
-            # TODO: the ProposalTargetLayer is not intuitive
+            # TODO JA - the ProposalTargetLayer is not intuitive
             rpn_proposal_target = _ProposalTargetLayer(cfg_params['num_classes'], cfg)
             return rpn_and_nms, rpn_proposal_target
 
         self.rpn_and_nms, self.rpn_proposal_target = create_rpn()
 
-        self.roi_pooler = create_roi_pooler(cfg_params['roi_pooler_name'], cfg_params['roi_pooler_size'])
-        # TODO delete next line:
-        self.grid_size = cfg_params['roi_pooler_size'] * 2 if cfg_params['crop_resize_with_max_pool'] else\
-            cfg_params['roi_pooler_size']
+        self.roi_pooler = create_roi_pooler(cfg_params['roi_pooler_name'], cfg_params['roi_pooler_size'],
+                                            cfg_params['crop_resize_with_max_pool'])
 
         def create_fast_rcnn():
             fast_rcnn_fe = feature_extractors.fast_rcnn_feature_extractor
@@ -57,7 +55,7 @@ class FasterRCNNMetaArch(nn.Module):
             return fast_rcnn_fe, fast_rcnn_bbox_head, fast_rcnn_cls_head
         self.fast_rcnn_feature_extractor, self.fast_rcnn_bbox_head, self.fast_rcnn_cls_head = create_fast_rcnn()
 
-        # TODO should the loss be in self?
+        # TODO JA - should the loss be in self?
         self.faster_rcnn_loss_cls = 0
         self.faster_rcnn_loss_bbox = 0
 
@@ -72,7 +70,6 @@ class FasterRCNNMetaArch(nn.Module):
         configured_normal_init(faster_rcnn.fast_rcnn_bbox_head, stddev=0.001)
         return faster_rcnn
 
-    # TODO JA - fix - add parameter to init random some layers and number of classes
     def forward(self, im_data, im_info, gt_boxes, num_boxes):
         batch_size = im_data.size(0)
         im_info = im_info.data
@@ -83,7 +80,7 @@ class FasterRCNNMetaArch(nn.Module):
 
         rois, rpn_loss_cls, rpn_loss_bbox = self.rpn_and_nms(base_feature_map, im_info, gt_boxes, num_boxes)
 
-        # TODO: IB- we skipped this if-else because we didn't want to dive into rpn_proposal_target
+        # TODO: JA - this if-else was skipped because we didn't want to dive into rpn_proposal_target
         if self.training:  # if it is training phrase, then use ground truth bboxes for refining
             rois, rois_label, rois_target, rois_inside_ws, rois_outside_ws = \
                 self.rpn_proposal_target(rois, gt_boxes, num_boxes)
@@ -100,11 +97,11 @@ class FasterRCNNMetaArch(nn.Module):
             rpn_loss_cls = 0
             rpn_loss_bbox = 0
 
-        rois = Variable(rois)  # TODO make immutable
+        rois = Variable(rois)
 
-        # TODO refactor this:
+        # TODO refactor this: pooled_rois = self.roi_pooler(base_feature_map, rois.view(-1, 5))
         if self.cfg_params['roi_pooler_name'] == 'crop':
-            grid_xy = _affine_grid_gen(rois.view(-1, 5), base_feature_map.size()[2:], self.grid_size)
+            grid_xy = _affine_grid_gen(rois.view(-1, 5), base_feature_map.size()[2:], self.roi_pooler.grid_size)
             grid_yx = torch.stack([grid_xy.data[:, :, :, 1], grid_xy.data[:, :, :, 0]], 3).contiguous()
             pooled_rois = self.roi_pooler(base_feature_map, Variable(grid_yx).detach())
             if self.cfg_params['CROP_RESIZE_WITH_MAX_POOL']:
@@ -113,7 +110,6 @@ class FasterRCNNMetaArch(nn.Module):
             pooled_rois = self.roi_pooler(base_feature_map, rois.view(-1, 5))
         elif self.cfg_params['roi_pooler_name'] == 'pool':
             pooled_rois = self.roi_pooler(base_feature_map, rois.view(-1, 5))
-        # TODO this insted : pooled_rois = self.roi_pooler(base_feature_map, rois.view(-1, 5))
         # TODO: IB - what is this 5 in the view? it might be hardcoding the number of bb coords
 
         def run_fast_rcnn():
@@ -121,8 +117,7 @@ class FasterRCNNMetaArch(nn.Module):
             bbox_pred = self.fast_rcnn_bbox_head(fast_rcnn_feature_map)
             if self.training and not self.cfg_params['is_class_agnostic']:
                 # select the corresponding columns according to roi labels
-                #  TODO: replace the comment with an encapsulating function
-                # TODO: these 4s might be hardcoding the number of output coords
+                # TODO JA: these 4s int the next line might be hardcoding the number of output coords
                 bbox_pred_view = bbox_pred.view(bbox_pred.size(0), int(bbox_pred.size(1) / 4), 4)
                 bbox_pred_select = torch.gather(bbox_pred_view,
                                                 1,
@@ -147,9 +142,9 @@ class FasterRCNNMetaArch(nn.Module):
         return rois, cls_prob, bbox_pred, rpn_loss_cls, rpn_loss_bbox, \
                self.faster_rcnn_loss_cls, self.faster_rcnn_loss_bbox, rois_label
 
-    # TODO: JA - enable manually overriding num_classes and enable to randomize the last layers
     @classmethod
     def create_from_ckpt(cls, ckpt_path):
+        # TODO: JA - enable manually overriding num_classes and enable to randomize the last layers
         state_dict = torch.load(os.path.abspath(ckpt_path))
         loaded_cfg = ConfigProvider()
         loaded_cfg.create_from_dict(state_dict['ckpt_cfg'])
