@@ -29,7 +29,6 @@ config_file = '/home/jenny/gripper2/test_on_p100/cfgs/vgg16.yml'
 
 cfg = ConfigProvider()
 cfg.load(config_file)
-cfg.GPU_ID = 1
 np.random.seed(cfg.RNG_SEED)
 
 set_root_logger(cfg.get_log_path())
