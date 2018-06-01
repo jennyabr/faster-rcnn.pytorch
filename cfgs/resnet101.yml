@@ -1,8 +1,9 @@
 DATA_DIR: '/home/jenny/gripper2/data'
 OUTPUT_DIR: '/home/jenny/gripper2/outputs/05_31'
 EXPERIMENT_NAME: 'resnet101_exp'
+net: 'resnet' #  # {vgg,resnet}
+net_variant: '101' # Currently supported: {16 for vgg, 50, 101, 152 for resnet}
 
-EXP_DIR: resnet101
 TRAIN:
   HAS_RPN: True
   BBOX_NORMALIZE_TARGETS_PRECOMPUTED: True

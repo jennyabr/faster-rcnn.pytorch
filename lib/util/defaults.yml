@@ -1,3 +1,4 @@
+#TODO: ja - remove unused parameters
 DATA_DIR:
 OUTPUT_DIR:
 EXPERIMENT_NAME:
@@ -8,8 +9,8 @@ evals_dir_format: 'evals_e{}'
 vis_path_format: 'visualizations_e{}/{}.png'
 
 dataset: 'pascal_voc'  # training dataset'
-net: 'vgg' #  # {vgg,resnet}
-net_variant: '16' # Currently supported: {16 for vgg, 50, 101, 152 for resnet}
+net: # {vgg,resnet}
+net_variant: # Currently supported: {16 for vgg, 50, 101, 152 for resnet}
 
 NUM_WORKERS: 6  # number of worker to load data
 

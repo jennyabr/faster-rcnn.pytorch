@@ -43,11 +43,11 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractors):
             return fast_rcnn_fe
 
         def resnet_variant_builder(variant):
-            if variant == '50':
+            if str(variant) == '50':
                 return resnet50()
-            elif variant == '101':
+            elif str(variant) == '101':
                 return resnet101()
-            elif variant == '152':
+            elif str(variant) == '152':
                 return resnet152()
             else:
                 raise ValueError('The variant Resnet{} is currently not supported'.format(variant))
