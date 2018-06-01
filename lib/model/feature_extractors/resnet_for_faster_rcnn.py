@@ -165,7 +165,8 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractors):
 
     #TODO: JA - this was taken as is from the original repo, some of the lines look redundant\wrong
     def train(self, mode=True):
-        nn.Module.train(self, mode)
+        nn.Module.train(self._base_feature_extractor, mode)
+        nn.Module.train(self._fast_rcnn_feature_extractor, mode)
         if mode:
             # Set fixed blocks to be in eval mode
             self._base_feature_extractor.eval()

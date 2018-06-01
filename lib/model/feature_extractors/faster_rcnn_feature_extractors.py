@@ -37,7 +37,8 @@ class FasterRCNNFeatureExtractors(ABC):
 
     #TODO: JA - this was taken nearly as is from the original repo, some of the lines look redundant\wrong
     def train(self, mode=True):
-        nn.Module.train(self, mode)
+        nn.Module.train(self._base_feature_extractor, mode)
+        nn.Module.train(self._fast_rcnn_feature_extractor, mode)
         if mode:
             def set_bn_eval(m):
                 classname = m.__class__.__name__
