@@ -14,8 +14,10 @@ logger = logging.getLogger(__name__)
 def run_training_session(data_manager, model, create_optimizer_fn, cfg, train_logger, first_epoch=0):
     def get_trainable_params():
         trainable_params = []
+        trainable_keys = []
         for key, value in dict(model.named_parameters()).items():
             if value.requires_grad:
+                trainable_keys += [key, ]
                 if 'bias' in key:
                     trainable_params += [{'params': [value],
                                           'lr': cfg.TRAIN.LEARNING_RATE * (cfg.TRAIN.DOUBLE_BIAS + 1),
@@ -77,9 +79,9 @@ def run_training_session(data_manager, model, create_optimizer_fn, cfg, train_lo
         loss_temp = 0
         start = time.time()
 
-        if epoch % (cfg.lr_decay_step + 1) == 0:
-            adjust_learning_rate(optimizer, cfg.GAMMA)
-            lr *= cfg.lr_decay_gamma
+        if epoch % (cfg.TRAIN.lr_decay_step + 1) == 0:
+            adjust_learning_rate(optimizer, cfg.TRAIN.GAMMA)
+            lr *= cfg.TRAIN.GAMMA
 
         data_manager.prepare_iter_for_new_epoch()
         for step in range(iters_per_epoch):
@@ -102,10 +104,10 @@ def run_training_session(data_manager, model, create_optimizer_fn, cfg, train_lo
                 clip_gradient(model, 10.)
             optimizer.step()
 
-            if step % cfg.disp_interval == 0:
+            if step % cfg.TRAIN.disp_interval == 0:
                 end = time.time()
                 if step > 0:
-                    loss_temp /= cfg.disp_interval
+                    loss_temp /= cfg.TRAIN.disp_interval
 
                 if cfg.mGPUs:
                     loss_rpn_cls = rpn_loss_cls.mean().data[0]
@@ -123,11 +125,11 @@ def run_training_session(data_manager, model, create_optimizer_fn, cfg, train_lo
                     bg_cnt = rois_label.data.numel() - fg_cnt
 
                 print("[session %d][epoch %2d][iter %4d/%4d] loss: %.4f, lr: %.2e" \
-                      % (cfg.session, epoch, step, iters_per_epoch, loss_temp, lr))
+                      % (cfg.TRAIN.session, epoch, step, iters_per_epoch, loss_temp, lr))
                 print("\t\t\tfg/bg=(%d/%d), time cost: %f" % (fg_cnt, bg_cnt, end - start))
                 print("\t\t\trpn_cls: %.4f, rpn_box: %.4f, rcnn_cls: %.4f, rcnn_box %.4f" \
                       % (loss_rpn_cls, loss_rpn_box, loss_rcnn_cls, loss_rcnn_box))
-                if cfg.use_tfboard:
+                if cfg.TRAIN.use_tfboard:
                     total_step = epoch * iters_per_epoch + step
                     info = {
                         'loss': loss_temp,
