@@ -17,7 +17,7 @@ from model.faster_rcnn.faster_rcnn_training_session import run_training_session
 from model.faster_rcnn.faster_rcnn_postprocessing import faster_rcnn_postprocessing
 from model.faster_rcnn.faster_rcnn_prediction import faster_rcnn_prediction
 from model.faster_rcnn.faster_rcnn_visualization import faster_rcnn_visualization
-from model.feature_extractors.faster_rcnn_feature_extractors import create_feature_extractor_from_ckpt
+from model.feature_extractors.faster_rcnn_feature_extractor_duo import create_duo_from_ckpt
 from util.config import ConfigProvider
 from util.logging import set_root_logger
 
@@ -39,11 +39,11 @@ def create_and_train():
 
     train_logger = TensorBoardLogger(cfg.output_path)
 
-    feature_extractors = create_feature_extractor_from_ckpt(
+    feature_extractor_duo = create_duo_from_ckpt(
         cfg.net, cfg.net_variant, frozen_blocks=cfg.TRAIN.frozen_blocks,
         pretrained_model_path=cfg.TRAIN.get("pretrained_model_path", None))
 
-    model = FasterRCNNMetaArch.create_with_random_normal_init(feature_extractors, cfg,
+    model = FasterRCNNMetaArch.create_with_random_normal_init(feature_extractor_duo, cfg,
                                                               num_classes=train_data_manager.num_classes)
 
     create_optimizer_fn = partial(torch.optim.SGD, momentum=cfg.TRAIN.MOMENTUM)

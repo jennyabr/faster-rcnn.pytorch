@@ -1,5 +1,5 @@
 DATA_DIR: '/home/jenny/gripper2/data'
-OUTPUT_DIR: '/home/jenny/gripper2/outputs/05_31'
+OUTPUT_DIR: '/home/jenny/gripper2/outputs/06_02'
 EXPERIMENT_NAME: 'resnet101_exp3_orig_train_session'
 net: 'resnet' #  # {vgg,resnet}
 net_variant: '101' # Currently supported: {16 for vgg, 50, 101, 152 for resnet}

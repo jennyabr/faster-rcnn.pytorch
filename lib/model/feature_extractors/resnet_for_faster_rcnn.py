@@ -40,7 +40,7 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractorDuo):
             super(ResNetForFasterRCNN._RPNFeatureExtractor, self).__init__()
             self._ordered_layer_names = ["conv1.", "bn1.", "relu.", "maxpool.", "layer1.", "layer2.", "layer3."] 
             #TODO: JA - the model should not be able to change independently of the list of ordered layer names can change 
-            feature_extractor = nn.Sequential(resnet.conv1,
+            self._model = nn.Sequential(resnet.conv1,
                                               resnet.bn1,
                                               resnet.relu,
                                               resnet.maxpool,
@@ -49,14 +49,14 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractorDuo):
                                               resnet.layer3)
             if not (0 <= frozen_blocks < 4):
                 raise ValueError('Illegal number of blocks to freeze')
-            frozen_feature_extractor = ResNetForFasterRCNN._freeze_layers(feature_extractor, frozen_blocks)
-            frozen_feature_extractor.apply(self._freeze_batch_norm_layers)
-            self._model = frozen_feature_extractor
-            self._output_layer = self._model[-1].conv3 #TODO: JA - verify conv3
+            ResNetForFasterRCNN._freeze_layers(self._model, frozen_blocks)
+            self._model.apply(self._freeze_batch_norm_layers)
+            self._output_num_channels = self.get_output_num_channels(self._model[-1][-1].conv3)
+            #TODO: JA - verify conv3
 
         @property
-        def output_layer(self):
-            return self._output_layer
+        def output_num_channels(self):
+            return self._output_num_channels
         
         @property
         def layer_mapping_to_pretrained(self):
@@ -91,7 +91,7 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractorDuo):
             self._model = nn.Sequential(resnet.layer4)
 
             self._model.apply(self._freeze_batch_norm_layers)
-            self._output_layer = self._model[-1].conv3 #TODO: JA - verify conv3
+            self._output_num_channels = self.get_output_num_channels(self._model[-1][-1].conv3) #TODO: JA - verify conv3
 
         def forward(self, input):
             def global_average_pooling(first_input):
@@ -101,8 +101,8 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractorDuo):
             return pooled_feature_vector
 
         @property
-        def output_layer(self):
-            return self._output_layer
+        def output_num_channels(self):
+            return self._output_num_channels
         
         @property
         def layer_mapping_to_pretrained(self):
@@ -120,15 +120,16 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractorDuo):
 
     @classmethod
     def _freeze_layers(cls, model, upto_block_num):
+        #TODO: JA - use recursion instead of module.modules()
         curr_block_num = 0
         if upto_block_num > 0:
-            for module in model.modules():
+            for module in model.children():
                 module_name = module.__class__.__name__.lower()
-                is_block = module_name.find('layer') != -1
+                is_block = isinstance(module, nn.Sequential)
                 if module_name.find('pool') != -1 or is_block:
                     curr_block_num += 1
                 if curr_block_num > upto_block_num:
-                    return
+                    break
                 else:
                     if is_block:
                         for submodule in module.modules():
@@ -137,15 +138,13 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractorDuo):
                     else:
                         for p in module.parameters():
                             p.requires_grad = False
-        return model
-
 
     def convert_pretrained_state_dict(self, pretrained_resnet_state_dict):
         rpn_state_dict = {}
         fast_rcnn_state_dict = {}
 
-        def startswith_one_of(key, list):
-            for i, item in enumerate(list):
+        def startswith_one_of(key, mapping_dict):
+            for i, item in mapping_dict.items():
                 if key.startswith(item):
                     return i, item
             return -1, ""
@@ -159,6 +158,6 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractorDuo):
                 if i != -1:
                     rpn_state_dict[orig_key.replace(item, str(i) + ".")] = v
 
-        fe_subnets = [self.rpn_feature_extractor, self.fast_rcnn_feature_extractor.feature_extractor]
+        fe_subnets = [self.rpn_feature_extractor, self.fast_rcnn_feature_extractor]
         fe_state_dicts = [rpn_state_dict, fast_rcnn_state_dict]
         return zip(fe_subnets, fe_state_dicts)

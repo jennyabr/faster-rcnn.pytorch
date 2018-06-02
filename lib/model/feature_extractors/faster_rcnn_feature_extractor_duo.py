@@ -19,17 +19,17 @@ class FasterRCNNFeatureExtractorDuo(ABC):
         self._base_feature_extractor = None
         self._fast_rcnn_feature_extractor = None
 
-    class _FeatureExtractor(nn.Module, metaclass=ABC):
+    class _FeatureExtractor(nn.Module):
         @property
-        @abstractmethod
-        def output_layer(self):
-            return NotImplementedError
+        def output_num_channels(self):
+            raise NotImplementedError
 
-        def get_output_num_channels(self):
-            if hasattr(self.output_layer, 'out_channels'):
-                out_num = self.output_layer.out_channels
-            elif hasattr(self.output_layer, 'out_features'):
-                out_num = self.output_layer.out_features
+        @classmethod
+        def get_output_num_channels(cls, layer):
+            if hasattr(layer, 'out_channels'):
+                out_num = layer.out_channels
+            elif hasattr(layer, 'out_features'):
+                out_num = layer.out_features
             else:
                 raise ValueError('Last layer of model does not have field describing number of output channels. '
                                  'Check if it was set correctly.')

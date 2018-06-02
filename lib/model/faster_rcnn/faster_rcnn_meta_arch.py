@@ -14,7 +14,7 @@ from util.config import ConfigProvider
 
 
 class FasterRCNNMetaArch(nn.Module):
-    def __init__(self, feature_extractors, cfg, num_classes):
+    def __init__(self, feature_extractor_duo, cfg, num_classes):
         super(FasterRCNNMetaArch, self).__init__()
         cfg_params = {'num_classes': num_classes,
                       'is_class_agnostic': cfg.class_agnostic,
@@ -24,24 +24,23 @@ class FasterRCNNMetaArch(nn.Module):
                       'num_regression_outputs_per_bbox': cfg.num_regression_outputs_per_bbox}
 
         self.cfg_params = cfg_params
-        self.feature_extractor_train_fn = feature_extractors.train
-        self.base_feature_extractor = feature_extractors.base_feature_extractor
 
         def create_rpn():
-            rpn_fe_output_depth = feature_extractors.get_output_num_channels(self.base_feature_extractor)
+            rpn_fe = feature_extractor_duo.rpn_feature_extractor
+            rpn_fe_output_depth = rpn_fe.output_num_channels
             rpn_and_nms = _RPN(rpn_fe_output_depth, cfg)
             # TODO JA - the ProposalTargetLayer is not intuitive
             rpn_proposal_target = _ProposalTargetLayer(cfg_params['num_classes'], cfg)
-            return rpn_and_nms, rpn_proposal_target
+            return rpn_fe, rpn_and_nms, rpn_proposal_target
 
-        self.rpn_and_nms, self.rpn_proposal_target = create_rpn()
+        self.rpn_fe, self.rpn_and_nms, self.rpn_proposal_target = create_rpn()
 
         self.roi_pooler = create_roi_pooler(cfg_params['roi_pooler_name'], cfg_params['roi_pooler_size'],
                                             cfg_params['crop_resize_with_max_pool'])
 
         def create_fast_rcnn():
-            fast_rcnn_fe = feature_extractors.fast_rcnn_feature_extractor
-            fast_rcnn_fe_output_depth = feature_extractors.get_output_num_channels(fast_rcnn_fe.feature_extractor)  # TODO this functioncan get any model...
+            fast_rcnn_fe = feature_extractor_duo.fast_rcnn_feature_extractor
+            fast_rcnn_fe_output_depth = fast_rcnn_fe.output_num_channels
             if cfg_params['is_class_agnostic']:
                 self.num_predicted_coords = cfg_params['num_regression_outputs_per_bbox']
             else:
@@ -60,8 +59,8 @@ class FasterRCNNMetaArch(nn.Module):
         self.faster_rcnn_loss_bbox = 0
 
     @classmethod
-    def create_with_random_normal_init(cls, feature_extractors, cfg, num_classes):
-        faster_rcnn = cls(feature_extractors, cfg, num_classes)
+    def create_with_random_normal_init(cls, feature_extractor_duo, cfg, num_classes):
+        faster_rcnn = cls(feature_extractor_duo, cfg, num_classes)
         configured_normal_init = partial(normal_init, mean=0)
         configured_normal_init(faster_rcnn.rpn_and_nms.RPN_Conv, stddev=0.01)
         configured_normal_init(faster_rcnn.rpn_and_nms.RPN_cls_score, stddev=0.01)
@@ -76,7 +75,7 @@ class FasterRCNNMetaArch(nn.Module):
         gt_boxes = gt_boxes.data
         num_boxes = num_boxes.data
 
-        base_feature_map = self.base_feature_extractor(im_data)
+        base_feature_map = self.rpn_fe(im_data)
 
         rois, rpn_loss_cls, rpn_loss_bbox = self.rpn_and_nms(base_feature_map, im_info, gt_boxes, num_boxes)
 
@@ -138,9 +137,9 @@ class FasterRCNNMetaArch(nn.Module):
         state_dict = torch.load(os.path.abspath(ckpt_path))
         loaded_cfg = ConfigProvider()
         loaded_cfg.create_from_dict(state_dict['ckpt_cfg'])
-        feature_extractors = create_empty_duo(
+        feature_extractor_duo = create_empty_duo(
             loaded_cfg.net, loaded_cfg.net_variant, loaded_cfg.TRAIN.frozen_blocks)
-        model = FasterRCNNMetaArch(feature_extractors, loaded_cfg, state_dict['model_cfg_params']['num_classes'])
+        model = FasterRCNNMetaArch(feature_extractor_duo, loaded_cfg, state_dict['model_cfg_params']['num_classes'])
         model.load_state_dict(state_dict['model'])
         return model
 
