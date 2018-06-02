@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 
 import torch.nn as nn
+from torch.nn.modules.batchnorm import _BatchNorm
 from torchvision.models import resnet101
 from torchvision.models.resnet import Bottleneck, resnet50, resnet152
 
@@ -10,37 +11,9 @@ from model.utils.net_utils import assert_sequential
 
 
 class ResNetForFasterRCNN(FasterRCNNFeatureExtractors):
-    class _FastRCNNFeatureExtractor(nn.Module):
-        def __init__(self, resnet_architecture, freeze_batch_norm_layers_fn):
-            super(ResNetForFasterRCNN._FastRCNNFeatureExtractor, self).__init__()
-            self.feature_extractor = nn.Sequential(resnet_architecture.layer4)
-            self.feature_extractor.apply(freeze_batch_norm_layers_fn)
-            # TODO can layer 4 can be frozen?
-
-        def forward(self, input):
-            return self.feature_extractor(input).mean(3).mean(2)
 
     def __init__(self, net_variant='101', frozen_blocks=0):
         super(ResNetForFasterRCNN, self).__init__(net_variant, frozen_blocks)
-
-        def load_base(resnet):
-            base_fe = nn.Sequential(resnet.conv1,
-                                    resnet.bn1,
-                                    resnet.relu,
-                                    resnet.maxpool,
-                                    resnet.layer1,
-                                    resnet.layer2,
-                                    resnet.layer3)
-            if not (0 <= frozen_blocks < 4):
-                raise ValueError('Illegal number of blocks to freeze')
-            base_fe_non_trainable = self._freeze_layers(base_fe, frozen_blocks)
-            base_fe.apply(self._freeze_batch_norm_layers)
-
-            return base_fe_non_trainable
-
-        def load_fast_rcnn(resnet):
-            fast_rcnn_fe = self._FastRCNNFeatureExtractor(resnet, self._freeze_batch_norm_layers)
-            return fast_rcnn_fe
 
         def resnet_variant_builder(variant):
             if str(variant) == '50':
@@ -52,31 +25,63 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractors):
             else:
                 raise ValueError('The variant Resnet{} is currently not supported'.format(variant))
         resnet = resnet_variant_builder(net_variant)
-        self._base_feature_extractor = load_base(resnet)
-        self._fast_rcnn_feature_extractor = load_fast_rcnn(resnet)
+        self._rpn_feature_extractor = self._RPNFeatureExtractor(resnet, frozen_blocks)
+        self._fast_rcnn_feature_extractor = self._FastRCNNFeatureExtractor(resnet)
+
+    class _RPNFeatureExtractor(nn.Module):
+
+        def __init__(self, resnet, frozen_blocks):
+            super(ResNetForFasterRCNN._RPNFeatureExtractor, self).__init__()
+            feature_extractor = nn.Sequential(resnet.conv1,
+                                              resnet.bn1,
+                                              resnet.relu,
+                                              resnet.maxpool,
+                                              resnet.layer1,
+                                              resnet.layer2,
+                                              resnet.layer3)
+            if not (0 <= frozen_blocks < 4):
+                raise ValueError('Illegal number of blocks to freeze')
+            frozen_feature_extractor = ResNetForFasterRCNN._freeze_layers(feature_extractor, frozen_blocks)
+            frozen_feature_extractor.apply(self._freeze_batch_norm_layers)
+            self.model = frozen_feature_extractor
+
+        def forward(self, input):
+            return self.model(input)
+
+    class _FastRCNNFeatureExtractor(nn.Module):
+
+        def __init__(self, resnet):
+            super(ResNetForFasterRCNN._FastRCNNFeatureExtractor, self).__init__()
+            self.model = nn.Sequential(resnet.layer4)
+            self.model.apply(ResNetForFasterRCNN._freeze_batch_norm_layers)
+
+        def forward(self, input):
+            def global_average_pooling(first_input):
+                return first_input.mean(3).mean(2)
+            result_feature_map = self.model(input)
+            pooled_feature_vector = global_average_pooling(result_feature_map)
+            return pooled_feature_vector
+
 
     @property
-    def base_feature_extractor(self):
-        return self._base_feature_extractor
+    def rpn_feature_extractor(self):
+        return self._rpn_feature_extractor
 
     @property
     def fast_rcnn_feature_extractor(self):
         return self._fast_rcnn_feature_extractor
 
-    def _freeze_batch_norm_layers(self, net):
+    @classmethod
+    def _freeze_batch_norm_layers(cls, net):
         def _freeze_if_batch_norm(model):
-            if isinstance(model, nn.BatchNorm1d) or \
-                    isinstance(model, nn.BatchNorm2d) or \
-                    isinstance(model, nn.BatchNorm3d) or \
-                    model.__class__.__name__.lower().find('batchnorm') != -1:
+            if isinstance(model, _BatchNorm):
                 model.eval()  # freezing running_mean & running_var
                 for p in model.parameters():
                     p.requires_grad = False  # freezing weight & bias
         net.apply(_freeze_if_batch_norm)
 
-    def _freeze_layers(self, model, upto_block_num):
-        assert_sequential(model)
-
+    @classmethod
+    def _freeze_layers(cls, model, upto_block_num):
         curr_block_num = 0
         if upto_block_num > 0:
             for module in model.modules():

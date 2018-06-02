@@ -9,7 +9,7 @@ from functools import partial
 from model.utils.net_utils import normal_init
 
 
-class FasterRCNNFeatureExtractors(ABC):
+class FasterRCNNFeatureExtractorDuo(ABC):
 
     def __init__(self, net_variant, frozen_blocks):
         self.net_variant = net_variant
