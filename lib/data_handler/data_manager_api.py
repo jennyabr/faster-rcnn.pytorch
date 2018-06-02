@@ -18,19 +18,19 @@ class DataManager(ABC):
         def create_input_tensors():
             im_data = torch.FloatTensor(1)  # TODO JA check the param [1] - is it needed?...
             im_info = torch.FloatTensor(1)
-            num_boxes = torch.LongTensor(1)
             gt_boxes = torch.FloatTensor(1)
+            num_boxes = torch.LongTensor(1)
 
             if is_cuda:
                 im_data = im_data.cuda()
                 im_info = im_info.cuda()
-                num_boxes = num_boxes.cuda()
                 gt_boxes = gt_boxes.cuda()
+                num_boxes = num_boxes.cuda()
 
             im_data = Variable(im_data, volatile=self.is_infer)
             im_info = Variable(im_info, volatile=self.is_infer)
-            num_boxes = Variable(num_boxes, volatile=self.is_infer)
             gt_boxes = Variable(gt_boxes, volatile=self.is_infer)
+            num_boxes = Variable(num_boxes, volatile=self.is_infer)
 
             return im_data, im_info, gt_boxes, num_boxes
         self._im_data, self._im_info, self._gt_boxes, self._num_boxes = create_input_tensors()

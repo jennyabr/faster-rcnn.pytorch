@@ -110,11 +110,12 @@ class FasterRCNNMetaArch(nn.Module):
                 bbox_pred_view = bbox_pred.view(bbox_pred.size(0), int(bbox_pred.size(1) / 4), 4)
                 bbox_pred_select = torch.gather(bbox_pred_view,
                                                 1,
-                                                rois_label.view(rois_label.size(0), 1, 1).expand(rois_label.size(0), 1, 4))
+                                                rois_label.view(rois_label.size(0), 1, 1)
+                                                .expand(rois_label.size(0), 1, 4))
                 bbox_pred = bbox_pred_select.squeeze(1)
 
             cls_score = self.fast_rcnn_cls_head(fast_rcnn_feature_map)
-            cls_prob = F.softmax(cls_score, dim=-1)
+            cls_prob = F.softmax(cls_score)  # TODO: JA - add this back: , dim=-1)
             return bbox_pred, cls_score, cls_prob
         bbox_pred, cls_score, cls_prob = run_fast_rcnn()
 

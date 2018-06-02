@@ -14,9 +14,6 @@ net_variant: # Currently supported: {16 for vgg, 50, 101, 152 for resnet}
 
 NUM_WORKERS: 6  # number of worker to load data
 
-# Place outputs under an experiments directory
-EXP_DIR: 'default'
-
 # For reproducibility
 RNG_SEED: 3
 

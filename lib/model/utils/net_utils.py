@@ -21,11 +21,19 @@ def clip_gradient(model, clip_norm):
             p.grad.mul_(norm)
 
 
+#TODO: JA - delete one of the learning rate decay funcs
 def decay_lr_in_optimizer(epoch, lr_decay_step, optimizer, decay=0.1):
     if epoch % lr_decay_step == 0:
         for param_group in optimizer.param_groups:
             param_group['lr'] = decay * param_group['lr']
     return optimizer
+
+
+def adjust_learning_rate(optimizer, decay=0.1):
+    """Sets the learning rate to the initial LR decayed by 0.5 every 20 epochs"""
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = decay * param_group['lr']
+
 
 
 def _smooth_l1_loss(bbox_pred, bbox_targets, bbox_inside_weights, bbox_outside_weights,
