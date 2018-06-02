@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from functools import partial
 from torch.autograd import Variable
 
-from model.feature_extractors.faster_rcnn_feature_extractors import create_feature_extractor_empty
+from model.feature_extractors.faster_rcnn_feature_extractor_duo import create_empty_duo
 from model.roi_poolers.roi_pooler_factory import create_roi_pooler
 from model.rpn.proposal_target_layer_cascade import _ProposalTargetLayer
 from model.rpn.rpn import _RPN
@@ -138,12 +138,12 @@ class FasterRCNNMetaArch(nn.Module):
         state_dict = torch.load(os.path.abspath(ckpt_path))
         loaded_cfg = ConfigProvider()
         loaded_cfg.create_from_dict(state_dict['ckpt_cfg'])
-        feature_extractors = create_feature_extractor_empty(
+        feature_extractors = create_empty_duo(
             loaded_cfg.net, loaded_cfg.net_variant, loaded_cfg.TRAIN.frozen_blocks)
         model = FasterRCNNMetaArch(feature_extractors, loaded_cfg, state_dict['model_cfg_params']['num_classes'])
         model.load_state_dict(state_dict['model'])
         return model
 
     def train(self, mode=True):
-        super(FasterRCNNMetaArch, self).train(mode)
-        self.feature_extractor_train_fn(mode)
+        # super(FasterRCNNMetaArch, self).train(mode) #TODO: JA - uncomment this
+        nn.Module.train(self, mode)
