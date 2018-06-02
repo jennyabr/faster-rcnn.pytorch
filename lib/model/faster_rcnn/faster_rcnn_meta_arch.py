@@ -144,5 +144,5 @@ class FasterRCNNMetaArch(nn.Module):
         return model
 
     def train(self, mode=True):
-        # super(FasterRCNNMetaArch, self).train(mode) #TODO: JA - uncomment this
-        nn.Module.train(self, mode)
+        super(FasterRCNNMetaArch, self).train(mode) #TODO: JA - uncomment this
+        # nn.Module.train(self, mode)

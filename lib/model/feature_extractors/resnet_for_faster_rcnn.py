@@ -91,14 +91,10 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractorDuo):
             self._model = nn.Sequential(resnet.layer4)
 
             self._model.apply(self._freeze_batch_norm_layers)
-            self._output_num_channels = self.get_output_num_channels(self._model[-1][-1].conv3) #TODO: JA - verify conv3
+            self._output_num_channels = self.get_output_num_channels(self._model[-1][-1].conv3)
 
         def forward(self, input):
-            def global_average_pooling(first_input):
-                return first_input.mean(3).mean(2)
-            result_feature_map = self._model(input)
-            pooled_feature_vector = global_average_pooling(result_feature_map)
-            return pooled_feature_vector
+            return self._model(input).mean(3).mean(2)
 
         @property
         def output_num_channels(self):
@@ -146,17 +142,18 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractorDuo):
         def startswith_one_of(key, mapping_dict):
             for i, item in mapping_dict.items():
                 if key.startswith(item):
+                    print('key: {}, item: {}, i: {}'.format(key, item, i)) #TODO: JA - delete this
                     return i, item
             return -1, ""
 
         for orig_key, v in pretrained_resnet_state_dict.items():
             i, item = startswith_one_of(orig_key, self.fast_rcnn_feature_extractor.layer_mapping_to_pretrained)
             if i != -1:
-                fast_rcnn_state_dict[orig_key.replace(item, str(i) + ".")] = v
+                fast_rcnn_state_dict[orig_key.replace(item, '_model.{}.'.format(str(i)))] = v
             else:
                 i, item = startswith_one_of(orig_key, self.rpn_feature_extractor.layer_mapping_to_pretrained)
                 if i != -1:
-                    rpn_state_dict[orig_key.replace(item, str(i) + ".")] = v
+                    rpn_state_dict[orig_key.replace(item, '_model.{}.'.format(str(i)))] = v
 
         fe_subnets = [self.rpn_feature_extractor, self.fast_rcnn_feature_extractor]
         fe_state_dicts = [rpn_state_dict, fast_rcnn_state_dict]
