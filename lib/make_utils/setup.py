@@ -8,7 +8,7 @@ import os
 from Cython.Distutils import build_ext
 from os.path import join as pjoin
 
-from util.init_paths import add_lib_to_python_path
+from make_utils.init_paths import add_lib_to_python_path
 
 add_lib_to_python_path()
 def find_in_path(name, path):
