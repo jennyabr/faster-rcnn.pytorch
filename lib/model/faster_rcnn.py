@@ -13,9 +13,9 @@ from model.utils.net_utils import _smooth_l1_loss, normal_init
 from util.config import ConfigProvider
 
 
-class FasterRCNNMetaArch(nn.Module):
+class FasterRCNN(nn.Module):
     def __init__(self, feature_extractor_duo, cfg, num_classes):
-        super(FasterRCNNMetaArch, self).__init__()
+        super(FasterRCNN, self).__init__()
         cfg_params = {'num_classes': num_classes,
                       'is_class_agnostic': cfg.class_agnostic,
                       'roi_pooler_name': cfg.roi_pooler_name,
@@ -139,9 +139,9 @@ class FasterRCNNMetaArch(nn.Module):
         loaded_cfg.create_from_dict(state_dict['ckpt_cfg'])
         feature_extractor_duo = create_empty_duo(
             loaded_cfg.net, loaded_cfg.net_variant, loaded_cfg.TRAIN.frozen_blocks)
-        model = FasterRCNNMetaArch(feature_extractor_duo, loaded_cfg, state_dict['model_cfg_params']['num_classes'])
+        model = FasterRCNN(feature_extractor_duo, loaded_cfg, state_dict['model_cfg_params']['num_classes'])
         model.load_state_dict(state_dict['model'])
         return model
 
     def train(self, mode=True):
-        super(FasterRCNNMetaArch, self).train(mode)
+        super(FasterRCNN, self).train(mode)

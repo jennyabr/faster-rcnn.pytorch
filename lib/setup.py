@@ -122,10 +122,12 @@ ext_modules = [
         extra_compile_args={'gcc': ["-Wno-cpp", "-Wno-unused-function"]},
         include_dirs=[numpy_include]
     ),
+# data_manager.classic_detection.datasets.pycocotools
     Extension(
         'pycocotools._mask',
-        sources=['pycocotools/maskApi.c', 'pycocotools/_mask.pyx'],
-        include_dirs=[numpy_include, 'pycocotools'],
+        sources=['data_manager/classic_detection/datasets/pycocotools/maskApi.c',
+                 'data_manager/classic_detection/datasets/pycocotools/_mask.pyx'],
+        include_dirs=[numpy_include, 'data_manager/classic_detection/datasets/pycocotools'],
         extra_compile_args={
             'gcc': ['-Wno-cpp', '-Wno-unused-function', '-std=c99']},
     ),

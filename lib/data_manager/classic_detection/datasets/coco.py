@@ -17,9 +17,9 @@ import os.path as osp
 import scipy.sparse
 
 import datasets.ds_utils as ds_utils
-from datasets.imdb import imdb
-from pycocotools.coco import COCO
-from pycocotools.cocoeval import COCOeval
+from data_manager.classic_detection.datasets.imdb import imdb
+from data_manager.classic_detection.datasets.pycocotools.coco import COCO
+from data_manager.classic_detection.datasets.pycocotools.cocoeval import COCOeval
 
 
 logger = logging.getLogger(__name__)

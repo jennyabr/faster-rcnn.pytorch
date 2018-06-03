@@ -7,7 +7,7 @@ import os
 import scipy.io as sio
 import scipy.sparse
 
-from datasets.imdb import imdb
+from data_manager.classic_detection.datasets.imdb import imdb
 
 # --------------------------------------------------------
 # Fast R-CNN

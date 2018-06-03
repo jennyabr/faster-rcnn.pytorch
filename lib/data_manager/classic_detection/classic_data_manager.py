@@ -2,9 +2,9 @@ import torch
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import Sampler
 
-from data_handler.data_manager_api import DataManager, Mode
-from roi_data_layer.roibatchLoader import roiBatchLoader
-from roi_data_layer.roidb import combined_roidb
+from data_manager.data_manager_abstract import DataManager, Mode
+from data_manager.roi_data_layer.roibatchLoader import roiBatchLoader
+from data_manager.roi_data_layer.roidb import combined_roidb
 
 
 class DBSampler(Sampler):
@@ -34,9 +34,9 @@ class DBSampler(Sampler):
         return len(self.rand_num_view)
 
 
-class FasterRCNNDataManager(DataManager):
+class ClassicDataManager(DataManager):
     def __init__(self, mode, imdb_name, num_workers, is_cuda, cfg, batch_size=1):
-        super(FasterRCNNDataManager, self).__init__(mode, is_cuda)
+        super(ClassicDataManager, self).__init__(mode, is_cuda)
         self._imdb, roidb, ratio_list, ratio_index = combined_roidb(
             imdb_name,
             use_flipped=cfg.TRAIN.USE_FLIPPED,

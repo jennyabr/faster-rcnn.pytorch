@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 from torch.autograd.variable import Variable
 
-from model.faster_rcnn.ckpt_utils import save_session_to_ckpt
+from pipeline.faster_rcnn.ckpt_utils import save_session_to_ckpt
 from model.utils.net_utils import decay_lr_in_optimizer, clip_gradient
 
 logger = logging.getLogger(__name__)

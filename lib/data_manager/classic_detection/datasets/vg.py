@@ -9,7 +9,7 @@ import numpy as np
 import os
 import scipy.sparse
 
-from datasets.imdb import imdb
+from data_manager.classic_detection.datasets.imdb import imdb
 from .vg_eval import vg_eval
 
 

@@ -17,7 +17,7 @@ import numpy as np
 import os
 import scipy.sparse
 
-from datasets.imdb import imdb
+from data_manager.classic_detection.datasets.imdb import imdb
 from .voc_eval import voc_eval
 
 logger = logging.getLogger(__name__)

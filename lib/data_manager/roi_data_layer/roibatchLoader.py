@@ -8,7 +8,7 @@ import numpy as np
 import torch
 import torch.utils.data as data
 
-from roi_data_layer.minibatch import get_minibatch
+from data_manager.roi_data_layer.minibatch import get_minibatch
 
 
 class roiBatchLoader(data.Dataset):

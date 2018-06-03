@@ -8,7 +8,7 @@ import PIL
 import numpy as np
 
 import datasets.imdb
-from datasets.factory import get_imdb
+from data_manager.classic_detection.datasets.factory import get_imdb
 
 logger = logging.getLogger(__name__)
 

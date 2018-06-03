@@ -3,6 +3,7 @@ import logging
 import os
 import torch
 
+from model.meta_architechture import FasterRCNN
 from util.config import ConfigProvider
 
 
@@ -24,12 +25,11 @@ def save_session_to_ckpt(model, optimizer, cfg, epoch):
 
 
 def load_session_from_ckpt(ckpt_path):
-    from model.faster_rcnn.faster_rcnn_meta_arch import FasterRCNNMetaArch
     state_dict = torch.load(os.path.abspath(ckpt_path))
     loaded_cfg = ConfigProvider()
     loaded_cfg.create_from_dict(state_dict['ckpt_cfg'])
     # TODO: JA - don't be hard coded to faster-rcnn (uses FasterRCNN constructor)
-    model = FasterRCNNMetaArch.create_from_ckpt(ckpt_path)
+    model = FasterRCNN.create_from_ckpt(ckpt_path)
 
     def create_optimizer_from_ckpt_fn(trainable_params):
         optimizer = torch.optim.SGD(params=trainable_params, momentum=loaded_cfg.TRAIN.MOMENTUM)

@@ -9,10 +9,10 @@
 from __future__ import absolute_import
 from __future__ import division
 
-from datasets.coco import coco
-from datasets.imagenet import imagenet
-from datasets.pascal_voc import pascal_voc
-from datasets.vg import vg
+from data_manager.classic_detection.datasets.coco import coco
+from data_manager.classic_detection.datasets.imagenet import imagenet
+from data_manager.classic_detection.datasets.pascal_voc import pascal_voc
+from data_manager.classic_detection.datasets.vg import vg
 
 
 def get_imdb(db_name, data_dir):

@@ -7,15 +7,15 @@ import logging
 import torch
 from functools import partial
 
-from data_handler.data_manager_api import Mode
-from data_handler.detection_data_manager import FasterRCNNDataManager
+from data_manager.data_manager_abstract import Mode
+from data_manager.classic_detection.classic_data_manager import ClassicDataManager
 from loggers.tensorbord_logger import TensorBoardLogger
-from model.faster_rcnn.faster_rcnn_evaluation import faster_rcnn_evaluation
-from model.faster_rcnn.faster_rcnn_meta_arch import FasterRCNNMetaArch
-from model.faster_rcnn.faster_rcnn_training_session import run_training_session
-from model.faster_rcnn.faster_rcnn_postprocessing import faster_rcnn_postprocessing
-from model.faster_rcnn.faster_rcnn_prediction import faster_rcnn_prediction
-from model.faster_rcnn.faster_rcnn_visualization import faster_rcnn_visualization
+from pipeline.faster_rcnn.faster_rcnn_evaluation import faster_rcnn_evaluation
+from model.faster_rcnn import FasterRCNN
+from pipeline.faster_rcnn.faster_rcnn_training_session import run_training_session
+from pipeline.faster_rcnn.faster_rcnn_postprocessing import faster_rcnn_postprocessing
+from pipeline.faster_rcnn.faster_rcnn_prediction import faster_rcnn_prediction
+from pipeline.faster_rcnn.faster_rcnn_visualization import faster_rcnn_visualization
 from model.feature_extractors.faster_rcnn_feature_extractor_duo import create_duo_from_ckpt
 from model.utils.misc_utils import get_epoch_num_from_ckpt
 
@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 def create_and_train():
-    train_data_manager = FasterRCNNDataManager(
+    train_data_manager = ClassicDataManager(
         mode=Mode.TRAIN, imdb_name=cfg.imdb_name, num_workers=cfg.NUM_WORKERS, is_cuda=cfg.CUDA, cfg=cfg,
         batch_size=cfg.TRAIN.batch_size)
 
@@ -43,7 +43,7 @@ def create_and_train():
         cfg.net, cfg.net_variant, frozen_blocks=cfg.TRAIN.frozen_blocks,
         pretrained_model_path=cfg.TRAIN.get("pretrained_model_path", None))
 
-    model = FasterRCNNMetaArch.create_with_random_normal_init(feature_extractor_duo, cfg,
+    model = FasterRCNN.create_with_random_normal_init(feature_extractor_duo, cfg,
                                                               num_classes=train_data_manager.num_classes)
 
     create_optimizer_fn = partial(torch.optim.SGD, momentum=cfg.TRAIN.MOMENTUM)
@@ -54,9 +54,9 @@ def create_and_train():
 def pred_eval(predict_on_epoch):
     ckpt_path = cfg.get_last_ckpt_path()
     epoch_num = get_epoch_num_from_ckpt(ckpt_path)
-    model = FasterRCNNMetaArch.create_from_ckpt(ckpt_path)
+    model = FasterRCNN.create_from_ckpt(ckpt_path)
     model.cuda()
-    data_manager = FasterRCNNDataManager(mode=Mode.INFER,
+    data_manager = ClassicDataManager(mode=Mode.INFER,
                                          imdb_name=cfg.imdbval_name,
                                          num_workers=cfg.NUM_WORKERS,
                                          is_cuda=cfg.CUDA,

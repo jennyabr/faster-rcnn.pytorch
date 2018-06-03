@@ -2,13 +2,13 @@ import argparse
 import logging
 import numpy as np
 
-from data_handler.data_manager_api import Mode
-from data_handler.detection_data_manager import FasterRCNNDataManager
-from model.faster_rcnn.faster_rcnn_evaluation import faster_rcnn_evaluation
-from model.faster_rcnn.faster_rcnn_meta_arch import FasterRCNNMetaArch
-from model.faster_rcnn.faster_rcnn_postprocessing import faster_rcnn_postprocessing
-from model.faster_rcnn.faster_rcnn_prediction import faster_rcnn_prediction
-from model.faster_rcnn.faster_rcnn_visualization import faster_rcnn_visualization
+from data_manager.data_manager_abstract import Mode
+from data_manager.classic_detection.classic_data_manager import ClassicDataManager
+from pipeline.faster_rcnn.faster_rcnn_evaluation import faster_rcnn_evaluation
+from model.faster_rcnn import FasterRCNN
+from pipeline.faster_rcnn.faster_rcnn_postprocessing import faster_rcnn_postprocessing
+from pipeline.faster_rcnn.faster_rcnn_prediction import faster_rcnn_prediction
+from pipeline.faster_rcnn.faster_rcnn_visualization import faster_rcnn_visualization
 from model.utils.misc_utils import get_epoch_num_from_ckpt
 from util.config import ConfigProvider
 from util.logging import set_root_logger
@@ -28,9 +28,9 @@ if __name__ == '__main__':
     try:
         ckpt_path = cfg.get_last_ckpt_path()
         epoch_num = get_epoch_num_from_ckpt(ckpt_path)
-        model = FasterRCNNMetaArch.create_from_ckpt(ckpt_path)
+        model = FasterRCNN.create_from_ckpt(ckpt_path)
         model.cuda()
-        data_manager = FasterRCNNDataManager(mode=Mode.INFER,
+        data_manager = ClassicDataManager(mode=Mode.INFER,
                                              imdb_name=cfg.imdbval_name,
                                              num_workers=cfg.NUM_WORKERS,
                                              is_cuda=cfg.CUDA,
