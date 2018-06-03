@@ -1,19 +1,16 @@
 from __future__ import print_function
-# --------------------------------------------------------
-# Fast R-CNN
-# Copyright (c) 2015 Microsoft
-# Licensed under The MIT License [see LICENSE for details]
-# Written by Ross Girshick
-# --------------------------------------------------------
 
-import os
-from os.path import join as pjoin
-import numpy as np
 from distutils.core import setup
 from distutils.extension import Extension
+
+import numpy as np
+import os
 from Cython.Distutils import build_ext
+from os.path import join as pjoin
 
+from util.init_paths import add_lib_to_python_path
 
+add_lib_to_python_path()
 def find_in_path(name, path):
     "Find a file in a search path"
     # adapted fom http://code.activestate.com/recipes/52224-find-a-file-given-a-search-path/
@@ -121,8 +118,9 @@ ext_modules = [
     ),
     Extension(
         'pycocotools._mask',
-        sources=['pycocotools/maskApi.c', 'pycocotools/_mask.pyx'],
-        include_dirs=[numpy_include, 'pycocotools'],
+        sources=['data_manager/classic_detection/datasets/pycocotools/maskApi.c',
+                 'data_manager/classic_detection/datasets/pycocotools/_mask.pyx'],
+        include_dirs=[numpy_include, '.'],
         extra_compile_args={
             'gcc': ['-Wno-cpp', '-Wno-unused-function', '-std=c99']},
     ),
