@@ -1,4 +1,3 @@
-#TODO: ja - remove unused parameters
 DATA_DIR:
 OUTPUT_DIR:
 EXPERIMENT_NAME:
@@ -8,7 +7,7 @@ postprocessed_file_format: 'pp_preds_e{}.pkl'
 evals_dir_format: 'evals_e{}'
 vis_path_format: 'visualizations_e{}/{}.png'
 
-dataset: 'pascal_voc'  # training dataset'
+dataset:  # training dataset'
 net: # {vgg,resnet}
 net_variant: # Currently supported: {16 for vgg, 50, 101, 152 for resnet}
 
@@ -40,7 +39,6 @@ roi_pooler_name: 'align'
 
 # Size of the pooled region after RoI pooling
 roi_pooler_size: 7
-POOLING_SIZE: 7 #TODO JA - delete this
 
 # Maximal number of gt rois in an image during Training
 MAX_NUM_GT_BOXES: 20
@@ -85,14 +83,9 @@ TRAIN:
   start_epoch: 1
   max_epochs: 6  # number of epochs to train
   disp_interval: 100  # number of iterations to display
-  checkpoint_interval: 10000  # number of iterations to display
   large_scale: False  # whether use large imag scale
   batch_size: 1
-  session: 1  # training session
   resume: False  # resume checkpoint or not
-  checksession: 1  # checksession to load model
-  checkepoch: 1  # checkepoch to load model
-  checkpoint: 0  # checkpoint to load model
   use_tfboard: True  # whether use tensorflow tensorboard
   optimizer: 'sgd'  # training optimizer
   LEARNING_RATE: 0.001
@@ -100,25 +93,14 @@ TRAIN:
   GAMMA: 0.1 # Factor for reducing the learning rate | learning rate decay ratio
   MOMENTUM: 0.9
   WEIGHT_DECAY: 0.0005
-  STEPSIZE: [30000] # Step size for reducing the learning rate, currently only support one step
-  DISPLAY: 10 # Iteration intervals for showing the loss during training, on command line interface
   DOUBLE_BIAS: True # Whether to double the learning rate for bias
   BIAS_DECAY: False # Whether to have weight decay on bias as well
-  USE_GT: False # Whether to add ground truth boxes to the pool when sampling regions
-  ASPECT_GROUPING: False # Whether to use aspect-ratio grouping of training images, introduced merely for saving GPU memory
-  SNAPSHOT_KEPT: 3 # The number of snapshots kept, older ones are deleted to save space
-  SUMMARY_INTERVAL: 180 # The time interval for saving tensorflow summaries
   SCALES: [600] # Scale to use during training (can list multiple scales) The scale is the pixel size of an image's shortest side
   MAX_SIZE: 1000 # Max pixel size of the longest side of a scaled input image
 
   # Trim size for input images to create minibatch
   TRIM_HEIGHT: 600
   TRIM_WIDTH: 600
-
-  IMS_PER_BATCH: 1
-
-  # Minibatch size (number of regions of interest [ROIs])
-  #BATCH_SIZE: 128
 
   # Fraction of minibatch that is labeled foreground (i.e. class > 0)
   FG_FRACTION: 0.25
@@ -133,28 +115,10 @@ TRAIN:
 
   USE_FLIPPED: True # Use horizontally-flipped images during training?
 
-  # Train bounding-box regressors
-  BBOX_REG: True
-
-  # Overlap required between a ROI and ground-truth box in order for that ROI to
-  # be used as a bounding-box regression training example
-  BBOX_THRESH: 0.5
-  # Iterations between snapshots
-  SNAPSHOT_ITERS: 5000
-
-  # solver.prototxt specifies the snapshot path prefix, this adds an optional
-  # infix to yield the path: <prefix>[_<infix>]_iters_XYZ.caffemodel
-  SNAPSHOT_PREFIX: 'res101_faster_rcnn'
-
-
-  # Normalize the targets (subtract empirical mean, divide by empirical stddev)
-  BBOX_NORMALIZE_TARGETS: True
-
   # Deprecated (inside weights)
   BBOX_INSIDE_WEIGHTS: [1.0, 1.0, 1.0, 1.0]
 
   # Normalize the targets using "precomputed" (or made up) means and stdevs
-  # (BBOX_NORMALIZE_TARGETS must also be True)
   BBOX_NORMALIZE_TARGETS_PRECOMPUTED: True
   BBOX_NORMALIZE_MEANS: [0.0, 0.0, 0.0, 0.0]
   BBOX_NORMALIZE_STDS: [0.1, 0.1, 0.2, 0.2]
@@ -162,12 +126,6 @@ TRAIN:
   # Train using these proposals
   PROPOSAL_METHOD: 'gt'
 
-  # Make minibatches from images that have similar aspect ratios (i.e. both
-  # tall and thin or both short and wide) in order to avoid wasting computation
-  # on zero-padding.
-
-  # Use RPN to detect objects
-  HAS_RPN: True
   # IOU >= thresh: positive example
   RPN_POSITIVE_OVERLAP: 0.7
   # IOU < thresh: negative example
@@ -195,12 +153,7 @@ TRAIN:
   # Whether to use all ground truth bounding boxes for training,
   # For COCO, setting USE_ALL_GT to False will exclude boxes that are flagged as ''iscrowd''
   USE_ALL_GT: True
-
-  # Whether to tune the batch normalization parameters during training
-  BN_TRAIN: False
-
   CLIP_GRADIENTS: False
-
   frozen_blocks: 2
 
 TEST:
@@ -213,9 +166,6 @@ TEST:
 
   # Overlap threshold used for non-maximum suppression (suppress boxes with IoU >= this threshold)
   NMS: 0.3
-
-  # Propose boxes
-  HAS_RPN: False
 
   # Test using these proposals
   PROPOSAL_METHOD: 'gt'
@@ -235,13 +185,7 @@ TEST:
   # See report for details
   MODE: 'nms'
 
-  # Only useful when TEST.MODE is 'top', specifies the number of top proposals to select
-  RPN_TOP_N: 5000
-
-  USE_FLIPPED: False # Use horizontally-flipped images during evaluation
-
   MAX_DETECTIONS_PER_IMAGE: 100 # counted over all classes together
-
   DETECTION_THRESH: 0.05
 
   max_per_image: 100

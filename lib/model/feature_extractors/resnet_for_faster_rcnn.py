@@ -49,10 +49,8 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractorDuo):
                                               resnet.layer3)
             if not (0 <= frozen_blocks < 4):
                 raise ValueError('Illegal number of blocks to freeze')
-            ResNetForFasterRCNN._freeze_layers(self._model, frozen_blocks)
-            self._model.apply(self._freeze_batch_norm_layers)
+            self._frozen_blocks = frozen_blocks
             self._output_num_channels = self.get_output_num_channels(self._model[-1][-1].conv3)
-            #TODO: JA - verify conv3
 
         @property
         def output_num_channels(self):
@@ -67,20 +65,9 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractorDuo):
             return self._model(input)
 
         def train(self, mode=True):
-            # TODO: JA - this was taken as is from the original repo, some of the lines look redundant\wrong
-            nn.Module.train(self, mode)
-            if mode:
-                # TODO: JA - why 5, and 6 are in train? Should it be related to the frozen layers
-                self.eval()
-                self._model[5].train()
-                self._model[6].train()
-                
-            # TODO: JA - use jenny's function and put it in the Base class
-            def set_bn_eval(m):
-                classname = m.__class__.__name__
-                if classname.find('BatchNorm') != -1:
-                    m.eval()
-            self._model.apply(set_bn_eval)
+            super(ResNetForFasterRCNN._RPNFeatureExtractor, self).train(mode)
+            ResNetForFasterRCNN._freeze_layers(self._model, self._frozen_blocks)
+            self._model.apply(self._freeze_batch_norm_layers)
 
     class _FastRCNNFeatureExtractor(FasterRCNNFeatureExtractorDuo._FeatureExtractor):
 
@@ -105,14 +92,9 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractorDuo):
             return self._mapping_dict
 
         def train(self, mode=True):
-            nn.Module.train(self, mode)
+            super(ResNetForFasterRCNN._FastRCNNFeatureExtractor, self).train(mode)
+            self._model.apply(self._freeze_batch_norm_layers)
 
-            # TODO: JA - use jenny's function and put it in the Base class
-            def set_bn_eval(m):
-                classname = m.__class__.__name__
-                if classname.find('BatchNorm') != -1:
-                    m.eval()
-            self._model.apply(set_bn_eval)
 
     @classmethod
     def _freeze_layers(cls, model, upto_block_num):
@@ -127,6 +109,7 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractorDuo):
                 if curr_block_num > upto_block_num:
                     break
                 else:
+                    module.eval()
                     if is_block:
                         for submodule in module.modules():
                             for p in submodule.parameters():
@@ -140,20 +123,20 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractorDuo):
         fast_rcnn_state_dict = {}
 
         def startswith_one_of(key, mapping_dict):
-            for i, item in mapping_dict.items():
+            for new_key, item in mapping_dict.items():
                 if key.startswith(item):
-                    print('key: {}, item: {}, i: {}'.format(key, item, i)) #TODO: JA - delete this
-                    return i, item
-            return -1, ""
+                    return new_key, item
+            return None, None
 
         for orig_key, v in pretrained_resnet_state_dict.items():
-            i, item = startswith_one_of(orig_key, self.fast_rcnn_feature_extractor.layer_mapping_to_pretrained)
-            if i != -1:
-                fast_rcnn_state_dict[orig_key.replace(item, '_model.{}.'.format(str(i)))] = v
+            replacing_key, item = startswith_one_of(orig_key, self.fast_rcnn_feature_extractor.layer_mapping_to_pretrained)
+            if replacing_key is not None:
+                fast_rcnn_state_dict[orig_key.replace(item, '_model.{}.'.format(str(replacing_key)))] = v
             else:
-                i, item = startswith_one_of(orig_key, self.rpn_feature_extractor.layer_mapping_to_pretrained)
-                if i != -1:
-                    rpn_state_dict[orig_key.replace(item, '_model.{}.'.format(str(i)))] = v
+                replacing_key, item = startswith_one_of(
+                    orig_key, self.rpn_feature_extractor.layer_mapping_to_pretrained)
+                if replacing_key is not None:
+                    rpn_state_dict[orig_key.replace(item, '_model.{}.'.format(str(replacing_key)))] = v
 
         fe_subnets = [self.rpn_feature_extractor, self.fast_rcnn_feature_extractor]
         fe_state_dicts = [rpn_state_dict, fast_rcnn_state_dict]

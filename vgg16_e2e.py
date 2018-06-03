@@ -16,7 +16,6 @@ from model.faster_rcnn.faster_rcnn_training_session import run_training_session
 from model.faster_rcnn.faster_rcnn_postprocessing import faster_rcnn_postprocessing
 from model.faster_rcnn.faster_rcnn_prediction import faster_rcnn_prediction
 from model.faster_rcnn.faster_rcnn_visualization import faster_rcnn_visualization
-from model.feature_extractors.faster_rcnn_feature_extractors import create_feature_extractor_from_ckpt
 from util.config import ConfigProvider
 from util.logging import set_root_logger
 
@@ -50,8 +49,9 @@ def create_and_train():
     run_training_session(train_data_manager, model, create_optimizer_fn, cfg, train_logger, cfg.TRAIN.start_epoch)
 
 
-def pred_eval(predict_on_epoch):
+def pred_eval(epoch_nem):
     ckpt_path = cfg.get_last_ckpt_path()
+    epoch_num = get_epoch_num_from_ckpt(ckpt_path)
     model = FasterRCNNMetaArch.create_from_ckpt(ckpt_path)
     model.cuda()
     data_manager = FasterRCNNDataManager(mode=Mode.INFER,
@@ -61,19 +61,17 @@ def pred_eval(predict_on_epoch):
                                          batch_size=cfg.TRAIN.batch_size,
                                          cfg=cfg)
 
-    faster_rcnn_prediction(data_manager, model, cfg, predict_on_epoch)
+    faster_rcnn_prediction(data_manager, model, cfg, epoch_nem)
 
-    faster_rcnn_postprocessing(data_manager, model, cfg, predict_on_epoch)
+    faster_rcnn_postprocessing(data_manager, model, cfg, epoch_nem)
 
-    detections_path = cfg.get_postprocessed_detections_path(predict_on_epoch)
-    eval_path = cfg.get_evals_dir_path(predict_on_epoch)
-    faster_rcnn_evaluation(data_manager, cfg, detections_path, eval_path)
+    faster_rcnn_evaluation(data_manager, cfg, epoch_num)
 
-    faster_rcnn_visualization(data_manager, cfg, predict_on_epoch)
+    faster_rcnn_visualization(data_manager, cfg, epoch_nem)
 
 
 try:
     create_and_train()
-    pred_eval(predict_on_epoch=7)
+    pred_eval(epoch_nem=7)
 except Exception:
     logger.error("Unexpected error: ", exc_info=True)

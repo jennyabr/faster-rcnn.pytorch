@@ -17,8 +17,6 @@ def faster_rcnn_visualization(data_manager, cfg, epoch_num):
         bboxes = pickle.load(f)
 
     visualizations_dir = os.path.dirname(cfg.get_img_visualization_path(epoch_num, 0))
-    os.makedirs(visualizations_dir, exist_ok=True)
-
     start_time = time.time()
     for i in range(data_manager.num_images):
         im = cv2.imread(data_manager.imdb.image_path_at(i))

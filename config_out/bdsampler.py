@@ -1,6 +1,6 @@
-class BDSampler(Sampler):
+class DBSampler(Sampler):
     def __init__(self, train_size, batch_size):
-        # super(BDSampler, self).__init__(data_source="")  # TODO: JA - originally they didn't call super
+        # super(DBSampler, self).__init__(data_source="")  # TODO: JA - originally they didn't call super
         self.data_size = train_size
         self.num_per_batch = int(train_size / batch_size)
         self.batch_size = batch_size

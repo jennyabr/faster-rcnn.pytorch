@@ -5,7 +5,9 @@ import time
 logger = logging.getLogger(__name__)
 
 
-def faster_rcnn_evaluation(data_manager, cfg, detections_path, eval_dir_path):  # TODO JA alternative prams
+def faster_rcnn_evaluation(data_manager, cfg, epoch_num):
+    detections_path = cfg.get_postprocessed_detections_path(epoch_num)
+    eval_dir_path = cfg.get_evals_dir_path(epoch_num)
     logger.info('--->>> Evaluating detections from: {}'.format(detections_path))
     with open(detections_path, 'rb') as f:
         dets_to_evaluate = pickle.load(f)

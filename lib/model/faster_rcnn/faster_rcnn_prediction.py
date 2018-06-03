@@ -65,7 +65,6 @@ def faster_rcnn_prediction(data_manager, model, cfg, epoch_num):
                         'avg per image: {2:.3f} s.'.format(i, num_images, avg_pred_time))
 
     preds_file_path = cfg.get_preds_path(epoch_num)
-    os.makedirs(os.path.dirname(preds_file_path), exist_ok=True)
     with open(preds_file_path, 'wb') as f:
         pickle.dump(raw_preds, f, pickle.HIGHEST_PROTOCOL)
 

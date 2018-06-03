@@ -79,7 +79,6 @@ def faster_rcnn_postprocessing(data_manager, model, cfg, num_epoch):
                         'avg time per image: {2:.4f} s.'.format(i, num_images, (pp_end-start_time) / (i+1)))
 
     pp_dets_path = cfg.get_postprocessed_detections_path(num_epoch)
-    os.makedirs(os.path.dirname(pp_dets_path), exist_ok=True)
     with open(pp_dets_path, 'wb') as f:
         pickle.dump(postprocessed_detections, f)
 

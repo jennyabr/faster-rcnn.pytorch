@@ -1,10 +1,12 @@
 from __future__ import absolute_import
 from __future__ import division
 import os
+
+from model.utils.misc_utils import get_epoch_num_from_ckpt
+
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 import logging
-import numpy as np
 import torch
 from functools import partial
 
@@ -26,7 +28,6 @@ config_file = '/home/jenny/gripper2/test_on_p100/cfgs/resnet101a.yml'
 
 cfg = ConfigProvider()
 cfg.load(config_file)
-np.random.seed(cfg.RNG_SEED)
 
 set_root_logger(cfg.get_log_path())
 logger = logging.getLogger(__name__)
@@ -53,6 +54,7 @@ def create_and_train():
 
 def pred_eval(predict_on_epoch):
     ckpt_path = cfg.get_last_ckpt_path()
+    epoch_num = get_epoch_num_from_ckpt(ckpt_path)
     model = FasterRCNNMetaArch.create_from_ckpt(ckpt_path)
     model.cuda()
     data_manager = FasterRCNNDataManager(mode=Mode.INFER,
@@ -62,13 +64,11 @@ def pred_eval(predict_on_epoch):
                                          batch_size=cfg.TRAIN.batch_size,
                                          cfg=cfg)
 
-    faster_rcnn_prediction(data_manager, model, cfg, predict_on_epoch)
+    faster_rcnn_prediction(data_manager, model, cfg, epoch_num)
 
-    faster_rcnn_postprocessing(data_manager, model, cfg, predict_on_epoch)
+    faster_rcnn_postprocessing(data_manager, model, cfg, epoch_num)
 
-    detections_path = cfg.get_postprocessed_detections_path(predict_on_epoch)
-    eval_path = cfg.get_evals_dir_path(predict_on_epoch)
-    faster_rcnn_evaluation(data_manager, cfg, detections_path, eval_path)
+    faster_rcnn_evaluation(data_manager, cfg, epoch_num)
 
     faster_rcnn_visualization(data_manager, cfg, predict_on_epoch)
 

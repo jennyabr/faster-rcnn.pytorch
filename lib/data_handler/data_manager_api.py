@@ -35,14 +35,10 @@ class DataManager(ABC):
             return im_data, im_info, gt_boxes, num_boxes
         self._im_data, self._im_info, self._gt_boxes, self._num_boxes = create_input_tensors()
 
-        # TODO JA what to do here?
         self._data_iter = None
 
     @abstractmethod
     def transform_data_tensors(self, data):
-        # TODO JA maybe (self, im_data, im_info, gt_boxes, num_boxes) the order
-        # TODO JA depends on how the data is constracted...
-        # return self.im_data, self.im_info, self.gt_boxes, self.num_boxes
         raise NotImplementedError
 
     def __next__(self):

@@ -114,7 +114,7 @@ class FasterRCNNMetaArch(nn.Module):
                 bbox_pred = bbox_pred_select.squeeze(1)
 
             cls_score = self.fast_rcnn_cls_head(fast_rcnn_feature_map)
-            cls_prob = F.softmax(cls_score)  # TODO: JA - add this back: , dim=-1)
+            cls_prob = F.softmax(cls_score, dim=-1)
             return bbox_pred, cls_score, cls_prob
         bbox_pred, cls_score, cls_prob = run_fast_rcnn()
 
@@ -144,5 +144,4 @@ class FasterRCNNMetaArch(nn.Module):
         return model
 
     def train(self, mode=True):
-        super(FasterRCNNMetaArch, self).train(mode) #TODO: JA - uncomment this
-        # nn.Module.train(self, mode)
+        super(FasterRCNNMetaArch, self).train(mode)

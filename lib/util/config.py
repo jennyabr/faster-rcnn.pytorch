@@ -7,6 +7,7 @@ from time import gmtime, strftime
 
 import numpy as np
 import os
+import random
 import torch
 import yaml
 from easydict import EasyDict as edict
@@ -61,15 +62,12 @@ class ConfigProvider(dict):
             If the directory does not exist, it is created.
             """
             outdir = os.path.join(os.path.abspath(cfg['OUTPUT_DIR']), cfg['EXPERIMENT_NAME'])
-            if not os.path.exists(outdir):
-                os.makedirs(outdir)
+            os.makedirs(outdir, exist_ok=True)
             return outdir
         cfg['OUTPUT_PATH'] = create_output_path()
-        # torch.manual_seed(cfg['RNG_SEED'])
-        # torch.cuda.manual_seed_all(cfg['RNG_SEED'])
-
-        if torch.cuda.is_available() and not cfg['CUDA']:  # todo del
-            logger.warning("You have a CUDA device, so you should probably run with --cuda")
+        seed = cfg.get('RNG_SEED', random.randint(1,1e20)
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
 
         cfg = edict(cfg)
         logger.info('--->>> Config:\n{}'.format(pprint.pformat(cfg)))
@@ -92,6 +90,7 @@ class ConfigProvider(dict):
             epoch = epoch_num
         file_name = self.ckpt_file_format.format(epoch)
         path = os.path.join(self.output_path, file_name)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
         logger.info("CKPT path: {}.".format(path))
         return path
 
@@ -99,28 +98,31 @@ class ConfigProvider(dict):
         import glob
         list_of_files = glob.glob(os.path.join(self.output_path, self.ckpt_file_format.format('*')))
         latest_file = max(list_of_files, key=os.path.getctime)
+        
         return latest_file
 
     def get_preds_path(self, epoch_num):
         file_name = self.raw_preds_file_format.format(epoch_num)
         path = os.path.join(self.output_path, file_name)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
         return path
 
     def get_postprocessed_detections_path(self, epoch_num):
         file_name = self.postprocessed_file_format.format(epoch_num)
         path = os.path.join(self.output_path, file_name)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
         return path
 
     def get_evals_dir_path(self, epoch_num):
         dir_name = self.evals_dir_format.format(epoch_num)
-        # TODO should create dir?
         dir_path = os.path.join(self.output_path, dir_name)
+        os.makedirs(dir_path, exist_ok=True)
         return dir_path
 
     def get_img_visualization_path(self, epoch_num, im_num):
         rel_file_path = self.vis_path_format.format(epoch_num, im_num)
-        # TODO should create dir?
         full_file_path = os.path.join(self.output_path, rel_file_path)
+        os.makedirs(os.path.dirname(full_file_path), exist_ok=True)
         return full_file_path
 
     def get_log_path(self):
