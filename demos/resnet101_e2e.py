@@ -23,7 +23,7 @@ from util.config import ConfigProvider
 from util.logging import set_root_logger
 
 
-config_file = '/home/jenny/gripper2/test_on_p100/cfgs/resnet101.yml'
+config_file = os.path.join(os.getcwd(), 'cfgs', 'resnet101.yml')
 
 cfg = ConfigProvider()
 cfg.load(config_file)

@@ -7,7 +7,7 @@ import logging
 import PIL
 import numpy as np
 
-import datasets.imdb
+import data_manager.classic_detection.datasets.imdb as dataset_imdb
 from data_manager.classic_detection.datasets.factory import get_imdb
 
 logger = logging.getLogger(__name__)
@@ -124,7 +124,7 @@ def combined_roidb(imdb_names, data_dir, use_flipped, proposal_method, training=
         for r in roidbs[1:]:
             roidb.extend(r)
         tmp = get_imdb(imdb_names.split('+')[1], data_dir=data_dir)
-        imdb = datasets.imdb.imdb(imdb_names, data_dir=data_dir, classes=tmp.classes)
+        imdb = dataset_imdb.imdb(imdb_names, data_dir=data_dir, classes=tmp.classes)
     else:
         imdb = get_imdb(imdb_names, data_dir=data_dir)
 
