@@ -8,7 +8,7 @@ from pipeline.faster_rcnn.run_functions.run_classic_pipeline import \
 from util.config import ConfigProvider
 
 
-config_file = os.path.join(os.getcwd(), 'demos', 'cfgs', 'vgg16.yml')
+config_file = os.path.join(os.getcwd(), 'cfgs', 'vgg16.yml')
 cfg = ConfigProvider()
 cfg.load(config_file)
 create_and_train_with_err_handling(cfg)

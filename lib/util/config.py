@@ -37,6 +37,7 @@ class ConfigProvider(dict):
                     else:
                         cfg[k] = v
 
+        self.create_from_dict(cfg)
         dataset = cfg['dataset']
         cfg['imdb_name'] = cfg[dataset]['imdb_name']
         cfg['imdbval_name'] = cfg[dataset]['imdbval_name']
@@ -45,8 +46,6 @@ class ConfigProvider(dict):
         cfg['MAX_NUM_GT_BOXES'] = cfg[dataset]['MAX_NUM_GT_BOXES']
 
         cfg['DEDUP_BOXES'] = float(cfg['DEDUP_BOXES_numerator']) / float(cfg['DEDUP_BOXES_denominator'])
-
-        self.create_from_dict(cfg)
 
     def create_from_dict(self, cfg):
         cfg['start_run_time_str'] = strftime("%Y_%b_%d_%H_%M", gmtime())
