@@ -5,14 +5,14 @@ import torch.nn as nn
 from torchvision.models import resnet101
 from torchvision.models.resnet import resnet50, resnet152
 
-from model.feature_extractors.faster_rcnn_feature_extractor_duo import FasterRCNNFeatureExtractorDuo
+from model.feature_extractors.feature_extractor_duo import FeatureExtractorDuo
 from model.utils.net_utils import global_average_pooling
 
 
-class ResNetForFasterRCNN(FasterRCNNFeatureExtractorDuo):
+class ResNetFeatureExtractorDuo(FeatureExtractorDuo):
 
     def __init__(self, net_variant='101', frozen_blocks=0):
-        super(ResNetForFasterRCNN, self).__init__(net_variant, frozen_blocks)
+        super(ResNetFeatureExtractorDuo, self).__init__(net_variant, frozen_blocks)
 
         def resnet_variant_builder(variant):
             if str(variant) == '50':
@@ -35,10 +35,10 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractorDuo):
     def fast_rcnn_feature_extractor(self):
         return self._fast_rcnn_feature_extractor
     
-    class _RPNFeatureExtractor(FasterRCNNFeatureExtractorDuo._FeatureExtractor):
+    class _RPNFeatureExtractor(FeatureExtractorDuo._FeatureExtractor):
 
         def __init__(self, resnet, frozen_blocks):
-            super(ResNetForFasterRCNN._RPNFeatureExtractor, self).__init__()
+            super(ResNetFeatureExtractorDuo._RPNFeatureExtractor, self).__init__()
             self._ordered_layer_names = ["conv1.", "bn1.", "relu.", "maxpool.", "layer1.", "layer2.", "layer3."] 
             #TODO: JA - the model should not be able to change independently of the list of ordered layer names can change 
             self._model = nn.Sequential(resnet.conv1,
@@ -51,6 +51,8 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractorDuo):
             if not (0 <= frozen_blocks < 4):
                 raise ValueError('Illegal number of blocks to freeze')
             self._frozen_blocks = frozen_blocks
+            ResNetFeatureExtractorDuo._freeze_layers(self._model, self._frozen_blocks)
+            self._model.apply(self._freeze_batch_norm_layers)
             self._output_num_channels = self.get_output_num_channels(self._model[-1][-1].conv3)
 
         @property
@@ -66,14 +68,14 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractorDuo):
             return self._model(input)
 
         def train(self, mode=True):
-            super(ResNetForFasterRCNN._RPNFeatureExtractor, self).train(mode)
-            ResNetForFasterRCNN._freeze_layers(self._model, self._frozen_blocks)
+            super(ResNetFeatureExtractorDuo._RPNFeatureExtractor, self).train(mode)
+            ResNetFeatureExtractorDuo._freeze_layers(self._model, self._frozen_blocks)
             self._model.apply(self._freeze_batch_norm_layers)
 
-    class _FastRCNNFeatureExtractor(FasterRCNNFeatureExtractorDuo._FeatureExtractor):
+    class _FastRCNNFeatureExtractor(FeatureExtractorDuo._FeatureExtractor):
 
         def __init__(self, resnet):
-            super(ResNetForFasterRCNN._FastRCNNFeatureExtractor, self).__init__()
+            super(ResNetFeatureExtractorDuo._FastRCNNFeatureExtractor, self).__init__()
             self._mapping_dict = {0: "layer4."}
             #TODO: JA - the model should not be able to change independently of the list of ordered layer names can change 
             self._model = nn.Sequential(resnet.layer4)
@@ -93,7 +95,7 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractorDuo):
             return self._mapping_dict
 
         def train(self, mode=True):
-            super(ResNetForFasterRCNN._FastRCNNFeatureExtractor, self).train(mode)
+            super(ResNetFeatureExtractorDuo._FastRCNNFeatureExtractor, self).train(mode)
             self._model.apply(self._freeze_batch_norm_layers)
 
 

@@ -7,7 +7,7 @@ from functools import partial
 from data_manager.classic_detection.classic_data_manager import ClassicDataManager
 from data_manager.data_manager_abstract import Mode
 from loggers.tensorbord_logger import TensorBoardLogger
-from model.feature_extractors.faster_rcnn_feature_extractor_duo import create_duo_from_ckpt
+from model.feature_extractors.feature_extractor_duo import create_duo_from_ckpt
 from model.meta_architecture.faster_rcnn import FasterRCNN
 from model.utils.misc_utils import get_epoch_num_from_ckpt
 from pipeline.faster_rcnn.faster_rcnn_evaluation import faster_rcnn_evaluation

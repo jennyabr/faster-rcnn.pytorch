@@ -20,7 +20,7 @@ from pipeline.faster_rcnn.faster_rcnn_training_session import run_training_sessi
 from pipeline.faster_rcnn.faster_rcnn_postprocessing import faster_rcnn_postprocessing
 from pipeline.faster_rcnn.faster_rcnn_prediction import faster_rcnn_prediction
 from pipeline.faster_rcnn.faster_rcnn_visualization import faster_rcnn_visualization
-from model.feature_extractors.faster_rcnn_feature_extractor_duo import create_duo_from_ckpt
+from model.feature_extractors.feature_extractor_duo import create_duo_from_ckpt
 from model.utils.misc_utils import get_epoch_num_from_ckpt
 
 from util.config import ConfigProvider

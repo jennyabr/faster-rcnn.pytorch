@@ -3,17 +3,15 @@ from __future__ import division
 
 import torch.nn as nn
 from torchvision import models
-from torchvision.models import resnet101
-from torchvision.models.resnet import resnet50, resnet152
 
-from model.feature_extractors.faster_rcnn_feature_extractor_duo import FasterRCNNFeatureExtractorDuo
-from model.utils.net_utils import global_average_pooling, remove_last_layer_from_network
+from model.feature_extractors.feature_extractor_duo import FeatureExtractorDuo
+from model.utils.net_utils import remove_last_layer_from_network
 
 
-class VGGForFasterRCNN(FasterRCNNFeatureExtractorDuo):
+class VGGFeatureExtractorDuo(FeatureExtractorDuo):
 
     def __init__(self, net_variant='16', frozen_blocks=0):
-        super(VGGForFasterRCNN, self).__init__(net_variant, frozen_blocks)
+        super(VGGFeatureExtractorDuo, self).__init__(net_variant, frozen_blocks)
 
         def vgg_variant_builder(variant):
             if str(variant) == '16':
@@ -33,15 +31,16 @@ class VGGForFasterRCNN(FasterRCNNFeatureExtractorDuo):
     def fast_rcnn_feature_extractor(self):
         return self._fast_rcnn_feature_extractor
     
-    class _RPNFeatureExtractor(FasterRCNNFeatureExtractorDuo._FeatureExtractor):
+    class _RPNFeatureExtractor(FeatureExtractorDuo._FeatureExtractor):
         def __init__(self, vgg, frozen_blocks):
-            super(VGGForFasterRCNN._RPNFeatureExtractor, self).__init__()
+            super(VGGFeatureExtractorDuo._RPNFeatureExtractor, self).__init__()
             layers = remove_last_layer_from_network(vgg.features)
             self._model = nn.Sequential(*layers)
             if not (0 <= frozen_blocks < 4):
                 raise ValueError('Illegal number of blocks to freeze')
             self._frozen_blocks = frozen_blocks
-            self._output_num_channels = self.get_output_num_channels(self._model[-2]) #TODO: JA - verify this
+            VGGFeatureExtractorDuo._freeze_layers(self._model, self._frozen_blocks)
+            self._output_num_channels = self.get_output_num_channels(self._model[-2])
 
         @property
         def output_num_channels(self):
@@ -55,17 +54,16 @@ class VGGForFasterRCNN(FasterRCNNFeatureExtractorDuo):
             return self._model(input)
 
         def train(self, mode=True):
-            super(VGGForFasterRCNN._RPNFeatureExtractor, self).train(mode)
-            VGGForFasterRCNN._freeze_layers(self._model, self._frozen_blocks)
+            super(VGGFeatureExtractorDuo._RPNFeatureExtractor, self).train(mode)
+            VGGFeatureExtractorDuo._freeze_layers(self._model, self._frozen_blocks)
 
-    class _FastRCNNFeatureExtractor(FasterRCNNFeatureExtractorDuo._FeatureExtractor):
+    class _FastRCNNFeatureExtractor(FeatureExtractorDuo._FeatureExtractor):
 
         def __init__(self, vgg):
-            super(VGGForFasterRCNN._FastRCNNFeatureExtractor, self).__init__()
+            super(VGGFeatureExtractorDuo._FastRCNNFeatureExtractor, self).__init__()
             layers = remove_last_layer_from_network(vgg.classifier)
             self._model = nn.Sequential(*layers)
-            self._model.apply(self._freeze_batch_norm_layers)
-            self._output_num_channels = self.get_output_num_channels(self._model[-3]) # TODO: verify this
+            self._output_num_channels = self.get_output_num_channels(self._model[-3])
 
         def forward(self, input):
             flattened_input = input.view(input.size(0), -1)
@@ -78,9 +76,6 @@ class VGGForFasterRCNN(FasterRCNNFeatureExtractorDuo):
         @property
         def layer_mapping_to_pretrained(self):
             return None
-
-        def train(self, mode=True):
-            super(VGGForFasterRCNN._FastRCNNFeatureExtractor, self).train(mode)
 
     @classmethod
     def _freeze_layers(cls, model, upto_pooling_num):

@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from functools import partial
 from torch.autograd import Variable
 
-from model.feature_extractors.faster_rcnn_feature_extractor_duo import create_empty_duo
+from model.feature_extractors.feature_extractor_duo import create_empty_duo
 from model.meta_architecture.roi_poolers.roi_pooler_factory import create_roi_pooler
 from model.meta_architecture.rpn.proposal_target_layer_cascade import _ProposalTargetLayer
 from model.meta_architecture.rpn.rpn import _RPN
@@ -120,7 +120,7 @@ class FasterRCNN(nn.Module):
 
         if self.training:
             self.faster_rcnn_loss_cls = F.cross_entropy(cls_score, rois_label)
-            self.faster_rcnn_loss_bbox = _smooth_l1_losska(bbox_pred, rois_target, rois_inside_ws, rois_outside_ws)
+            self.faster_rcnn_loss_bbox = _smooth_l1_loss(bbox_pred, rois_target, rois_inside_ws, rois_outside_ws)
         else:
             self.faster_rcnn_loss_cls = 0
             self.faster_rcnn_loss_bbox = 0

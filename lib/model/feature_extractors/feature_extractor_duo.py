@@ -11,7 +11,7 @@ from torch.nn.modules.batchnorm import _BatchNorm
 from model.utils.net_utils import normal_init
 
 
-class FasterRCNNFeatureExtractorDuo(ABC):
+class FeatureExtractorDuo(ABC):
 
     def __init__(self, net_variant, frozen_blocks):
         self.net_variant = net_variant

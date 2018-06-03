@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 def run_training_session(data_manager, model, create_optimizer_fn, cfg, train_logger, first_epoch=0):
+    model.train()
     def get_trainable_params():
         trainable_params = []
         trainable_keys = []
@@ -37,7 +38,6 @@ def run_training_session(data_manager, model, create_optimizer_fn, cfg, train_lo
     iters_per_epoch = data_manager.iters_per_epoch
 
     aggregated_stats = {}
-    model.train()
     for epoch in range(first_epoch, cfg.TRAIN.max_epochs + 1):
         decay_lr_in_optimizer(epoch, cfg.TRAIN.lr_decay_step + 1, optimizer, cfg.TRAIN.GAMMA)
 
