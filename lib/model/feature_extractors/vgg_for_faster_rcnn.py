@@ -94,6 +94,7 @@ class VGGForFasterRCNN(FasterRCNNFeatureExtractorDuo):
             if curr_pooling_num >= upto_pooling_num:
                 break
 
+            layer.eval()
             for p in layer.parameters():
                 p.requires_grad = False
         return model

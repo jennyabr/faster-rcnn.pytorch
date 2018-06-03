@@ -120,7 +120,7 @@ class FasterRCNN(nn.Module):
 
         if self.training:
             self.faster_rcnn_loss_cls = F.cross_entropy(cls_score, rois_label)
-            self.faster_rcnn_loss_bbox = _smooth_l1_loss(bbox_pred, rois_target, rois_inside_ws, rois_outside_ws)
+            self.faster_rcnn_loss_bbox = _smooth_l1_losska(bbox_pred, rois_target, rois_inside_ws, rois_outside_ws)
         else:
             self.faster_rcnn_loss_cls = 0
             self.faster_rcnn_loss_bbox = 0

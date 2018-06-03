@@ -1,6 +1,6 @@
 DATA_DIR: '/home/jenny/gripper2/data'
 OUTPUT_DIR: '/home/jenny/gripper2/outputs/05_31'
-EXPERIMENT_NAME: 'vgg16_testing_with_all_our_code'
+EXPERIMENT_NAME: 'vgg16doc_testing_with_all_our_code'
 net: 'vgg' #  # {vgg,resnet}
 net_variant: '16' # Currently supported: {16 for vgg, 50, 101, 152 for resnet}
 roi_pooler_name: align
