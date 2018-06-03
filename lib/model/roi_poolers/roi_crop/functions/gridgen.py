@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 from torch.autograd import Function
+import torch.nn.functional as F
 
 
 class AffineGridGenFunction(Function):
@@ -32,3 +33,27 @@ class AffineGridGenFunction(Function):
                                     torch.transpose(grad_output.view(-1, self.height*self.width, 2), 1, 2),
                                     self.batchgrid.view(-1, self.height * self.width, 3))
         return grad_input1
+
+
+def _affine_grid_gen(rois, input_size, grid_size):
+    rois = rois.detach()
+    x1 = rois[:, 1::4] / 16.0
+    y1 = rois[:, 2::4] / 16.0
+    x2 = rois[:, 3::4] / 16.0
+    y2 = rois[:, 4::4] / 16.0
+
+    height = input_size[0]
+    width = input_size[1]
+
+    zero = Variable(rois.data.new(rois.size(0), 1).zero_())
+    theta = torch.cat([(x2 - x1) / (width - 1),
+                       zero,
+                       (x1 + x2 - width + 1) / (width - 1),
+                       zero,
+                       (y2 - y1) / (height - 1),
+                       (y1 + y2 - height + 1) / (height - 1)], 1).view(-1, 2, 3)
+
+    grid = F.affine_grid(theta, torch.Size((rois.size(0), 1, grid_size, grid_size)))
+    return grid
+
+

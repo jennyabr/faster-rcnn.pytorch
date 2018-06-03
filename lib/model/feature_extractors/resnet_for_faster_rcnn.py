@@ -6,6 +6,7 @@ from torchvision.models import resnet101
 from torchvision.models.resnet import resnet50, resnet152
 
 from model.feature_extractors.faster_rcnn_feature_extractor_duo import FasterRCNNFeatureExtractorDuo
+from model.utils.net_utils import global_average_pooling
 
 
 class ResNetForFasterRCNN(FasterRCNNFeatureExtractorDuo):
@@ -81,7 +82,7 @@ class ResNetForFasterRCNN(FasterRCNNFeatureExtractorDuo):
             self._output_num_channels = self.get_output_num_channels(self._model[-1][-1].conv3)
 
         def forward(self, input):
-            return self._model(input).mean(3).mean(2)
+            return global_average_pooling(self._model(input))
 
         @property
         def output_num_channels(self):

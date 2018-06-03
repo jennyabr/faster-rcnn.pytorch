@@ -1,9 +1,5 @@
 import numpy as np
-
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from torch.autograd import Variable
 
 
 def clip_gradient(model, clip_norm):
@@ -45,56 +41,11 @@ def _smooth_l1_loss(bbox_pred, bbox_targets, bbox_inside_weights, bbox_outside_w
     return loss_box
 
 
-def _affine_grid_gen(rois, input_size, grid_size):
-    rois = rois.detach()
-    x1 = rois[:, 1::4] / 16.0
-    y1 = rois[:, 2::4] / 16.0
-    x2 = rois[:, 3::4] / 16.0
-    y2 = rois[:, 4::4] / 16.0
-
-    height = input_size[0]
-    width = input_size[1]
-
-    zero = Variable(rois.data.new(rois.size(0), 1).zero_())
-    theta = torch.cat([(x2 - x1) / (width - 1),
-                       zero,
-                       (x1 + x2 - width + 1) / (width - 1),
-                       zero,
-                       (y2 - y1) / (height - 1),
-                       (y1 + y2 - height + 1) / (height - 1)], 1).view(-1, 2, 3)
-
-    grid = F.affine_grid(theta, torch.Size((rois.size(0), 1, grid_size, grid_size)))
-    return grid
-
-
-def _affine_theta(rois, input_size):
-    rois = rois.detach()
-    x1 = rois[:, 1::4] / 16.0
-    y1 = rois[:, 2::4] / 16.0
-    x2 = rois[:, 3::4] / 16.0
-    y2 = rois[:, 4::4] / 16.0
-
-    height = input_size[0]
-    width = input_size[1]
-
-    zero = Variable(rois.data.new(rois.size(0), 1).zero_())
-
-    theta = torch.cat([(y2 - y1) / (height - 1),
-                       zero,
-                       (y1 + y2 - height + 1) / (height - 1),
-                       zero,
-                       (x2 - x1) / (width - 1),
-                       (x1 + x2 - width + 1) / (width - 1)], 1).view(-1, 2, 3)
-    return theta
-
-
-def assert_sequential(model):
-    if not isinstance(model, nn.Sequential):
-        raise ValueError(
-            'Since Pytorch supports dynamic graphs, the order of layers in a non-sequential net is '
-            'defined only dynamically at run-time and cant be used for counting layers')
-
 
 def normal_init(nn_module, mean=0, stddev=1):
     nn_module.weight.data.normal_(mean, stddev)
     nn_module.bias.data.zero_()
+
+
+def global_average_pooling(input):
+    return input.mean(3).mean(2)
