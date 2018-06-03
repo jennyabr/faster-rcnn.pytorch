@@ -6,9 +6,9 @@
 # --------------------------------------------------------
 
 import torch
-from model.nms.nms_cpu import nms_cpu
+from model.meta_architecture.nms.nms_cpu import nms_cpu
 if torch.cuda.is_available():
-    from model.nms.nms_gpu import nms_gpu
+    from model.meta_architecture.nms.nms_gpu import nms_gpu
 
 
 def nms(dets, thresh, force_cpu=False):

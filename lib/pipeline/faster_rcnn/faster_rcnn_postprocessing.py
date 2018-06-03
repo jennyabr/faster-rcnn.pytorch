@@ -6,7 +6,7 @@ import numpy as np
 import os
 import torch
 
-from model.nms.nms_wrapper import nms
+from model.meta_architecture.nms.nms_wrapper import nms
 
 logger = logging.getLogger(__name__)
 

@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from model.nms.nms_wrapper import nms
+from model.meta_architecture.nms.nms_wrapper import nms
 from .bbox_transform import bbox_transform_inv, clip_boxes
 from .generate_anchors import generate_anchors
 

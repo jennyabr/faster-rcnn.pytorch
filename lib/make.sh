@@ -23,7 +23,7 @@ python build.py
 
 # compile roi_pooling
 cd ../../
-cd /meta_architecture/roi_poolers/roi_pooling/src
+cd meta_architecture/roi_poolers/roi_pooling/src
 echo "Compiling roi pooling kernels by nvcc..."
 nvcc -c -o roi_pooling.cu.o roi_pooling_kernel.cu \
 	 -D GOOGLE_CUDA=1 -x cu -Xcompiler -fPIC $CUDA_ARCH
@@ -32,7 +32,7 @@ python build.py
 
 # compile roi_align
 cd ../../../
-cd /meta_architecture/roi_poolers/roi_align/src
+cd meta_architecture/roi_poolers/roi_align/src
 echo "Compiling roi align kernels by nvcc..."
 nvcc -c -o roi_align_kernel.cu.o roi_align_kernel.cu \
 	 -D GOOGLE_CUDA=1 -x cu -Xcompiler -fPIC $CUDA_ARCH
@@ -41,7 +41,7 @@ python build.py
 
 # compile roi_crop
 cd ../../../
-cd /meta_architecture/roi_poolers/roi_crop/src
+cd meta_architecture/roi_poolers/roi_crop/src
 echo "Compiling roi crop kernels by nvcc..."
 nvcc -c -o roi_crop_cuda_kernel.cu.o roi_crop_cuda_kernel.cu \
 	 -D GOOGLE_CUDA=1 -x cu -Xcompiler -fPIC $CUDA_ARCH
