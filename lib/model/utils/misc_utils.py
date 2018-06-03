@@ -1,3 +1,6 @@
+import os
+import re
+
 def get_epoch_num_from_ckpt(ckpt_path):
     filename = os.path.basename(ckpt_path)
     fname_without_ext = filename.split('.')[0]

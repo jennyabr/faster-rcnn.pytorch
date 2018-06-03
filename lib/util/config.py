@@ -31,11 +31,12 @@ class ConfigProvider(dict):
 
             if model_cfg:
                 for k, v in model_cfg.items():
-                    if k == 'TRAIN' or k == 'TEST' and v is not None:  # TODO can ask if len > 1
-                        for k1, v1 in v.items():  # TODO note that this is not recursion...
-                            cfg[k][k1] = v1
-                    else:
-                        cfg[k] = v
+                    if v is not None:
+                        if k == 'TRAIN' or k == 'TEST':  # TODO can ask if len > 1
+                            for k1, v1 in v.items():  # TODO note that this is not recursion...
+                                cfg[k][k1] = v1
+                        else:
+                            cfg[k] = v
 
         self.create_from_dict(cfg)
         dataset = self._cfg['dataset']
@@ -44,8 +45,7 @@ class ConfigProvider(dict):
         self._cfg['ANCHOR_SCALES'] = self._cfg[dataset]['ANCHOR_SCALES']
         self._cfg['ANCHOR_RATIOS'] = self._cfg[dataset]['ANCHOR_RATIOS']
         self._cfg['MAX_NUM_GT_BOXES'] = self._cfg[dataset]['MAX_NUM_GT_BOXES']
-
-        cfg['DEDUP_BOXES'] = float(cfg['DEDUP_BOXES_numerator']) / float(cfg['DEDUP_BOXES_denominator'])
+        self._cfg['DEDUP_BOXES'] = float(self._cfg['DEDUP_BOXES_numerator']) / float(self._cfg['DEDUP_BOXES_denominator'])
 
     def create_from_dict(self, cfg):
         cfg['start_run_time_str'] = strftime("%Y_%b_%d_%H_%M", gmtime())

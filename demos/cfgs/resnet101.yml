@@ -1,6 +1,6 @@
 DATA_DIR: '/home/jenny/gripper2/data'
 OUTPUT_DIR: '/home/jenny/gripper2/outputs/06_02'
-EXPERIMENT_NAME: 'resnet101_testing_with_all_our_code'
+EXPERIMENT_NAME: 'resnet101_testing_with_all_our_code2'
 dataset: 'pascal_voc'
 net: 'resnet' #  # {vgg,resnet}
 net_variant: '101' # Currently supported: {16 for vgg, 50, 101, 152 for resnet}
