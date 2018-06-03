@@ -45,10 +45,7 @@ def run_training_session(data_manager, model, create_optimizer_fn, cfg, train_lo
         data_manager.prepare_iter_for_new_epoch()
         for step in range(iters_per_epoch):
             batch_outputs = _train_on_batch(data_manager, model, optimizer, cfg)
-            aggregated_stats = _aggregate_stats(aggregated_stats, batch_outputs['loss_tensors'], cfg.TRAIN.disp_interval)
-            aggregated_stats = _aggregate_stats(aggregated_stats,
-                                                batch_outputs,
-                                                cfg.TRAIN.disp_interval)
+            aggregated_stats = _aggregate_stats(aggregated_stats, batch_outputs['batch_metrics'], cfg.TRAIN.disp_interval)
 
             if step % cfg.TRAIN.disp_interval == 0 and step > 0:
                 aggregation_end_time = time.time()
@@ -76,27 +73,27 @@ def _train_on_batch(data_manager, model, optimizer, cfg):
     rois, cls_prob, bbox_pred, rpn_loss_cls, rpn_loss_bbox, RCNN_loss_cls, RCNN_loss_bbox, rois_label = \
         model(im_data, im_info, gt_boxes, num_boxes)
 
-    loss_tensors = {'loss_rpn_cls': rpn_loss_cls.mean(),
+    batch_metrics = {'loss_rpn_cls': rpn_loss_cls.mean(),
                     'loss_rpn_box': rpn_loss_bbox.mean(),
                     'loss_rcnn_cls': RCNN_loss_cls.mean(),
                     'loss_rcnn_box':  RCNN_loss_bbox.mean()}
 
-    loss_tensors['loss'] = torch.cat(list(loss_tensors.values())).sum()
+    batch_metrics['loss'] = torch.cat(list(batch_metrics.values())).sum()
 
     # TODO variable?
-    loss_tensors['fg_cnt'] = torch.sum(rois_label.data.ne(0))
-    loss_tensors['bg_cnt'] = rois_label.data.numel() - loss_tensors['fg_cnt']
+    batch_metrics['fg_cnt'] = torch.sum(rois_label.data.ne(0))
+    batch_metrics['bg_cnt'] = rois_label.data.numel() - batch_metrics['fg_cnt']
 
     batch_outputs = {
         'rois': rois,
         'rois_label': rois_label,
         'cls_prob': cls_prob,
         'bbox_pred': bbox_pred,
-        'loss_tensors': loss_tensors
+        'batch_metrics': batch_metrics
         }
 
     optimizer.zero_grad()
-    loss_tensors['loss'].backward()
+    batch_metrics['loss'].backward()
 
     if cfg.TRAIN.CLIP_GRADIENTS:
         clip_gradient(model, cfg.TRAIN.CLIP_GRADIENTS)

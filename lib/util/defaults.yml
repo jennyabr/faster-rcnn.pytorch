@@ -14,7 +14,8 @@ net_variant: # Currently supported: {16 for vgg, 50, 101, 152 for resnet}
 NUM_WORKERS: 6  # number of worker to load data
 
 # For reproducibility
-RNG_SEED: 3
+USE_RND_SEED: True
+USER_CHOSEN_SEED:
 
 # Use GPU implementation of non-maximum suppression
 USE_GPU_NMS: True

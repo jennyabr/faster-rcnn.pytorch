@@ -1,9 +1,6 @@
 from __future__ import absolute_import
 from __future__ import division
 import os
-
-from model.utils.misc_utils import get_epoch_num_from_ckpt
-
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 import logging
@@ -20,11 +17,13 @@ from model.faster_rcnn.faster_rcnn_postprocessing import faster_rcnn_postprocess
 from model.faster_rcnn.faster_rcnn_prediction import faster_rcnn_prediction
 from model.faster_rcnn.faster_rcnn_visualization import faster_rcnn_visualization
 from model.feature_extractors.faster_rcnn_feature_extractor_duo import create_duo_from_ckpt
+from model.utils.misc_utils import get_epoch_num_from_ckpt
+
 from util.config import ConfigProvider
 from util.logging import set_root_logger
 
 
-config_file = '/home/jenny/gripper2/test_on_p100/cfgs/resnet101a.yml'
+config_file = '/home/jenny/gripper2/test_on_p100/cfgs/resnet101.yml'
 
 cfg = ConfigProvider()
 cfg.load(config_file)

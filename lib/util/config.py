@@ -31,7 +31,7 @@ class ConfigProvider(dict):
 
             if model_cfg:
                 for k, v in model_cfg.items():
-                    if k == 'TRAIN' or k == 'TEST':  # TODO can ask if len > 1
+                    if k == 'TRAIN' or k == 'TEST' and v is not None:  # TODO can ask if len > 1
                         for k1, v1 in v.items():  # TODO note that this is not recursion...
                             cfg[k][k1] = v1
                     else:
@@ -65,9 +65,15 @@ class ConfigProvider(dict):
             os.makedirs(outdir, exist_ok=True)
             return outdir
         cfg['OUTPUT_PATH'] = create_output_path()
-        seed = cfg.get('RNG_SEED', random.randint(1,1e20)
-        torch.manual_seed(seed)
-        torch.cuda.manual_seed_all(seed)
+        if cfg['USE_RND_SEED']:
+            seed = cfg.get('USER_CHOSEN_SEED', None)
+            if seed is None:
+                seed = random.randint(1, 1e3)
+                cfg['USER_CHOSEN_SEED'] = seed
+            torch.manual_seed(seed+1)
+            torch.cuda.manual_seed_all(seed+2)
+            np.random.seed(seed+3)
+            random.seed(seed+4)
 
         cfg = edict(cfg)
         logger.info('--->>> Config:\n{}'.format(pprint.pformat(cfg)))
