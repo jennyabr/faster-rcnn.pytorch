@@ -16,7 +16,7 @@ class FasterRCNNFeatureExtractorDuo(ABC):
     def __init__(self, net_variant, frozen_blocks):
         self.net_variant = net_variant
         self.frozen_blocks = frozen_blocks
-        self._base_feature_extractor = None
+        self._rpn_feature_extractor = None
         self._fast_rcnn_feature_extractor = None
 
     class _FeatureExtractor(nn.Module):

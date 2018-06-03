@@ -6,7 +6,7 @@ import numpy as np
 import os
 import torch
 
-from model.rpn.bbox_transform import bbox_transform_inv, clip_boxes
+from model.meta_architecture.rpn.bbox_transform import bbox_transform_inv, clip_boxes
 
 logger = logging.getLogger(__name__)
 

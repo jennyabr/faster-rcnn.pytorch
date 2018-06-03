@@ -15,7 +15,7 @@ from functools import partial
 from data_manager.data_manager_abstract import Mode
 from data_manager.classic_detection.classic_data_manager import ClassicDataManager
 from loggers.tensorbord_logger import TensorBoardLogger
-from model.faster_rcnn import FasterRCNN
+from model.meta_architecture.faster_rcnn import FasterRCNN
 from pipeline.faster_rcnn.faster_rcnn_training_session import run_training_session
 from model.feature_extractors.faster_rcnn_feature_extractors import create_feature_extractor_from_ckpt
 from util.config import ConfigProvider

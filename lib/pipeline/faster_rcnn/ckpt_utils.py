@@ -3,7 +3,7 @@ import logging
 import os
 import torch
 
-from model.faster_rcnn import FasterRCNN
+from model.meta_architecture.faster_rcnn import FasterRCNN
 from util.config import ConfigProvider
 
 

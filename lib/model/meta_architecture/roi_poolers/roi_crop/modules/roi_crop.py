@@ -2,7 +2,7 @@ import torch
 from torch.autograd import Variable
 from torch.nn.modules.module import Module
 import torch.nn.functional as F
-from model.roi_poolers.roi_crop.functions.gridgen import _affine_grid_gen
+from model.meta_architecture.roi_poolers.roi_crop.functions.gridgen import _affine_grid_gen
 from ..functions.roi_crop import RoICropFunction
 
 

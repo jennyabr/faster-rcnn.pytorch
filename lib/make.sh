@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
 
+echo 'Please write the CUDA architecture of your GPU (e.g. 60 for P100, 61 for 1080Ti, 37 for K80,'
+echo 'find other GPUs here: http://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/)'
+read cuda_arch_num
+
 CUDA_PATH=/usr/local/cuda/
 
 python setup.py build_ext --inplace
 rm -rf build
 
-CUDA_ARCH="-gencode arch=compute_37,code=sm_37"
+CUDA_ARCH="-gencode arch=$cuda_arch_num,code=sm_$cuda_arch_num"
 
 # compile NMS
 cd model/nms/src

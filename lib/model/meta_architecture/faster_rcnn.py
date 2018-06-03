@@ -6,9 +6,9 @@ from functools import partial
 from torch.autograd import Variable
 
 from model.feature_extractors.faster_rcnn_feature_extractor_duo import create_empty_duo
-from model.roi_poolers.roi_pooler_factory import create_roi_pooler
-from model.rpn.proposal_target_layer_cascade import _ProposalTargetLayer
-from model.rpn.rpn import _RPN
+from model.meta_architecture.roi_poolers.roi_pooler_factory import create_roi_pooler
+from model.meta_architecture.rpn.proposal_target_layer_cascade import _ProposalTargetLayer
+from model.meta_architecture.rpn.rpn import _RPN
 from model.utils.net_utils import _smooth_l1_loss, normal_init
 from util.config import ConfigProvider
 

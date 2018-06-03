@@ -5,7 +5,7 @@ import numpy as np
 from data_manager.data_manager_abstract import Mode
 from data_manager.classic_detection.classic_data_manager import ClassicDataManager
 from pipeline.faster_rcnn.faster_rcnn_evaluation import faster_rcnn_evaluation
-from model.faster_rcnn import FasterRCNN
+from model.meta_architecture.faster_rcnn import FasterRCNN
 from pipeline.faster_rcnn.faster_rcnn_postprocessing import faster_rcnn_postprocessing
 from pipeline.faster_rcnn.faster_rcnn_prediction import faster_rcnn_prediction
 from pipeline.faster_rcnn.faster_rcnn_visualization import faster_rcnn_visualization

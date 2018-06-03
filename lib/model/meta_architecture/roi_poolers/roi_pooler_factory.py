@@ -1,6 +1,6 @@
-from model.roi_poolers.roi_align.modules.roi_align import RoIAlignAvg
-from model.roi_poolers.roi_crop.modules.roi_crop import _RoICrop
-from model.roi_poolers.roi_pooling.modules.roi_pool import _RoIPooling
+from model.meta_architecture.roi_poolers.roi_align.modules.roi_align import RoIAlignAvg
+from model.meta_architecture.roi_poolers.roi_crop.modules.roi_crop import _RoICrop
+from model.meta_architecture.roi_poolers.roi_pooling.modules.roi_pool import _RoIPooling
 
 
 def create_roi_pooler(roi_pooler_name, roi_pooler_size, crop_resize_with_max_pool=None):

@@ -41,7 +41,6 @@ def _smooth_l1_loss(bbox_pred, bbox_targets, bbox_inside_weights, bbox_outside_w
     return loss_box
 
 
-
 def normal_init(nn_module, mean=0, stddev=1):
     nn_module.weight.data.normal_(mean, stddev)
     nn_module.bias.data.zero_()
@@ -49,3 +48,6 @@ def normal_init(nn_module, mean=0, stddev=1):
 
 def global_average_pooling(input):
     return input.mean(3).mean(2)
+
+def remove_last_layer_from_network(model):
+    return list(model._modules.values())[:-1]

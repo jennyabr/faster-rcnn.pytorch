@@ -8,15 +8,9 @@ import os
 from Cython.Distutils import build_ext
 from os.path import join as pjoin
 
+from util._init_paths import add_lib_to_python_path
 
-# --------------------------------------------------------
-# Fast R-CNN
-# Copyright (c) 2015 Microsoft
-# Licensed under The MIT License [see LICENSE for details]
-# Written by Ross Girshick
-# --------------------------------------------------------
-
-
+add_lib_to_python_path()
 def find_in_path(name, path):
     "Find a file in a search path"
     # adapted fom http://code.activestate.com/recipes/52224-find-a-file-given-a-search-path/
