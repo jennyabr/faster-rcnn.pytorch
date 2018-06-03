@@ -5,7 +5,7 @@ echo 'find other GPUs here: http://arnon.dk/matching-sm-architectures-arch-and-g
 read cuda_arch_num
 
 CUDA_PATH=/usr/local/cuda/
-
+cd make_utils
 python setup.py build_ext --inplace
 rm -rf build
 
