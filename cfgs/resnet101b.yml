@@ -1,0 +1,26 @@
+DATA_DIR: '/home/jenny/gripper2/data'
+OUTPUT_DIR: '/home/jenny/gripper2/outputs/06_02'
+EXPERIMENT_NAME: 'resnet101_testing_after_bugfixes_b'
+net: 'resnet' #  # {vgg,resnet}
+net_variant: '101' # Currently supported: {16 for vgg, 50, 101, 152 for resnet}
+
+TRAIN:
+  HAS_RPN: True
+  BBOX_NORMALIZE_TARGETS_PRECOMPUTED: True
+  RPN_POSITIVE_OVERLAP: 0.7
+  RPN_BATCHSIZE: 256
+  PROPOSAL_METHOD: gt
+  BG_THRESH_LO: 0.0
+  DISPLAY: 20
+  BATCH_SIZE: 128
+  WEIGHT_DECAY: 0.0001
+  DOUBLE_BIAS: False
+  LEARNING_RATE: 0.001
+  pretrained_model_path: '/home/jenny/gripper2/data/pretrained_model/resnet101_caffe.pth'
+  FROZEN_BLOCKS: 2
+  max_epochs: 7
+TEST:
+  HAS_RPN: True
+roi_pooler_size: 7
+roi_pooler_name: align
+CROP_RESIZE_WITH_MAX_POOL: False
