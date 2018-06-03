@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 
 import torch.nn as nn
+from torchvision import models
 from torchvision.models import resnet101
 from torchvision.models.resnet import resnet50, resnet152
 
@@ -35,12 +36,12 @@ class VGGForFasterRCNN(FasterRCNNFeatureExtractorDuo):
     class _RPNFeatureExtractor(FasterRCNNFeatureExtractorDuo._FeatureExtractor):
         def __init__(self, vgg, frozen_blocks):
             super(VGGForFasterRCNN._RPNFeatureExtractor, self).__init__()
-            #TODO: JA - the model should not be able to change independently of the list of ordered layer names can change
-            self._model = nn.Sequential(remove_last_layer_from_network(vgg.features))
+            layers = remove_last_layer_from_network(vgg.features)
+            self._model = nn.Sequential(*layers)
             if not (0 <= frozen_blocks < 4):
                 raise ValueError('Illegal number of blocks to freeze')
             self._frozen_blocks = frozen_blocks
-            self._output_num_channels = self.get_output_num_channels(self._model[-1][-1].conv3) #TODO: JA - verify this
+            self._output_num_channels = self.get_output_num_channels(self._model[-2]) #TODO: JA - verify this
 
         @property
         def output_num_channels(self):
@@ -64,7 +65,7 @@ class VGGForFasterRCNN(FasterRCNNFeatureExtractorDuo):
             layers = remove_last_layer_from_network(vgg.classifier)
             self._model = nn.Sequential(*layers)
             self._model.apply(self._freeze_batch_norm_layers)
-            self._output_num_channels = self.get_output_num_channels(self._model[-1][-1].conv3) # TODO: verify this
+            self._output_num_channels = self.get_output_num_channels(self._model[-3]) # TODO: verify this
 
         def forward(self, input):
             flattened_input = input.view(input.size(0), -1)

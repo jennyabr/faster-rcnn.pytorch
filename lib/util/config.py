@@ -38,12 +38,12 @@ class ConfigProvider(dict):
                         cfg[k] = v
 
         self.create_from_dict(cfg)
-        dataset = cfg['dataset']
-        cfg['imdb_name'] = cfg[dataset]['imdb_name']
-        cfg['imdbval_name'] = cfg[dataset]['imdbval_name']
-        cfg['ANCHOR_SCALES'] = cfg[dataset]['ANCHOR_SCALES']
-        cfg['ANCHOR_RATIOS'] = cfg[dataset]['ANCHOR_RATIOS']
-        cfg['MAX_NUM_GT_BOXES'] = cfg[dataset]['MAX_NUM_GT_BOXES']
+        dataset = self._cfg['dataset']
+        self._cfg['imdb_name'] = self._cfg[dataset]['imdb_name']
+        self._cfg['imdbval_name'] = self._cfg[dataset]['imdbval_name']
+        self._cfg['ANCHOR_SCALES'] = self._cfg[dataset]['ANCHOR_SCALES']
+        self._cfg['ANCHOR_RATIOS'] = self._cfg[dataset]['ANCHOR_RATIOS']
+        self._cfg['MAX_NUM_GT_BOXES'] = self._cfg[dataset]['MAX_NUM_GT_BOXES']
 
         cfg['DEDUP_BOXES'] = float(cfg['DEDUP_BOXES_numerator']) / float(cfg['DEDUP_BOXES_denominator'])
 
