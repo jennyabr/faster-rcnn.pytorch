@@ -9,10 +9,11 @@ CUDA_PATH=/usr/local/cuda/
 python setup.py build_ext --inplace
 rm -rf build
 
-CUDA_ARCH="-gencode arch=$cuda_arch_num,code=sm_$cuda_arch_num"
+CUDA_ARCH="-gencode arch=compute_$cuda_arch_num,code=sm_$cuda_arch_num"
+echo $CUDA_ARCH
 
 # compile NMS
-cd model/nms/src
+cd model/meta_architecture/nms/src
 echo "Compiling nms kernels by nvcc..."
 nvcc -c -o nms_cuda_kernel.cu.o nms_cuda_kernel.cu \
 	 -D GOOGLE_CUDA=1 -x cu -Xcompiler -fPIC $CUDA_ARCH
@@ -22,7 +23,7 @@ python build.py
 
 # compile roi_pooling
 cd ../../
-cd model/roi_poolers/roi_pooling/src
+cd /meta_architecture/roi_poolers/roi_pooling/src
 echo "Compiling roi pooling kernels by nvcc..."
 nvcc -c -o roi_pooling.cu.o roi_pooling_kernel.cu \
 	 -D GOOGLE_CUDA=1 -x cu -Xcompiler -fPIC $CUDA_ARCH
@@ -31,7 +32,7 @@ python build.py
 
 # compile roi_align
 cd ../../../
-cd model/roi_poolers/roi_align/src
+cd /meta_architecture/roi_poolers/roi_align/src
 echo "Compiling roi align kernels by nvcc..."
 nvcc -c -o roi_align_kernel.cu.o roi_align_kernel.cu \
 	 -D GOOGLE_CUDA=1 -x cu -Xcompiler -fPIC $CUDA_ARCH
@@ -40,7 +41,7 @@ python build.py
 
 # compile roi_crop
 cd ../../../
-cd model/roi_poolers/roi_crop/src
+cd /meta_architecture/roi_poolers/roi_crop/src
 echo "Compiling roi crop kernels by nvcc..."
 nvcc -c -o roi_crop_cuda_kernel.cu.o roi_crop_cuda_kernel.cu \
 	 -D GOOGLE_CUDA=1 -x cu -Xcompiler -fPIC $CUDA_ARCH
