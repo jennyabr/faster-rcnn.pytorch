@@ -95,11 +95,11 @@ python Resnet101_e2e.py
 - [ ] Test on COCO, Visual Genome and VOC-large datasets.
 - [ ] Upgrade to torch 0.4.
 - [ ] Optimize calculations to work on GPU ==============.
-- [ ] Fix incorrect usage of torch.FloatTensor(NUMBER)
+- [ ] Fix incorrect usage of `torch.FloatTensor(NUMBER)`.
 - [ ] Number of output coords in faster rcnn should be a parameter (currently hardcoded to 4).
-- [ ] Reloading faster rcnn from checkpoint should enable manually overriding num_classes and enable to randomize the last layers.
-- [ ] Make load_session_from_ckpt function in ckpt utiles independent from faster-rcnn (i.e. don't uses FasterRCNN constructor)
-- [ ] ConfigProvider should enable setting attributes inside _cfg for h.p. sweeps.
+- [ ] Reloading faster rcnn from checkpoint should enable manually overriding `num_classes` and enable to randomize the last layers.
+- [ ] Make `load_session_from_ckpt` function in `ckpt_utiles.py` independent from faster-rcnn (i.e. don't uses `FasterRCNN` constructor)
+- [ ] `ConfigProvider` should enable setting attributes inside `_cfg` for h.p. sweeps.
 - [ ] Config should be divided to logical units.
 - [ ] Method `_freeze_layers` in feture extractors duo should be a recursion.
 - [ ] Check if the loss can be removed from the state (i.e. remove from `self`) of the modules.
