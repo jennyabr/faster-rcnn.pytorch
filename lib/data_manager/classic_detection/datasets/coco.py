@@ -79,12 +79,6 @@ class coco(imdb):
         image_ids = self._COCO.getImgIds()
         return image_ids
 
-    # TODO JA: delete this implementatyion as it is implemented twice
-    def _get_widths(self):
-        anns = self._COCO.loadImgs(self._image_index)
-        widths = [ann['width'] for ann in anns]
-        return widths
-
     def image_path_at(self, i):
         """
         Return the absolute path to image i in the image sequence.

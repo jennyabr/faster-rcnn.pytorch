@@ -28,7 +28,6 @@ def load_session_from_ckpt(ckpt_path):
     state_dict = torch.load(os.path.abspath(ckpt_path))
     loaded_cfg = ConfigProvider()
     loaded_cfg.create_from_dict(state_dict['ckpt_cfg'])
-    # TODO: JA - don't be hard coded to faster-rcnn (uses FasterRCNN constructor)
     model = FasterRCNN.create_from_ckpt(ckpt_path)
 
     def create_optimizer_from_ckpt_fn(trainable_params):

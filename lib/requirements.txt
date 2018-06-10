@@ -1,0 +1,11 @@
+Cython==0.25.2
+cffi==1.11.5
+tensorflow-gpu==1.6.0
+tensorboard==1.6.0
+opencv-python==3.4.0.12
+scipy==0.19.0
+easydict==1.7
+matplotlib==2.0.0
+torch==0.3.1
+torchvision==0.2.0
+numpy==1.14.1

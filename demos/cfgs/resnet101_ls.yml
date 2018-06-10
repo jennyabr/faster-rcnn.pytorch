@@ -1,4 +1,3 @@
-# TODO JA - test this
 DATA_DIR: '/home/jenny/gripper2/data'
 OUTPUT_DIR: '/home/jenny/gripper2/outputs/05_31'
 EXPERIMENT_NAME: 'after_config'

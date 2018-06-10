@@ -40,14 +40,15 @@ class ResNetFeatureExtractorDuo(FeatureExtractorDuo):
         def __init__(self, resnet, frozen_blocks):
             super(ResNetFeatureExtractorDuo._RPNFeatureExtractor, self).__init__()
             self._ordered_layer_names = ["conv1.", "bn1.", "relu.", "maxpool.", "layer1.", "layer2.", "layer3."] 
-            #TODO: JA - the model should not be able to change independently of the list of ordered layer names can change 
+            # TODO: JA - the model should not be able to change independently
+            # TODO: JA - of the list of _ordered_layer_names can change
             self._model = nn.Sequential(resnet.conv1,
-                                              resnet.bn1,
-                                              resnet.relu,
-                                              resnet.maxpool,
-                                              resnet.layer1,
-                                              resnet.layer2,
-                                              resnet.layer3)
+                                        resnet.bn1,
+                                        resnet.relu,
+                                        resnet.maxpool,
+                                        resnet.layer1,
+                                        resnet.layer2,
+                                        resnet.layer3)
             if not (0 <= frozen_blocks < 4):
                 raise ValueError('Illegal number of blocks to freeze')
             self._frozen_blocks = frozen_blocks
@@ -77,7 +78,8 @@ class ResNetFeatureExtractorDuo(FeatureExtractorDuo):
         def __init__(self, resnet):
             super(ResNetFeatureExtractorDuo._FastRCNNFeatureExtractor, self).__init__()
             self._mapping_dict = {0: "layer4."}
-            #TODO: JA - the model should not be able to change independently of the list of ordered layer names can change 
+            # TODO: JA - the model should not be able to change independently
+            # TODO: JA - of the list in the mapping_dict can change
             self._model = nn.Sequential(resnet.layer4)
 
             self._model.apply(self._freeze_batch_norm_layers)
@@ -98,10 +100,8 @@ class ResNetFeatureExtractorDuo(FeatureExtractorDuo):
             super(ResNetFeatureExtractorDuo._FastRCNNFeatureExtractor, self).train(mode)
             self._model.apply(self._freeze_batch_norm_layers)
 
-
     @classmethod
     def _freeze_layers(cls, model, upto_block_num):
-        #TODO: JA - use recursion instead of module.modules()
         curr_block_num = 0
         if upto_block_num > 0:
             for module in model.children():
@@ -132,7 +132,8 @@ class ResNetFeatureExtractorDuo(FeatureExtractorDuo):
             return None, None
 
         for orig_key, v in pretrained_resnet_state_dict.items():
-            replacing_key, item = startswith_one_of(orig_key, self.fast_rcnn_feature_extractor.layer_mapping_to_pretrained)
+            replacing_key, item = startswith_one_of(orig_key,
+                                                    self.fast_rcnn_feature_extractor.layer_mapping_to_pretrained)
             if replacing_key is not None:
                 fast_rcnn_state_dict[orig_key.replace(item, '_model.{}.'.format(str(replacing_key)))] = v
             else:

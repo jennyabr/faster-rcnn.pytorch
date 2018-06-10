@@ -10,6 +10,7 @@ from __future__ import division
 import logging
 import pdb
 import pickle
+import pprint
 import uuid
 import xml.etree.ElementTree as ET
 
@@ -226,6 +227,7 @@ class pascal_voc(imdb):
             self._image_set + '.txt')
         cachedir = os.path.join(self._devkit_path, 'annotations_cache')
         aps = []
+        aps_dict = {}
         # The PASCAL VOC metric changed in 2010
         use_07_metric = True if int(self._year) < 2010 else False
         logger.info('VOC07 metric? {}'.format(('Yes' if use_07_metric else 'No')))
@@ -239,23 +241,23 @@ class pascal_voc(imdb):
                 filename, annopath, imagesetfile, cls, cachedir, ovthresh=0.5,
                 use_07_metric=use_07_metric)
             aps += [ap]
+            aps_dict[cls] = ap
             logger.info(('AP for {} = {:.4f}.'.format(cls, ap)))
             with open(os.path.join(output_dir, cls + '_pr.pkl'), 'wb') as f:
                 pickle.dump({'rec': rec, 'prec': prec, 'ap': ap}, f)
-        logger.info(('Mean AP = {:.4f}.'.format(np.mean(aps))))
-        logger.info('~~~~~~~~')
-        logger.info('Results:')
-        for ap in aps:
-            logger.info(('{:.3f}'.format(ap)))
-        logger.info(('{:.3f}'.format(np.mean(aps))))
-        logger.info('~~~~~~~~')
-        logger.info('')
-        logger.info('--------------------------------------------------------------')
-        logger.info('Results computed with the **unofficial** Python eval code. '
+
+        aps_str = pprint.pformat(aps_dict)
+        with open(os.path.join(output_dir, 'eval_summery.txt'), 'w') as f:
+            f.write(aps_str)
+
+        logger.info('--------------------------------------------------------------\n'
+                    'Results:\n{0}\n'
+                    'Mean AP = {1:.4f}.\n'
+                    'Results computed with the **unofficial** Python eval code. '
                     'Results should be very close to the official MATLAB eval code. '
-                    'Recompute with `./tools/reval.py --matlab ...` for your paper. '
-                    '-- Thanks, The Management')
-        logger.info('--------------------------------------------------------------')
+                    '-- Thanks, The Management\n'
+                    '--------------------------------------------------------------'
+                    .format(aps_str, np.mean(aps)))
 
     def evaluate_detections(self, all_boxes, output_dir=None):
         pdb.set_trace()

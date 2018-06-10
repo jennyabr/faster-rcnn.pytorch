@@ -1,8 +1,8 @@
 DATA_DIR: '/home/jenny/gripper2/data'
-OUTPUT_DIR: '/home/jenny/gripper2/outputs/06_03'
-EXPERIMENT_NAME: 'vgg16_testing_with_all_our_code2'
-net: 'vgg' #  # {vgg,resnet}
-net_variant: '16' # Currently supported: {16 for vgg, 50, 101, 152 for resnet}
+OUTPUT_DIR: '/home/jenny/gripper2/outputs/06_05'
+EXPERIMENT_NAME: 'vgg16'
+net: 'vgg'
+net_variant: '16'
 roi_pooler_name: align
 CROP_RESIZE_WITH_MAX_POOL: False
 roi_pooler_size: 7
@@ -18,5 +18,5 @@ TRAIN:
   pretrained_model_path: '/home/jenny/gripper2/data/pretrained_model/vgg16_caffe.pth'
   CLIP_GRADIENTS: 10.
   frozen_blocks: 2
-
+  max_epochs: 6
 TEST:
