@@ -39,7 +39,7 @@ thus making it hard for widespread adoption and use.**
 git clone https://github.com/jennyabr/pytorch_faster_rcnn.git
 ```
 
-2. Add the “lib” directory to the ```PYTHONPATH```:
+2. Add the “lib” directory to the `PYTHONPATH`:
 ```
 export PYTHONPATH=*path_to_repo*/lib
 ```
@@ -53,14 +53,14 @@ virtualenv -p python3 .env           # Create a virtual environment (python3)
 source .env/bin/activate             # Activate the virtual environment
 pip install -r lib/requirements.txt  # Install dependencies
 ```
-To exit the virtual environment run: ```deactivate```
+* To exit the virtual environment run: `deactivate`
 
 4. compile (from lib directory):
 ```
 cd lib
 bash make.sh
 ```
-You will be asked for your GPU architecture,
+* You will be asked for your GPU architecture,
 you can find it [here](http://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/)
 (if it is SM_60, enter 60 when you’re prompted).
 
@@ -91,16 +91,16 @@ run end to end (train and inference). Run:
 python Resnet101_e2e.py
 ```
 ## TODOs
-- [] Compare results to the original implementation while running on multiple GPUs.
-- [] Test on COCO, Visual Genome and VOC-large datasets.
-- [] Upgrade to torch 0.4.
-- [] Optimize calculations to work on GPU ==============.
-- [] Fix incorrect usage of torch.FloatTensor(NUMBER)
-- [] Number of output coords in faster rcnn should be a parameter (currently hardcoded to 4).
-- [] Reloading faster rcnn from checkpoint should enable manually overriding num_classes and enable to randomize the last layers.
-- [] Make load_session_from_ckpt function in ckpt utiles independent from faster-rcnn (i.e. don't uses FasterRCNN constructor)
-- [] ConfigProvider should enable setting attributes inside _cfg for h.p. sweeps.
-- [] Config should be divided to logical units.
-- [] Method ```_freeze_layers``` in feture extractors duo should be a recursion.
-- [] Check if the loss can be removed from the state (i.e. remove from ```self```) of the modules.
+- [ ] Compare results to the original implementation while running on multiple GPUs.
+- [ ] Test on COCO, Visual Genome and VOC-large datasets.
+- [ ] Upgrade to torch 0.4.
+- [ ] Optimize calculations to work on GPU ==============.
+- [ ] Fix incorrect usage of torch.FloatTensor(NUMBER)
+- [ ] Number of output coords in faster rcnn should be a parameter (currently hardcoded to 4).
+- [ ] Reloading faster rcnn from checkpoint should enable manually overriding num_classes and enable to randomize the last layers.
+- [ ] Make load_session_from_ckpt function in ckpt utiles independent from faster-rcnn (i.e. don't uses FasterRCNN constructor)
+- [ ] ConfigProvider should enable setting attributes inside _cfg for h.p. sweeps.
+- [ ] Config should be divided to logical units.
+- [ ] Method `_freeze_layers` in feture extractors duo should be a recursion.
+- [ ] Check if the loss can be removed from the state (i.e. remove from `self`) of the modules.
 
