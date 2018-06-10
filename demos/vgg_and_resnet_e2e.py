@@ -7,8 +7,8 @@ from util.logging import set_root_logger
 
 if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-    config_file_vgg16 = os.path.join(os.getcwd(), 'demos', 'cfgs', 'vgg16.yml')
-    config_file_resnet101 = os.path.join(os.getcwd(), 'demos', 'cfgs', 'resnet101.yml')
+    config_file_vgg16 = os.path.join(os.getcwd(), 'cfgs', 'vgg16.yml')
+    config_file_resnet101 = os.path.join(os.getcwd(), 'cfgs', 'resnet101.yml')
 
     cfg_vgg16 = ConfigProvider()
     cfg_vgg16.load(config_file_vgg16)

@@ -6,7 +6,7 @@ from util.logging import set_root_logger
 
 if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-    config_file = os.path.join(os.getcwd(), 'demos', 'cfgs', 'vgg16.yml')
+    config_file = os.path.join(os.getcwd(), 'cfgs', 'vgg16.yml')
 
     cfg = ConfigProvider()
     cfg.load(config_file)

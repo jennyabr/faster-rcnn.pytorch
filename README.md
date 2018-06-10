@@ -17,6 +17,7 @@ Re-design of components was performed only if the previous implementation made i
 as a Faster R-CNN user (e.g. if in order to choose which pooling method I use out of the implemented methods,
 I need to do something that is more than a single line of code in my training script).
 
+
 ## Motivation for this work
 “Writing code is rarely just a private affair between the developer and the computer.
 **Code is not just meant for machines; it has human users. It is meant to be read by people, used by other developers,
@@ -25,6 +26,12 @@ maintained and built upon**.” While working on this project I have stumbled up
 the founder of Keras. I feel that these lines reflect one of the biggest pains in deep learning today: **GitHub is
 full with brilliant open source libraries implementing complex papers, while the API UX design remains left behind,
 thus making it hard for widespread adoption and use.**
+
+
+## prerequisites
+- Python 3 (I used 3.5.2)
+- CUDA 8.0 or higher (I used CUDA 9.0)
+
 
 ## Preparation
 1. Clone the repo:
@@ -60,10 +67,6 @@ you can find it [here](http://arnon.dk/matching-sm-architectures-arch-and-gencod
 5. Edit your config yml file to point to the correct paths and the desired hyper parameters.
 
 
-## prerequisites
-- Python 3 (I used 3.5.2)
-- CUDA 8.0 or higher (I used CUDA 9.0)
-
 ## Data
 The original project supports PASCAL_VOC 07+12, COCO and Visual Genome.
 I worked only with PASCAL_VOC (testing on other dataset was added to the TODO list).
@@ -76,6 +79,7 @@ to prepare the data.
 to prepare Visual Genome dataset. You need to download the images and object annotation files first,
 and then perform preprocessing to obtain the vocabulary and cleansed annotations based on the
 scripts provided in this repository.
+
 
 ## Train and Inference
 In the demo directory you will find several scripts that demonstrate how to use the library:
