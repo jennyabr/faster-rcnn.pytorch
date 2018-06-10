@@ -28,10 +28,14 @@ thus making it hard for widespread adoption and use.**
 
 ## Preparation
 1. Clone the repo:
-```git clone https://github.com/jennyabr/pytorch_faster_rcnn.git```
+```
+git clone https://github.com/jennyabr/pytorch_faster_rcnn.git
+```
 
 2. Add the “lib” directory to the PYTHONPATH:
-```export PYTHONPATH=*path_to_repo*/lib```
+```
+export PYTHONPATH=*path_to_repo*/lib
+```
 
 3. Prepare python virtual environment:
 ```
@@ -53,12 +57,12 @@ You will be asked for your GPU architecture,
 you can find it [here](http://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/)
 (if it is SM_60, enter 60 when you’re prompted).
 
-5. Edit the config yml file to point to the correct paths and the desired hyper parameters.
+5. Edit your config yml file to point to the correct paths and the desired hyper parameters.
 
 
 ## prerequisites
-Python 3 (I used 3.5.2)
-CUDA 8.0 or higher (I used CUDA 9.0)
+- Python 3 (I used 3.5.2)
+- CUDA 8.0 or higher (I used CUDA 9.0)
 
 ## Data
 The original project supports PASCAL_VOC 07+12, COCO and Visual Genome.
@@ -78,5 +82,7 @@ In the demo directory you will find several scripts that demonstrate how to use 
 All the scripts start with setting the config and the logger.
 [Resnet101_e2e.py](https://github.com/jennyabr/pytorch_faster_rcnn/blob/master/demos/resnet101_e2e.py)
 and [vgg16_e2e.py](https://github.com/jennyabr/pytorch_faster_rcnn/blob/master/demos/vgg16_e2e.py)
-run end to end (train and inference).
-Run: ```python Resnet101_e2e.py```
+run end to end (train and inference). Run:
+```
+python Resnet101_e2e.py
+```
