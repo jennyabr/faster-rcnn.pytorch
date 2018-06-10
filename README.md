@@ -84,11 +84,9 @@ scripts provided in this repository.
 ## Train and Inference
 In the demo directory you will find several scripts that demonstrate how to use the library:
 All the scripts start with setting the config and the logger.
-[Resnet101_e2e.py](https://github.com/jennyabr/pytorch_faster_rcnn/blob/master/demos/resnet101_e2e.py)
-and [vgg16_e2e.py](https://github.com/jennyabr/pytorch_faster_rcnn/blob/master/demos/vgg16_e2e.py)
-run end to end (train and inference). Run:
+In order to run end to end (train and inference) run [vgg_and_resnet_e2e.py](https://github.com/jennyabr/pytorch_faster_rcnn/blob/master/demos/vgg_and_resnet_e2e.py):
 ```
-python Resnet101_e2e.py
+python vgg_and_resnet_e2e.py
 ```
 ## TODOs
 - [ ] Compare results to the original implementation while running on multiple GPUs.
