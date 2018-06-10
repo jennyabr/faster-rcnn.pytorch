@@ -17,6 +17,8 @@ Re-design of components was performed only if the previous implementation made i
 as a Faster R-CNN user (e.g. if in order to choose which pooling method I use out of the implemented methods,
 I need to do something that is more than a single line of code in my training script).
 
+Highlighting some interesting points of this work can be found [here](https://docs.google.com/presentation/d/140-4eReJFky5E5YxZm6_9Fq1Mt74ZstWD25Va5P6QU0/edit?usp=sharing).
+
 
 ## Motivation for this work
 “Writing code is rarely just a private affair between the developer and the computer.
