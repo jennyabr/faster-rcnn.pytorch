@@ -12,7 +12,9 @@ import torch
 import yaml
 from easydict import EasyDict as edict
 
+
 logger = logging.getLogger(__name__)
+
 
 # TODO: ConfigProvider should enable setting attributes inside _cfg for h.p. sweeps
 class ConfigProvider(dict):
@@ -32,7 +34,7 @@ class ConfigProvider(dict):
             if model_cfg:
                 for k, v in model_cfg.items():
                     if v is not None:
-                        if k == 'TRAIN' or k == 'TEST':  # TODO can ask if len > 1
+                        if k == 'TRAIN' or k == 'TEST':
                             for k1, v1 in v.items():  # TODO note that this is not recursion...
                                 cfg[k][k1] = v1
                         else:

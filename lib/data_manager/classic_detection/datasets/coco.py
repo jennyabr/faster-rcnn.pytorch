@@ -79,7 +79,7 @@ class coco(imdb):
         image_ids = self._COCO.getImgIds()
         return image_ids
 
-    # TODO JA: delete this implementatyion as it is implemented twice
+    # TODO JA: delete this implementation as it is implemented twice
     def _get_widths(self):
         anns = self._COCO.loadImgs(self._image_index)
         widths = [ann['width'] for ann in anns]
