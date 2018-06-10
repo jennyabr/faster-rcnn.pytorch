@@ -69,7 +69,9 @@ to prepare VOC datasets.
 - COCO: Please also follow the instructions in [py-faster-rcnn](https://github.com/rbgirshick/py-faster-rcnn#beyond-the-demo-installation-for-training-and-testing-models)
 to prepare the data.
 - Visual Genome: Please follow the instructions in [bottom-up-attention](https://github.com/peteanderson80/bottom-up-attention)
-to prepare Visual Genome dataset. You need to download the images and object annotation files first, and then perform proprecessing to obtain the vocabulary and cleansed annotations based on the scripts provided in this repository.
+to prepare Visual Genome dataset. You need to download the images and object annotation files first,
+and then perform preprocessing to obtain the vocabulary and cleansed annotations based on the
+scripts provided in this repository.
 
 ## Train and Inference
 In the demo directory you will find several scripts that demonstrate how to use the library:
