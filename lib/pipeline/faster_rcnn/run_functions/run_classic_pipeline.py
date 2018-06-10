@@ -1,7 +1,6 @@
 import logging
 
 import torch
-
 from functools import partial
 
 from data_manager.classic_detection.classic_data_manager import ClassicDataManager
@@ -15,17 +14,18 @@ from pipeline.faster_rcnn.faster_rcnn_postprocessing import faster_rcnn_postproc
 from pipeline.faster_rcnn.faster_rcnn_prediction import faster_rcnn_prediction
 from pipeline.faster_rcnn.faster_rcnn_training_session import run_training_session
 from pipeline.faster_rcnn.faster_rcnn_visualization import faster_rcnn_visualization
-from util.logging import set_root_logger
+
+
+logger = logging.getLogger(__name__)
 
 
 def create_and_train_with_err_handling(cfg):
-    set_root_logger(cfg.get_log_path())
-    logger = logging.getLogger(__name__)
     try:
         create_and_train(cfg)
     except Exception as e:
         logger.error("Unexpected error: ", exc_info=True)
         raise e
+
 
 def create_and_train(cfg):
     train_data_manager = ClassicDataManager(
@@ -45,17 +45,16 @@ def create_and_train(cfg):
 
     run_training_session(train_data_manager, model, create_optimizer_fn, cfg, train_logger, cfg.TRAIN.start_epoch)
 
+
 def pred_eval_with_err_handling(cfg):
-    set_root_logger(cfg.get_log_path())
-    logger = logging.getLogger(__name__)
     try:
         pred_eval(cfg)
     except Exception as e:
         logger.error("Unexpected error: ", exc_info=True)
         raise e
 
+
 def pred_eval(cfg):
-    set_root_logger(cfg.get_log_path())
     ckpt_path = cfg.get_last_ckpt_path()
     epoch_num = get_epoch_num_from_ckpt(ckpt_path)
     model = FasterRCNN.create_from_ckpt(ckpt_path)
