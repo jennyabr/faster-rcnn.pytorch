@@ -103,4 +103,29 @@ python vgg_and_resnet_e2e.py
 - [ ] Config should be divided to logical units.
 - [ ] Method `_freeze_layers` in feture extractors duo should be a recursion.
 - [ ] Check if the loss can be removed from the state (i.e. remove from `self`) of the modules.
+- [ ] **Add tests**.
+- [ ] Implement Mask RCNN.
 
+# Contributing
+I want to make contributing to this project as easy and transparent as possible.
+
+### Pull Requests
+I welcome your pull requests.
+
+1. Fork the repo and create your branch from `master`.
+2. If you've added code that should be tested, add tests.
+3. Make sure your code lints.
+4. Ensure no regressions in baseline model speed and accuracy.
+
+### Issues
+GitHub issues will be largely unattended and are mainly intended as a community
+forum for collectively debugging issues, hopefully leading to pull requests with
+fixes when appropriate.
+
+### Coding Style
+* 4 spaces for indentation rather than tabs
+* 80 character line length
+* PEP8 formatting
+
+## License
+This project is licensed under the terms of the [MIT license](LICENSE.md).
