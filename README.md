@@ -39,23 +39,23 @@ thus making it hard for widespread adoption and use.**
 git clone https://github.com/jennyabr/pytorch_faster_rcnn.git
 ```
 
-2. Add the “lib” directory to the PYTHONPATH:
+2. Add the “lib” directory to the ```PYTHONPATH```:
 ```
 export PYTHONPATH=*path_to_repo*/lib
 ```
 
 3. Prepare python virtual environment:
 ```
-sudo pip install virtualenv      # This may already be installed
-virtualenv -p python3 .env       # Create a virtual environment (python3)
-# Note: you can also use "virtualenv .env" to use your default python (usually python 2.7)
-source .env/bin/activate         # Activate the virtual environment
-pip install -r requirements.txt  # Install dependencies
-# Work on the assignment for a while ...
-deactivate                       # Exit the virtual environment
+sudo pip install virtualenv          # This may already be installed
+virtualenv -p python3 .env           # Create a virtual environment (python3)
+                                     # Note: you can also use "virtualenv .env"
+                                     # to use your default python (usually python 2.7)
+source .env/bin/activate             # Activate the virtual environment
+pip install -r lib/requirements.txt  # Install dependencies
 ```
+To exit the virtual environment run: ```deactivate```
 
-4. compile:
+4. compile (from lib directory):
 ```
 cd lib
 bash make.sh
