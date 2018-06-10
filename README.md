@@ -94,7 +94,7 @@ python vgg_and_resnet_e2e.py
 - [ ] Compare results to the original implementation while running on multiple GPUs.
 - [ ] Test on COCO, Visual Genome and VOC-large datasets.
 - [ ] Upgrade to torch 0.4.
-- [ ] Optimize calculations to work on GPU ==============.
+- [ ] Optimize calculations to work on GPU (some interesting points to test are listed [here](https://www.sagivtech.com/2017/09/19/optimizing-pytorch-training-code/)).
 - [ ] Fix incorrect usage of `torch.FloatTensor(NUMBER)`.
 - [ ] Number of output coords in faster rcnn should be a parameter (currently hardcoded to 4).
 - [ ] Reloading faster rcnn from checkpoint should enable manually overriding `num_classes` and enable to randomize the last layers.
