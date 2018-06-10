@@ -5,8 +5,8 @@ researchers to train\infer Faster R-CNN on your own data or extend it to similar
 (e.g. Mask R-CNN) with just several lines of code** rather than duplicating thousands of existing
 lines and re-combining them each time.
 
-It was built on top of a fork from [jwyang/faster-rcnn.pytorch](https://github.com/jwyang/faster-rcnn.pytorch)
-- the most popular implementation of Faster R-CNN in PyTorch - an impressive and thorough implementation which
+It was built on top of a fork from [jwyang/faster-rcnn.pytorch](https://github.com/jwyang/faster-rcnn.pytorch) - the
+most popular implementation of Faster R-CNN in PyTorch - an impressive and thorough implementation which
 intended to create the first pure PyTorch repo for Faster R-CNN (in turn it built on top of several works of others,
 which you can see in its README).
 The level of abstraction which was in the focus of this work in order to reach the
