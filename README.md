@@ -1,5 +1,5 @@
 # Faster R-CNN with Pytorch
-This repository was built to create the most easily readable and extendable implementation of
+This repository was built to create the most easily readable and extensible implementation of
 Faster R-CNN in PyTorch. **The objective was to make it easier than ever for developers and
 researchers to train\infer Faster R-CNN on your own data or extend it to similar algorithms
 (e.g. Mask R-CNN) with just several lines of code** rather than duplicating thousands of existing
