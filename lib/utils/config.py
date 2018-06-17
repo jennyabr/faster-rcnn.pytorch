@@ -33,8 +33,9 @@ class ConfigProvider(dict):
             if model_cfg:
                 for k, v in model_cfg.items():
                     if v is not None:
+                        # TODO JA: as this is not a recursion - it will not work for nested config
                         if k == 'TRAIN' or k == 'TEST':
-                            for k1, v1 in v.items():  # TODO note that this is not recursion...
+                            for k1, v1 in v.items():
                                 cfg[k][k1] = v1
                         else:
                             cfg[k] = v

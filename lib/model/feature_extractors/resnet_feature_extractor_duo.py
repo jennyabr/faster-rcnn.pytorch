@@ -40,8 +40,8 @@ class ResNetFeatureExtractorDuo(FeatureExtractorDuo):
         def __init__(self, resnet, frozen_blocks):
             super(ResNetFeatureExtractorDuo._RPNFeatureExtractor, self).__init__()
             self._ordered_layer_names = ["conv1.", "bn1.", "relu.", "maxpool.", "layer1.", "layer2.", "layer3."] 
-            # TODO: JA - the model should not be able to change independently
-            # TODO: JA - of the list of _ordered_layer_names can change
+            # TODO JA: the model should not be able to change independently
+            # TODO JA: of the list of _ordered_layer_names can change
             self._model = nn.Sequential(resnet.conv1,
                                         resnet.bn1,
                                         resnet.relu,
@@ -78,8 +78,8 @@ class ResNetFeatureExtractorDuo(FeatureExtractorDuo):
         def __init__(self, resnet):
             super(ResNetFeatureExtractorDuo._FastRCNNFeatureExtractor, self).__init__()
             self._mapping_dict = {0: "layer4."}
-            # TODO: JA - the model should not be able to change independently
-            # TODO: JA - of the list in the mapping_dict can change
+            # TODO JA: the model should not be able to change independently
+            # TODO JA: of the list in the mapping_dict can change
             self._model = nn.Sequential(resnet.layer4)
 
             self._model.apply(self._freeze_batch_norm_layers)
