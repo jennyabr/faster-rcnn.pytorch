@@ -10,7 +10,7 @@ from model.meta_architecture.roi_poolers.roi_pooler_factory import create_roi_po
 from model.meta_architecture.rpn.proposal_target_layer_cascade import _ProposalTargetLayer
 from model.meta_architecture.rpn.rpn import _RPN
 from model.utils.net_utils import _smooth_l1_loss, normal_init
-from util.config import ConfigProvider
+from utils.config import ConfigProvider
 
 
 class FasterRCNN(nn.Module):

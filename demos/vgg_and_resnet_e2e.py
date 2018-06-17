@@ -2,8 +2,8 @@ import os
 
 from pipeline.faster_rcnn.run_functions.run_classic_pipeline import \
     create_and_train_with_err_handling, pred_eval_with_err_handling
-from util.config import ConfigProvider
-from util.logging import set_root_logger
+from utils.config import ConfigProvider
+from utils.logging import set_root_logger
 
 if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = '0'

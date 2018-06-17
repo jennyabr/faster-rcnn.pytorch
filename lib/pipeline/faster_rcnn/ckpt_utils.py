@@ -4,7 +4,7 @@ import os
 import torch
 
 from model.meta_architecture.faster_rcnn import FasterRCNN
-from util.config import ConfigProvider
+from utils.config import ConfigProvider
 
 
 logger = logging.getLogger(__name__)
