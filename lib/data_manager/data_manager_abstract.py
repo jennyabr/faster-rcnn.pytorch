@@ -16,7 +16,7 @@ class DataManager(ABC):
         self.is_train = mode == Mode.TRAIN
 
         def create_input_tensors():
-            im_data = torch.FloatTensor(1)  # TODO JA check the param [1] - is it needed?...
+            im_data = torch.FloatTensor(1)
             im_info = torch.FloatTensor(1)
             gt_boxes = torch.FloatTensor(1)
             num_boxes = torch.LongTensor(1)

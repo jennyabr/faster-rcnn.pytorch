@@ -55,7 +55,6 @@ def faster_rcnn_postprocessing(data_manager, model, cfg, num_epoch):
         if k > 0:
             cls_probs_per_image = np.hstack([image_detections[c][:, -1] for c in range(1, num_classes)])
             if len(cls_probs_per_image) > k:
-                # TODO: JA - Make sure to test what happens inside this if
                 prob_thresh = np.sort(cls_probs_per_image)[-k]
                 for c in range(1, num_classes):
                     boxes_idxs_to_keep = np.where(image_detections[c][:, -1] >= prob_thresh)[0]

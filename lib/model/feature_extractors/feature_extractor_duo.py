@@ -70,7 +70,6 @@ def create_empty_duo(net_name, net_variant, frozen_blocks):
     return empty_fe_duo
 
 
-#TODO: JA - test this function
 def create_duo_with_normal_init(net_name, net_variant, mean=0, stddev=0.01):
     fe_duo = create_empty_duo(net_name, net_variant, frozen_blocks=0)
     configured_normal_init = partial(normal_init, mean=mean, stddev=stddev)

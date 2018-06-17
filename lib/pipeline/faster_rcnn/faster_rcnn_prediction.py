@@ -37,7 +37,7 @@ def faster_rcnn_prediction(data_manager, model, cfg, epoch_num):
         def transform_preds_to_img_coords():
 
             def unnormalize_preds():
-                deltas_from_proposals = bbox_pred.data  # TODO why data?
+                deltas_from_proposals = bbox_pred.data
                 means = torch.FloatTensor(cfg.TRAIN.BBOX_NORMALIZE_MEANS).cuda()
                 stds = torch.FloatTensor(cfg.TRAIN.BBOX_NORMALIZE_STDS).cuda()
                 unnormalized_deltas = deltas_from_proposals.view(-1, 4) * stds + means

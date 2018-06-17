@@ -150,8 +150,8 @@ class _AnchorTargetLayer(nn.Module):
             assert ((self.cfg.TRAIN.RPN_POSITIVE_WEIGHT > 0) &
                     (self.cfg.TRAIN.RPN_POSITIVE_WEIGHT < 1))
 
-        bbox_outside_weights[labels == 1] = positive_weights  # TODO
-        bbox_outside_weights[labels == 0] = negative_weights  # TODO
+        bbox_outside_weights[labels == 1] = positive_weights
+        bbox_outside_weights[labels == 0] = negative_weights
 
         labels = _unmap(labels, total_anchors, inds_inside, batch_size, fill=-1)
         bbox_targets = _unmap(bbox_targets, total_anchors, inds_inside, batch_size, fill=0)

@@ -29,7 +29,6 @@ class FasterRCNN(nn.Module):
             rpn_fe = feature_extractor_duo.rpn_feature_extractor
             rpn_fe_output_depth = rpn_fe.output_num_channels
             rpn_and_nms = _RPN(rpn_fe_output_depth, cfg)
-            # TODO JA - the ProposalTargetLayer is not intuitive
             rpn_proposal_target = _ProposalTargetLayer(cfg_params['num_classes'], cfg)
             return rpn_fe, rpn_and_nms, rpn_proposal_target
 
@@ -54,7 +53,6 @@ class FasterRCNN(nn.Module):
             return fast_rcnn_fe, fast_rcnn_bbox_head, fast_rcnn_cls_head
         self.fast_rcnn_feature_extractor, self.fast_rcnn_bbox_head, self.fast_rcnn_cls_head = create_fast_rcnn()
 
-        # TODO JA - should the loss be in self?
         self.faster_rcnn_loss_cls = 0
         self.faster_rcnn_loss_bbox = 0
 
@@ -79,7 +77,6 @@ class FasterRCNN(nn.Module):
 
         rois, rpn_loss_cls, rpn_loss_bbox = self.rpn_and_nms(base_feature_map, im_info, gt_boxes, num_boxes)
 
-        # TODO: JA - this if-else was skipped because we didn't want to dive into rpn_proposal_target
         if self.training:  # if it is training phrase, then use ground truth bboxes for refining
             rois, rois_label, rois_target, rois_inside_ws, rois_outside_ws = \
                 self.rpn_proposal_target(rois, gt_boxes, num_boxes)
@@ -133,7 +130,6 @@ class FasterRCNN(nn.Module):
 
     @classmethod
     def create_from_ckpt(cls, ckpt_path):
-        # TODO: JA - enable manually overriding num_classes and enable to randomize the last layers
         state_dict = torch.load(os.path.abspath(ckpt_path))
         loaded_cfg = ConfigProvider()
         loaded_cfg.create_from_dict(state_dict['ckpt_cfg'])

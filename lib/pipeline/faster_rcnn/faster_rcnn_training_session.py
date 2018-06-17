@@ -80,7 +80,6 @@ def _train_on_batch(data_manager, model, optimizer, cfg):
 
     batch_metrics['loss'] = torch.cat(list(batch_metrics.values())).sum()
 
-    # TODO variable?
     batch_metrics['fg_cnt'] = torch.sum(rois_label.data.ne(0))
     batch_metrics['bg_cnt'] = rois_label.data.numel() - batch_metrics['fg_cnt']
 
@@ -117,7 +116,6 @@ def _aggregate_stats(aggregated_stats, new_stats, disp_interval):
     res = {}
     for stat_name, stat_value in new_stats.items():
         if type(stat_value) is Variable:
-            # TODO: JA - can we aggregate the stats on the gpu instead of the cpu?
             current = stat_value.data[0]
         else:
             current = stat_value
