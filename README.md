@@ -37,34 +37,32 @@ thus making it hard for widespread adoption and use.**
 
 ## Preparation
 1. Clone the repo:
-```
-git clone https://github.com/jennyabr/pytorch_faster_rcnn.git
-```
+   ```
+   git clone https://github.com/jennyabr/pytorch_faster_rcnn.git
+   ```
 
 2. Add the “lib” directory to the `PYTHONPATH`:
-```
-export PYTHONPATH=*path_to_repo*/lib
-```
+   ```
+   export PYTHONPATH=*path_to_repo*/lib
+   ```
 
 3. Prepare python virtual environment:
-```
-sudo pip install virtualenv                      # This may already be installed
-virtualenv -p python3 [path_to_environment].env  # Create a virtual environment (python3)
-                                                 # Note: you can also use "virtualenv .env"
-                                                 # to use your default python (usually python 2.7)
-source [path_to_environment].env/bin/activate    # Activate the virtual environment
-pip install -r lib/requirements.txt              # Install dependencies
-```
- (*) To exit the virtual environment run: `deactivate`
+   ```
+   sudo pip install virtualenv                      # This may already be installed
+   virtualenv -p python3 [path_to_environment].env  # Create a virtual environment (python3)
+                                                    # Note: you can also use "virtualenv .env"
+                                                    # to use your default python (usually python 2.7)
+   source [path_to_environment].env/bin/activate    # Activate the virtual environment
+   pip install -r lib/requirements.txt              # Install dependencies
+   ```
+   (*) To exit the virtual environment run: `deactivate`
 
 4. compile (from lib directory):
-```
-cd lib
-bash make.sh
-```
- (*) You will be asked for your GPU architecture,
-you can find it [here](http://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/)
-(if it is SM_60, enter 60 when you’re prompted).
+   ```
+   cd lib
+   bash make.sh
+   ```
+   (*) You will be asked for your GPU architecture, you can find it [here](http://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/) (if it is SM_60, enter 60 when you’re prompted).
 
 
 ## Data
@@ -84,16 +82,16 @@ scripts provided in this repository.
 ## Train and Inference
 In the demos directory you will find several scripts that demonstrate how to use the library:
 All the scripts start with setting the config and the logger.
-1. Create the config file for your run:
- a. Use one of the existing config files (e.g. vgg16.yml) or create your own.
- b. The config file defines all the desired hyper parameters for the run, as well as the experiment name, paths for saving the checkpoints, predictions, etc.
- c. The existing config files define only a small subset of the possible hyper-parameters and use the default values of many others. You can see the full list of hyper-parameters you can define, and their default values, in [defaults.yml](lib/utils/defaults.yml).
+* Create the config file for your run:
+  * Use one of the existing config files (e.g. vgg16.yml) or create your own.
+  * The config file defines all the desired hyper parameters for the run, as well as the experiment name, paths for saving the checkpoints, predictions, etc.
+  * The existing config files define only a small subset of the possible hyper-parameters and use the default values of many others. You can see the full list of hyper-parameters you can define, and their default values, in [defaults.yml](lib/utils/defaults.yml).
 
-2. In order to run end to end (train and inference) run one of the existing demo scripts (e.g. [vgg_and_resnet_e2e.py](https://github.com/jennyabr/pytorch_faster_rcnn/blob/master/demos/vgg_and_resnet_e2e.py)):
+* In order to run end to end (train and inference) run one of the existing demo scripts (e.g. [vgg_and_resnet_e2e.py](https://github.com/jennyabr/pytorch_faster_rcnn/blob/master/demos/vgg_and_resnet_e2e.py)):
 or a copy of them with the path to your config file:
-```
-python vgg_and_resnet_e2e.py
-```
+   ```
+   python vgg_and_resnet_e2e.py
+   ```
 
 
 ## TODOs
