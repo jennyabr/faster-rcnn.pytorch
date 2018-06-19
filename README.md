@@ -55,14 +55,14 @@ virtualenv -p python3 [path_to_environment].env  # Create a virtual environment 
 source [path_to_environment].env/bin/activate    # Activate the virtual environment
 pip install -r lib/requirements.txt              # Install dependencies
 ```
-* To exit the virtual environment run: `deactivate`
+(*) To exit the virtual environment run: `deactivate`
 
 4. compile (from lib directory):
 ```
 cd lib
 bash make.sh
 ```
-* You will be asked for your GPU architecture,
+(*) You will be asked for your GPU architecture,
 you can find it [here](http://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/)
 (if it is SM_60, enter 60 when you’re prompted).
 
@@ -85,10 +85,9 @@ scripts provided in this repository.
 In the demos directory you will find several scripts that demonstrate how to use the library:
 All the scripts start with setting the config and the logger.
 1. Create the config file for your run:
-
-1.a. Use one of the existing config files (e.g. vgg16.yml) or create your own.
-1.b. The config file defines all the desired hyper parameters for the run, as well as the experiment name, paths for saving the checkpoints, predictions, etc.
-1.c. The existing config files define only a small subset of the possible hyper-parameters and use the default values of many others. You can see the full list of hyper-parameters you can define, and their default values, in [defaults.yml](lib/utils/defaults.yml).
+a. Use one of the existing config files (e.g. vgg16.yml) or create your own.
+b. The config file defines all the desired hyper parameters for the run, as well as the experiment name, paths for saving the checkpoints, predictions, etc.
+c. The existing config files define only a small subset of the possible hyper-parameters and use the default values of many others. You can see the full list of hyper-parameters you can define, and their default values, in [defaults.yml](lib/utils/defaults.yml).
 
 2. In order to run end to end (train and inference) run one of the existing demo scripts (e.g. [vgg_and_resnet_e2e.py](https://github.com/jennyabr/pytorch_faster_rcnn/blob/master/demos/vgg_and_resnet_e2e.py)):
 or a copy of them with the path to your config file:
