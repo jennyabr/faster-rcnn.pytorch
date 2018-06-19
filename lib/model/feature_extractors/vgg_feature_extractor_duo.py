@@ -79,7 +79,7 @@ class VGGFeatureExtractorDuo(FeatureExtractorDuo):
 
     @classmethod
     def _freeze_layers(cls, model, upto_pooling_num):
-        #T ODO: JA - make sure this works correctly
+        # TODO: JA - make sure this works correctly
         curr_pooling_num = 0
         for idx in range(len(model)):
             layer = model[idx]

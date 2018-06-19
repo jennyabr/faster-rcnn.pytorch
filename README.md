@@ -85,14 +85,12 @@ scripts provided in this repository.
 In the demos directory you will find several scripts that demonstrate how to use the library:
 All the scripts start with setting the config and the logger.
 1. Create the config file for your run:
+
 1.a. Use one of the existing config files (e.g. vgg16.yml) or create your own.
-1.b. The config file defines all the desired hyper parameters for the run, as well as the experiment name,
-paths for saving the checkpoints, predictions, etc..
-1.c. The existing config files define only a small subset of the possible hyper-parameters and use the default
-values of many others. You can see the full list of hyper-parameters you can define, and their default values,
-in [defaults.yml](lib/utils/defaults.yml)
-2. In order to run end to end (train and inference) run one of the existing demo scripts
-(e.g. [vgg_and_resnet_e2e.py](https://github.com/jennyabr/pytorch_faster_rcnn/blob/master/demos/vgg_and_resnet_e2e.py))
+1.b. The config file defines all the desired hyper parameters for the run, as well as the experiment name, paths for saving the checkpoints, predictions, etc.
+1.c. The existing config files define only a small subset of the possible hyper-parameters and use the default values of many others. You can see the full list of hyper-parameters you can define, and their default values, in [defaults.yml](lib/utils/defaults.yml).
+
+2. In order to run end to end (train and inference) run one of the existing demo scripts (e.g. [vgg_and_resnet_e2e.py](https://github.com/jennyabr/pytorch_faster_rcnn/blob/master/demos/vgg_and_resnet_e2e.py)):
 or a copy of them with the path to your config file:
 ```
 python vgg_and_resnet_e2e.py

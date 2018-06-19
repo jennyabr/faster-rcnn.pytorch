@@ -1,5 +1,5 @@
 DATA_DIR: '/home/jenny/gripper2/data'
-OUTPUT_DIR: '/home/jenny/gripper2/outputs/06_05'
+OUTPUT_DIR: '/home/jenny/gripper2/outputs/06_19'
 EXPERIMENT_NAME: 'vgg16'
 net: 'vgg'
 net_variant: '16'

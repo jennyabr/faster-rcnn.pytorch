@@ -49,5 +49,6 @@ def normal_init(nn_module, mean=0, stddev=1):
 def global_average_pooling(input):
     return input.mean(3).mean(2)
 
+
 def remove_last_layer_from_network(model):
     return list(model._modules.values())[:-1]

@@ -48,6 +48,7 @@ def faster_rcnn_prediction(data_manager, model, cfg, epoch_num):
             preds_clipped_to_img_size = clip_boxes(preds_in_img_coords, im_info.data, 1)
             inference_scaling_factor = im_info.data[0][2]
             bbox_coords = preds_clipped_to_img_size / inference_scaling_factor
+
             return bbox_coords
 
         bbox_coords = transform_preds_to_img_coords()
