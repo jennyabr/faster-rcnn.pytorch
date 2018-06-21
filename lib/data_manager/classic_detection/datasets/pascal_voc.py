@@ -293,18 +293,18 @@ class pascal_voc(imdb):
             with open(os.path.join(output_dir, cls + '_pr.pkl'), 'wb') as f:
                 pickle.dump({'rec': rec, 'prec': prec, 'ap': ap}, f)
 
-        aps_str = pprint.pformat(aps_dict)
+        res_str = ('Results:\n{0}\n'
+                   'Mean AP = {1:.4f}.\n'
+                   'Results computed with the **unofficial** Python eval code. '
+                   'Results should be very close to the official MATLAB eval code.\n'
+                   '-- Thanks, The Management').format(pprint.pformat(aps_dict), np.mean(aps))
+        
         with open(os.path.join(output_dir, 'eval_summery.txt'), 'w') as f:
-            f.write(aps_str)
+            f.write(res_str)
 
         logger.info('--------------------------------------------------------------\n'
-                    'Results:\n{0}\n'
-                    'Mean AP = {1:.4f}.\n'
-                    'Results computed with the **unofficial** Python eval code. '
-                    'Results should be very close to the official MATLAB eval code. '
-                    '-- Thanks, The Management\n'
-                    '--------------------------------------------------------------'
-                    .format(aps_str, np.mean(aps)))
+                    '{}\n'
+                    '--------------------------------------------------------------'.format(res_str))
 
     def evaluate_detections(self, all_boxes, output_dir=None):
         self._write_voc_results_file(all_boxes)

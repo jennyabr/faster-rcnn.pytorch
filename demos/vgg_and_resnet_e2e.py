@@ -14,6 +14,7 @@ if __name__ == '__main__':
     cfg_vgg16 = ConfigProvider()
     cfg_vgg16.load(config_file_vgg16)
     set_root_logger(cfg_vgg16.get_log_path())
+
     create_and_train_with_err_handling(cfg_vgg16)
     pred_eval_with_err_handling(cfg_vgg16)
 
@@ -21,5 +22,6 @@ if __name__ == '__main__':
     cfg_resnet101 = ConfigProvider()
     cfg_resnet101.load(config_file_resnet101)
     set_root_logger(cfg_resnet101.get_log_path())
+
     create_and_train_with_err_handling(cfg_resnet101)
     pred_eval_with_err_handling(cfg_resnet101)

@@ -65,6 +65,7 @@ class ConfigProvider(dict):
             outdir = os.path.join(os.path.abspath(cfg['OUTPUT_DIR']), cfg['EXPERIMENT_NAME'])
             os.makedirs(outdir, exist_ok=True)
             return outdir
+
         cfg['OUTPUT_PATH'] = create_output_path()
         if cfg['USE_RND_SEED']:
             seed = cfg.get('USER_CHOSEN_SEED', None)
@@ -77,13 +78,13 @@ class ConfigProvider(dict):
             random.seed(seed+4)
 
         cfg = edict(cfg)
-        logger.info('--->>> Config:\n{}'.format(pprint.pformat(cfg)))
-        with open(os.path.join(cfg['OUTPUT_PATH'], 'run_with_config.yml'), 'w') as outfile:
+        save_to = os.path.join(cfg['OUTPUT_PATH'], 'run_with_config{}.yml'.format(cfg['start_run_time_str']))
+        with open(save_to, 'w') as outfile:
             yaml.dump(cfg, outfile, default_flow_style=False)
 
         self._cfg = cfg
 
-    def __str__(self):
+    def __repr__(self):
         return pprint.pformat(self._cfg)
 
     @property
@@ -98,7 +99,6 @@ class ConfigProvider(dict):
         file_name = self.ckpt_file_format.format(epoch)
         path = os.path.join(self.output_path, file_name)
         os.makedirs(os.path.dirname(path), exist_ok=True)
-        logger.info("CKPT path: {}.".format(path))
         return path
 
     def get_last_ckpt_path(self):

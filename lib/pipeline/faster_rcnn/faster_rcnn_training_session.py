@@ -12,7 +12,9 @@ logger = logging.getLogger(__name__)
 
 
 def run_training_session(data_manager, model, create_optimizer_fn, cfg, train_logger, first_epoch=0):
+    logger.info("--->>> Starting training session...")
     model.train()
+
     def get_trainable_params():
         trainable_params = []
         trainable_keys = []
@@ -61,7 +63,7 @@ def run_training_session(data_manager, model, create_optimizer_fn, cfg, train_lo
 
         epoch_end_time = time.time()
         epoch_duration_hrs = (epoch_end_time - epoch_start_time) / 3600
-        logger.info("Finished epoch {0} in {1:.3f} hrs.".format(epoch, epoch_duration_hrs))
+        logger.info("----------- Finished epoch {0} in {1:.3f} hrs. -----------".format(epoch, epoch_duration_hrs))
 
         save_session_to_ckpt(model, optimizer, cfg, epoch)
 
@@ -111,6 +113,7 @@ def _write_stats_to_logger(train_logger, metrics, time_per_sample, epoch, step, 
         logged_string += "\n\t\t{0}: {1:.4f}".format(metric_name, metric_value)
 
     return logged_string
+
 
 def _aggregate_stats(aggregated_stats, new_stats, disp_interval):
     res = {}

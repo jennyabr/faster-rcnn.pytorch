@@ -95,21 +95,29 @@ or a copy of them with the path to your config file:
 
 
 ## TODOs
+### Tests:
 - [ ] Compare results to the original implementation while running on multiple GPUs.
 - [ ] Test on COCO, Visual Genome and VOC-2012.
 - [ ] Test resnet101 with large scale and compare to results in original repo.
-- [ ] Upgrade to torch 0.4.
-- [ ] Optimize metric averaging to occur on GPU (some interesting points to test are listed [here](https://www.sagivtech.com/2017/09/19/optimizing-pytorch-training-code/)).
-- [ ] Fix incorrect usage of `torch.FloatTensor(NUMBER)`.
-- [ ] Number of output coords in faster rcnn should be a parameter (currently hardcoded to 4).
-- [ ] Reloading faster rcnn from checkpoint should enable manually overriding `num_classes` **and performing random initialization on the X last layers for fine-tuning**.
-- [ ] Make the `load_session_from_ckpt` function in `ckpt_utils.py` independent from FasterRCNN (i.e. don't use the `FasterRCNN` constructor)
+- [ ] **Add unit tests**.
+
+### Fix:
 - [ ] `ConfigProvider` should enable setting attributes inside `_cfg` for h.p. sweeps.
 - [ ] Config should be divided into logical units.
 - [ ] Method `_freeze_layers` in `FeatureExtractorDuo` should be a recursion.
+- [ ] Fix incorrect usage of `torch.FloatTensor(NUMBER)`.
+- [ ] fix warning: "Implicit dimension choice for softmax has been deprecated. Change the call to include dim=X as an argument" in `rpn` and in `faster_rcnn`
+- [ ] Reloading faster rcnn from checkpoint should enable manually overriding `num_classes` **and performing random initialization on the X last layers for fine-tuning**.
 - [ ] Check if the loss can be removed from the state (i.e. remove from `self`) of the modules.
+
+### Upgrades:
+- [ ] Upgrade to torch 0.4.
+- [ ] Optimize metric averaging to occur on GPU (some interesting points to test are listed [here](https://www.sagivtech.com/2017/09/19/optimizing-pytorch-training-code/)).
+- [ ] Number of output coords in faster rcnn should be a parameter (currently hardcoded to 4).
+
+### Extensions:
+- [ ] Make the `load_session_from_ckpt` function in `ckpt_utils.py` independent from FasterRCNN (i.e. don't use the `FasterRCNN` constructor)
 - [ ] `FeatureExtractorDuo` - test the random initialization factory method and expand to all possible random initializations.
-- [ ] **Add tests**.
 - [ ] Implement Mask RCNN.
 
 # Contributing

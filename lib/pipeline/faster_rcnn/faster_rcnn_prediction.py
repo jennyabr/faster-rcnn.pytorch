@@ -61,7 +61,7 @@ def faster_rcnn_prediction(data_manager, model, cfg, epoch_num):
         raw_preds['bbox_coords'][i, ...] = bbox_coords.cpu().numpy()
         raw_preds['cls_probs'][i, ...] = cls_probs.cpu().numpy()
 
-        if i % cfg.TRAIN.disp_interval == 0 and i > 0:
+        if i % cfg.TEST.disp_interval == 0 and i > 0:
             logger.info('Prediction in-progress {0}/{1}: '
                         'avg per image: {2:.3f} s.'.format(i, num_images, avg_pred_time))
 

@@ -16,8 +16,8 @@ def set_root_logger(log_path):
     for h in logger.handlers:
         if type(h) == logging.FileHandler:
             logger.removeHandler(h)
-    file = logging.FileHandler(filename=log_path, mode='a')
-    formatter_file = logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(name)s\n%(message)s',
+    file = logging.FileHandler(filename=log_path, mode='a', encoding='utf-8')
+    formatter_file = logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(name)s\n\t%(message)s\n',
                                        datefmt=None,
                                        style='%')
     file.setFormatter(formatter_file)

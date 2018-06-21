@@ -1,5 +1,5 @@
 DATA_DIR: '/home/jenny/gripper2/data'
-OUTPUT_DIR: '/home/jenny/gripper2/outputs/06_19'
+OUTPUT_DIR: '/home/jenny/gripper2/outputs/06_21'
 EXPERIMENT_NAME: 'resnet101'
 dataset: 'pascal_voc'
 net: 'resnet'

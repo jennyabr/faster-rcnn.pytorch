@@ -73,7 +73,7 @@ def faster_rcnn_postprocessing(data_manager, model, cfg, num_epoch):
         postprocessed_detections[:, i] = keep_top_k_detections_in_image(detections_after_nms)
         pp_end = time.time()
 
-        if i % cfg.TRAIN.disp_interval == 0 and i > 0:
+        if i % cfg.TEST.disp_interval == 0 and i > 0:
             logger.info('Postprocessing in-progress: {0}/{1}: '
                         'avg time per image: {2:.4f} s.'.format(i, num_images, (pp_end-start_time) / (i+1)))
 

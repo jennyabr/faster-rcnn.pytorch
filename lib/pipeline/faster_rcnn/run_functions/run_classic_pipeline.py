@@ -28,6 +28,9 @@ def create_and_train_with_err_handling(cfg):
 
 
 def create_and_train(cfg):
+    logger.info("--->>> Starting training...\n"
+                "With config:\n {}".format(cfg))
+
     train_data_manager = ClassicDataManager(
         mode=Mode.TRAIN, imdb_name=cfg.imdb_name, num_workers=cfg.NUM_WORKERS, is_cuda=cfg.CUDA, cfg=cfg,
         batch_size=cfg.TRAIN.batch_size)
@@ -57,7 +60,11 @@ def pred_eval_with_err_handling(cfg):
 def pred_eval(cfg):
     ckpt_path = cfg.get_last_ckpt_path()
     epoch_num = get_epoch_num_from_ckpt(ckpt_path)
-    model = FasterRCNN.create_from_ckpt(ckpt_path)
+    logger.info("--->>> Starting prediction-evaluation...\n"
+                "Last detected epoch: {},\n"
+                "Reading from ckpt: {},\n"
+                "Config:\n {}".format(epoch_num, ckpt_path, cfg))
+    model, _ = FasterRCNN.create_from_ckpt(ckpt_path)
     model.cuda()
     data_manager = ClassicDataManager(mode=Mode.INFER,
                                       imdb_name=cfg.imdbval_name,

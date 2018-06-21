@@ -137,7 +137,7 @@ class FasterRCNN(nn.Module):
             loaded_cfg.net, loaded_cfg.net_variant, loaded_cfg.TRAIN.frozen_blocks)
         model = FasterRCNN(feature_extractor_duo, loaded_cfg, state_dict['model_cfg_params']['num_classes'])
         model.load_state_dict(state_dict['model'])
-        return model
+        return model, loaded_cfg
 
     def train(self, mode=True):
         super(FasterRCNN, self).train(mode)

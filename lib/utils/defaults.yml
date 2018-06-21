@@ -190,3 +190,4 @@ TEST:
   DETECTION_THRESH: 0.05
 
   max_per_image: 100
+  disp_interval: 500  # number of iterations to display

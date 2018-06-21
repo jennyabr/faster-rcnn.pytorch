@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 def faster_rcnn_visualization(data_manager, cfg, epoch_num):
 
     pp_preds_path = cfg.get_postprocessed_detections_path(epoch_num)
-    logger.info("--->>> Reading post-processing data from: {}".format(pp_preds_path))
+    logger.info("--->>> Starting visualization, reading post-processing data from: {}.".format(pp_preds_path))
     with open(pp_preds_path, 'rb') as f:
         bboxes = pickle.load(f)
 
@@ -40,7 +40,7 @@ def faster_rcnn_visualization(data_manager, cfg, epoch_num):
                                 thickness=1)
 
         cv2.imwrite(cfg.get_img_visualization_path(epoch_num, i), im2show)
-        if i % cfg.TRAIN.disp_interval == 0 and i > 0:
+        if i % cfg.TEST.disp_interval == 0 and i > 0:
             logger.info("Visualization in-progress: {}/{}.".format(i, data_manager.num_images))
 
     end_time = time.time()
